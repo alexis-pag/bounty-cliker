@@ -1,1 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Image aléatoire au clic</title>
+  <style>
+    img {
+      width: 300px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
 
+  <img id="monImage" src="image/image1.jpg" alt="Image">
+
+  <script>
+    const images = [
+      "image/image1.jpg",
+      "image/image2.jpg",
+      "image/image3.jpg",
+      "image/image4.jpg"
+    ];
+
+    const img = document.getElementById("monImage");
+
+    img.addEventListener("click", () => {
+      // choisir une image aléatoire différente de l’actuelle
+      let nouvelleImage;
+      do {
+        const indexAleatoire = Math.floor(Math.random() * images.length);
+        nouvelleImage = images[indexAleatoire];
+      } while (nouvelleImage === img.src.split('/').slice(-2).join('/')); // évite la même image
+
+      img.src = nouvelleImage;
+    });
+  </script>
+
+</body>
+</html>
