@@ -5,6 +5,26 @@
 	<head>
 	<body>
 	<p>texte a afficher</p>
-	<p><img src="image/20250716_161633.jpg" width="300" height="200" alt="Description de l'image"></p>
+	<p><br>
+  <button onclick="changerImage()">Nouvelle image</button>
+
+  <script>
+    // liste des images
+    const images = [
+      'img1.jpg',
+      'img2.jpg',
+      'img3.jpg',
+      'img4.jpg'
+    ];
+
+    function changerImage() {
+      const index = Math.floor(Math.random() * images.length);
+      document.getElementById('image').src = images[index];
+    }
+
+    // affiche une image au chargement
+    changerImage();
+  </script>
+	<p>
 	<body>
 </html>
