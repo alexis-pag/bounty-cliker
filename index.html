@@ -1,6 +1,43 @@
 <!doctype html>
 <html lang="fr">
 <head>
+  <style> body {
+      /* Fond d'écran plein site */
+      background-image: url('image/bounty.jpg'); /* remplace par ton fichier de fond */
+      background-size: cover;       
+      background-repeat: no-repeat; 
+      background-position: center;  
+
+      /* Centrer le contenu */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      
+      height: 100vh;
+      margin: 0;
+    }
+
+    h2 {
+      color: white;
+      text-shadow: 1px 1px 5px black;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #image {
+      width: 400px;       /* taille fixe */
+      height: 300px;      /* taille fixe */
+      object-fit: contain; /* garde le ratio de l'image */
+      border: 2px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+
+    #image:hover {
+      transform: scale(1.05);
+    }</style>
   <meta charset="utf-8">
   <title>Accueil</title>
 </head>
