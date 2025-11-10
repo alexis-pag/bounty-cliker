@@ -2,15 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Images aléatoires avec fond</title>
+  <title>Images aléatoires avec fond fixe</title>
   <style>
     body {
       /* Fond d'écran plein site */
-      background-image: url('fond.jpg'); /* remplace par ton fichier de fond */
+      background-image: url('image/20250716_161633.jpg'); /* remplace par ton fichier de fond */
       background-size: cover;       
       background-repeat: no-repeat; 
       background-position: center;  
-      
+
       /* Centrer le contenu */
       display: flex;
       flex-direction: column;
@@ -29,18 +29,17 @@
     }
 
     #image {
-      width: 80%;          /* largeur adaptable */
-      max-width: 600px;     /* limite la taille sur grand écran */
-      height: auto;         /* garde le ratio */
-      object-fit: contain;
+      width: 400px;       /* taille fixe */
+      height: 300px;      /* taille fixe */
+      object-fit: contain; /* garde le ratio de l'image */
       border: 2px solid #fff;
-      cursor: pointer;      /* indique que c'est cliquable */
+      cursor: pointer;
       box-shadow: 0 0 15px rgba(0,0,0,0.5);
       transition: transform 0.2s;
     }
 
     #image:hover {
-      transform: scale(1.05); /* effet léger au survol */
+      transform: scale(1.05);
     }
   </style>
 </head>
