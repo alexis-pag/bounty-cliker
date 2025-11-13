@@ -195,7 +195,6 @@
       pointer-events: none;
     }
 
-    /* Boutons bleus */
     button, .reset-button {
       background: linear-gradient(90deg, #007BFF, #00BFFF);
       color: white;
@@ -224,7 +223,6 @@
       box-shadow: 0 0 20px rgba(255,69,0,0.8);
     }
 
-    /* --- Éclat lumineux --- */
     .flash {
       position: absolute;
       width: 30px;
@@ -242,7 +240,6 @@
     }
   </style>
 </head>
-
 <body>
   <div class="particles"></div>
 
@@ -367,8 +364,16 @@
       const item = storeItemsData[index];
       if(count >= item.price){
         count -= item.price;
+
         if(item.mult > 0) multiplier += item.mult;
-        if(item.auto > 0) item.owned += 1;
+
+        // === Mise à jour du rond rouge ===
+        if(item.name === "Gamelle de croquette") {
+          item.owned += 1; // le rond rouge augmente uniquement pour la Gamelle
+        } else if(item.auto > 0) {
+          item.owned += 1; // pour autres bâtiments, garde owned pour affichage si besoin
+        }
+
         item.price *= 1.15;
 
         // === Éclat lumineux ===
