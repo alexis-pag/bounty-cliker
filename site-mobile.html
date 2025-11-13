@@ -1,1 +1,360 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Bounty Clicker Mobile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      background-image: url('image/image.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      color: white;
+      text-shadow: 1px 1px 5px black;
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    #counter, #cps {
+      color: white;
+      font-size: 1.5em;
+      text-shadow: 1px 1px 5px black;
+      margin: 5px 0;
+    }
+
+    #image {
+      width: 90%;
+      max-width: 400px;
+      height: auto;
+      border: 3px solid #fff;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0,0,0,0.7);
+      margin: 15px 0;
+      border-radius: 10px;
+      touch-action: manipulation;
+    }
+
+    .plus-one {
+      position: absolute;
+      color: #fff;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-shadow: 2px 2px 5px black;
+      animation: floatUp 1s ease-out forwards;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-60px) scale(1.2); }
+    }
+
+    .store {
+      background-color: rgba(255,255,255,0.95);
+      width: 95%;
+      max-width: 400px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .store h3 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+      gap: 5px;
+    }
+
+    .building-icon-container img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .building-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: red;
+      color: white;
+      font-size: 12px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    button, .reset-button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      font-size: 1em;
+    }
+
+    button:hover, .reset-button:hover {
+      transform: scale(1.1);
+      background-color: #0056b3;
+    }
+
+    .item button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .reset-button {
+      margin-bottom: 10px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h2>Appuie sur Bounty !</h2>
+  <div id="counter">Bounty cliqué : 0</div>
+  <div id="cps">CPS : 0</div>
+  <img id="image" src="" alt="image aléatoire" onclick="clicBounty(event)">
+
+  <div class="store">
+    <button class="reset-button" onclick="resetJeu()">Réinitialiser</button>
+    <h3>Magasin de croquettes</h3>
+    <div id="storeItems"></div>
+  </div>
+
+  <audio id="clickSound">
+    <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const images = [
+      'image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg','image/bounty4.jpg',
+      'image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg',
+      'image/bountygraille.jpg'
+    ];
+
+    const imgEl = document.getElementById('image');
+    const sound = document.getElementById('clickSound');
+    const counterEl = document.getElementById('counter');
+    const cpsEl = document.getElementById('cps');
+    const storeDiv = document.getElementById('storeItems');
+
+    let lastIndex = -1;
+    let count = 0;
+    let multiplier = 1;
+    let lastClickTime = 0;
+    let cps = 0;
+
+    const storeItemsData = [
+      {name:"Gamelle de croquette", price:10, mult:1, auto:0, owned:0, icon:'image/gamelle.png'},
+      {name:"Paquet de croquette", price:50, mult:0, auto:1, owned:0, icon:'image/paquet.png'},
+      {name:"Magasin de croquettes", price:200, mult:0, auto:5, owned:0, icon:'image/magasin.png'},
+      {name:"Supermarcher de croquette", price:500, mult:0, auto:10, owned:0, icon:'image/supermarche.png'},
+      {name:"Hypermarcher de croquettes", price:1000, mult:0, auto:20, owned:0, icon:'image/hypermarcher.png'},
+      {name:"Entrepot de croquettes", price:5000, mult:0, auto:50, owned:0, icon:'image/entrepot.png'},
+      {name:"Usine de croquettes", price:10000, mult:0, auto:100, owned:0, icon:'image/usine.png'},
+      {name:"Dimension de croquettes", price:50000, mult:0, auto:500, owned:0, icon:'image/dimension.png'},
+      {name:"Univers de croquettes", price:100000, mult:0, auto:1000, owned:0, icon:'image/univers.png'}
+    ];
+
+    function chargerJeu() {
+      const saved = localStorage.getItem('bountySave');
+      if(saved){
+        const data = JSON.parse(saved);
+        count = data.count;
+        multiplier = data.multiplier;
+        data.storeItems.forEach((itemSaved, i) => {
+          storeItemsData[i].owned = itemSaved.owned;
+          storeItemsData[i].price = itemSaved.price;
+        });
+      }
+    }
+
+    function sauvegarderJeu() {
+      const saveData = {
+        count: count,
+        multiplier: multiplier,
+        storeItems: storeItemsData.map(item => ({owned: item.owned, price: item.price}))
+      };
+      localStorage.setItem('bountySave', JSON.stringify(saveData));
+    }
+
+    function updateStore() {
+      storeDiv.innerHTML = '';
+      storeItemsData.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = `${item.name} (${Math.floor(item.price)} croquettes)`;
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Acheter';
+        btn.disabled = count < item.price;
+        btn.onclick = () => acheterItem(index);
+
+        const iconContainer = document.createElement('div');
+        iconContainer.className = 'building-icon-container';
+
+        const img = document.createElement('img');
+        img.src = item.icon;
+
+        const countDiv = document.createElement('div');
+        countDiv.className = 'building-count';
+        countDiv.textContent = item.owned;
+
+        iconContainer.appendChild(img);
+        iconContainer.appendChild(countDiv);
+
+        itemDiv.appendChild(nameSpan);
+        itemDiv.appendChild(btn);
+        itemDiv.appendChild(iconContainer);
+
+        storeDiv.appendChild(itemDiv);
+      });
+    }
+
+    function acheterItem(index) {
+      const item = storeItemsData[index];
+      if(count >= item.price){
+        count -= item.price;
+        if(item.mult > 0) multiplier += item.mult;
+        if(item.auto > 0) item.owned += 1;
+        item.price *= 1.15;
+        updateCounter();
+        updateStore();
+        popCounter(index);
+        sauvegarderJeu();
+      }
+    }
+
+    function popCounter(index) {
+      const itemDiv = storeDiv.children[index];
+      const countDiv = itemDiv.querySelector('.building-count');
+      if(countDiv){
+        countDiv.style.animation = 'none';
+        countDiv.offsetHeight;
+        countDiv.style.animation = 'pop 0.3s ease-out';
+      }
+    }
+
+    function pickRandomIndex() {
+      if (images.length <= 1) return 0;
+      let idx;
+      do { idx = Math.floor(Math.random() * images.length); }
+      while(idx === lastIndex);
+      return idx;
+    }
+
+    function clicBounty(event) {
+      const now = Date.now();
+      if (now - lastClickTime < 300) return;
+      lastClickTime = now;
+
+      count += multiplier;
+      updateCounter();
+      changerImage();
+      jouerSon();
+      afficherPlusUn(event);
+      updateStore();
+      sauvegarderJeu();
+    }
+
+    function updateCounter() {
+      counterEl.textContent = `Bounty cliqué : ${Math.floor(count)} (x${multiplier})`;
+      cps = calculCPS();
+      cpsEl.textContent = `CPS : ${cps}`;
+    }
+
+    function calculCPS() {
+      let total = 0;
+      storeItemsData.forEach(item => {
+        if(item.auto > 0 && item.owned > 0){
+          total += item.auto * item.owned;
+        }
+      });
+      return total;
+    }
+
+    function changerImage() {
+      const idx = pickRandomIndex();
+      imgEl.src = images[idx];
+      lastIndex = idx;
+    }
+
+    function jouerSon() {
+      sound.currentTime = 0;
+      sound.volume = 1.0;
+      sound.play().catch(()=>{});
+    }
+
+    function afficherPlusUn(event) {
+      const plusOne = document.createElement('div');
+      plusOne.className = 'plus-one';
+      plusOne.textContent = `+${multiplier}`;
+      const rect = imgEl.getBoundingClientRect();
+      const x = event.touches ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
+      const y = event.touches ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
+      plusOne.style.left = `${x - 10}px`;
+      plusOne.style.top = `${y - 20}px`;
+      imgEl.parentElement.appendChild(plusOne);
+      setTimeout(()=>{ plusOne.remove(); },1000);
+    }
+
+    function resetJeu() {
+      localStorage.removeItem('bountySave');
+      count = 0;
+      multiplier = 1;
+      storeItemsData.forEach(item => {
+        item.owned = 0;
+        item.price = item.price / Math.pow(1.15, item.owned);
+      });
+      updateCounter();
+      updateStore();
+    }
+
+    setInterval(() => {
+      storeItemsData.forEach(item => {
+        if(item.auto > 0 && item.owned){
+          count += item.auto * item.owned;
+        }
+      });
+      updateCounter();
+      updateStore();
+    }, 1000);
+
+    setInterval(sauvegarderJeu, 60000);
+
+    // Initialisation
+    changerImage();
+    chargerJeu();
+    updateCounter();
+    updateStore();
+  </script>
+</body>
+</html>
 
