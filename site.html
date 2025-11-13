@@ -79,19 +79,13 @@
       100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
     }
 
-    .store-container {
-      display: flex;
-      flex-direction: row;
-      gap: 15px;
-    }
-
     .store {
       display: flex;
       flex-direction: column;
       background-color: rgba(255,255,255,0.9);
       padding: 15px;
       border-radius: 10px;
-      width: 250px;
+      width: 300px;
       max-height: 600px;
       overflow-y: auto;
     }
@@ -104,9 +98,11 @@
     .item {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin: 5px 0;
       padding: 5px;
       border-bottom: 1px solid #ccc;
+      gap: 5px;
     }
 
     .item button {
@@ -123,18 +119,32 @@
       cursor: not-allowed;
     }
 
-    .building-icons {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      max-height: 600px;
-      overflow-y: auto;
+    .building-icon-container {
+      position: relative;
+      display: inline-block;
     }
 
-    .building-icons img {
-      width: 30px;
-      height: 30px;
-      margin: 2px 0;
+    .building-icon-container img {
+      width: 35px;
+      height: 35px;
+      margin-left: 5px;
+    }
+
+    .building-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: red;
+      color: white;
+      font-size: 12px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -146,17 +156,14 @@
       <img id="image" src="" alt="image aléatoire" onclick="clicBounty(event)">
     </div>
 
-    <div class="store-container">
-      <div class="store">
-        <h3>Magasin de croquettes</h3>
-        <div id="storeItems"></div>
-      </div>
-      <div class="building-icons" id="buildingIcons"></div>
+    <div class="store">
+      <h3>Magasin de croquettes</h3>
+      <div id="storeItems"></div>
     </div>
   </div>
 
   <audio id="clickSound">
-    <source src="audio/click.mp3" type="audio/mpeg">
+    <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
   </audio>
 
   <script>
@@ -165,16 +172,17 @@
       'image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg',
       'image/bountygraille.jpg'
     ];
+
     const imgEl = document.getElementById('image');
     const sound = document.getElementById('clickSound');
     const counterEl = document.getElementById('counter');
-    const buildingIconsDiv = document.getElementById('buildingIcons');
+    const storeDiv = document.getElementById('storeItems');
 
     let lastIndex = -1;
     let count = 0;
     let multiplier = 1;
 
-    // Magasin
+    // Magasin : définis toi-même les images des bâtiments ici
     const storeItemsData = [
       {name:"Gamelle de croquette", price:10, mult:1, auto:0, owned:0, icon:'image/gamelle.png'},
       {name:"Paquet de croquette", price:50, mult:0, auto:1, owned:0, icon:'image/paquet.png'},
@@ -187,21 +195,37 @@
       {name:"Univers de croquettes", price:100000, mult:0, auto:1000, owned:0, icon:'image/univers.png'}
     ];
 
-    const storeDiv = document.getElementById('storeItems');
-
     function updateStore() {
       storeDiv.innerHTML = '';
       storeItemsData.forEach((item, index) => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'item';
+
         const nameSpan = document.createElement('span');
         nameSpan.textContent = `${item.name} (${Math.floor(item.price)} croquettes)`;
+
         const btn = document.createElement('button');
         btn.textContent = 'Acheter';
         btn.disabled = count < item.price;
         btn.onclick = () => acheterItem(index);
+
+        const iconContainer = document.createElement('div');
+        iconContainer.className = 'building-icon-container';
+
+        const img = document.createElement('img');
+        img.src = item.icon;
+
+        const countDiv = document.createElement('div');
+        countDiv.className = 'building-count';
+        countDiv.textContent = item.owned;
+
+        iconContainer.appendChild(img);
+        iconContainer.appendChild(countDiv);
+
         itemDiv.appendChild(nameSpan);
         itemDiv.appendChild(btn);
+        itemDiv.appendChild(iconContainer);
+
         storeDiv.appendChild(itemDiv);
       });
     }
@@ -215,19 +239,7 @@
         item.price *= 1.15;
         updateCounter();
         updateStore();
-        updateBuildingIcons();
       }
-    }
-
-    function updateBuildingIcons() {
-      buildingIconsDiv.innerHTML = '';
-      storeItemsData.forEach(item => {
-        for(let i=0; i<item.owned; i++){
-          const img = document.createElement('img');
-          img.src = item.icon;
-          buildingIconsDiv.appendChild(img);
-        }
-      });
     }
 
     function pickRandomIndex() {
@@ -267,13 +279,11 @@
       const plusOne = document.createElement('div');
       plusOne.className = 'plus-one';
       plusOne.textContent = `+${multiplier}`;
-
       const rect = imgEl.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       plusOne.style.left = `${x - 10}px`;
       plusOne.style.top = `${y - 20}px`;
-
       imgEl.parentElement.appendChild(plusOne);
       setTimeout(()=>{ plusOne.remove(); },1000);
     }
@@ -287,14 +297,12 @@
       });
       updateCounter();
       updateStore();
-      updateBuildingIcons();
     }, 1000);
 
     // Initialisation
     changerImage();
     updateCounter();
     updateStore();
-    updateBuildingIcons();
   </script>
 </body>
 </html>
