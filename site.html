@@ -5,18 +5,14 @@
   <title>bounty</title>
   <style>
     body {
-      /* Fond d'écran plein site */
-      background-image: url('image/image.png'); /* remplace par ton fichier de fond */
-      background-size: cover;       
-      background-repeat: no-repeat; 
-      background-position: center;  
-
-      /* Centrer le contenu */
+      background-image: url('fond.jpg'); /* remplace par ton fichier de fond */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      
       height: 100vh;
       margin: 0;
     }
@@ -29,28 +25,30 @@
     }
 
     #image {
-      width: 800px;       /* taille fixe */
-      height: 700px;      /* taille fixe */
-      object-fit: contain; /* garde le ratio de l'image */
+      width: 400px;    /* taille fixe */
+      height: 300px;   /* taille fixe */
+      object-fit: contain;
       border: 2px solid #fff;
       cursor: pointer;
       box-shadow: 0 0 15px rgba(0,0,0,0.5);
-      transition: transform 0.2s;
+      transition: transform 0.15s;
     }
 
-    #image:hover {
-      transform: scale(1.05);
-    }
+    #image:active { transform: scale(0.98); } /* léger retour visuel au clic */
   </style>
 </head>
 <body>
-  <h2>Cliquer sur l'image pour changer</h2>
-  <img id="image" src="" alt="image aléatoire" onclick="changerImage()">
-  
+  <h2>via ce site je vais vous presentez mon lapin bounty</h2>
+
+  <!-- Image cliquable -->
+  <img id="image" src="" alt="image aléatoire" onclick="changerImageEtJouerSon()">
+
+  <!-- Élément audio (place le fichier son dans son/click.mp3) -->
   <audio id="clickSound" preload="auto">
-    <source src="Mouse Click Sound Effect.mp3" type="audio/mpeg">
+    <source src="son/click.mp3" type="audio/mpeg">
+    <source src="son/click.ogg" type="audio/ogg">
   </audio>
-  
+
   <script>
     const images = [
       'image/bounty.jpg',
@@ -64,13 +62,51 @@
       'image/bountygraille.jpg'
     ];
 
-    function changerImage() {
-      const index = Math.floor(Math.random() * images.length);
-      document.getElementById('image').src = images[index];
+    const imgEl = document.getElementById('image');
+    const sound = document.getElementById('clickSound');
+    let lastIndex = -1;
+
+    // Evite de répéter la même image immédiatement
+    function pickRandomIndex() {
+      if (images.length === 0) return -1;
+      if (images.length === 1) return 0;
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * images.length);
+      } while (idx === lastIndex);
+      return idx;
+    }
+
+    function changerImageEtJouerSon() {
+      // changer l'image
+      const idx = pickRandomIndex();
+      if (idx >= 0) {
+        imgEl.src = images[idx];
+        lastIndex = idx;
+      }
+
+      // jouer le son depuis le début
+      try {
+        sound.currentTime = 0;
+        const playPromise = sound.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // si refusé (rare car clic utilisateur), on ignore
+          });
+        }
+      } catch (e) {
+        // ignore les erreurs de lecture
+      }
     }
 
     // Affiche une image au chargement
-    changerImage();
+    (function init() {
+      const idx = pickRandomIndex();
+      if (idx >= 0) {
+        imgEl.src = images[idx];
+        lastIndex = idx;
+      }
+    })();
   </script>
 </body>
 </html>
