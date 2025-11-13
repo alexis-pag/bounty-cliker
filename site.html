@@ -23,203 +23,61 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* --- Particules lumineuses --- */
-    .particles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      z-index: -1;
-    }
+    /* Particules lumineuses */
+    .particles { position: fixed; top:0; left:0; width:100%; height:100%; overflow:hidden; z-index:-1;}
     .particle {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 50%;
+      position:absolute; width:6px; height:6px; background:rgba(255,255,255,0.8); border-radius:50%;
       animation: floatParticle 10s linear infinite;
     }
-    @keyframes floatParticle {
-      0% { transform: translateY(100vh) scale(0.8); opacity: 0; }
-      25% { opacity: 1; }
-      100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
-    }
+    @keyframes floatParticle {0%{transform:translateY(100vh) scale(0.8);opacity:0;}25%{opacity:1;}100%{transform:translateY(-10vh) scale(1.2);opacity:0;}}
 
-    /* --- Structure principale --- */
-    .main {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 40px;
-      margin-top: 50px;
-    }
+    /* Structure principale */
+    .main { display:flex; flex-direction:row; align-items:flex-start; gap:40px; margin-top:50px; }
     .game {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: rgba(255,255,255,0.1);
-      border-radius: 20px;
-      box-shadow: 0 0 25px rgba(255,255,255,0.3);
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      animation: fadeIn 1s ease-out;
+      display:flex; flex-direction:column; align-items:center;
+      background: rgba(255,255,255,0.1); border-radius:20px; box-shadow:0 0 25px rgba(255,255,255,0.3);
+      padding:20px; backdrop-filter: blur(10px); animation: fadeIn 1s ease-out;
     }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    h2 {
-      color: #fff;
-      text-shadow: 2px 2px 10px #000;
-      margin-bottom: 10px;
-      font-size: 1.8em;
-      letter-spacing: 1px;
-      animation: popIn 1s ease-out;
-    }
-    @keyframes popIn {
-      0% { transform: scale(0.5); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    #counter, #cps {
-      color: #FFD700;
-      font-size: 1.6em;
-      text-shadow: 2px 2px 8px #000;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
+    @keyframes fadeIn { from {opacity:0;transform:scale(0.9);} to {opacity:1;transform:scale(1);} }
+    h2 { color:#fff; text-shadow:2px 2px 10px #000; margin-bottom:10px; font-size:1.8em; letter-spacing:1px; animation: popIn 1s ease-out;}
+    @keyframes popIn {0%{transform:scale(0.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
+    #counter,#cps{color:#FFD700;font-size:1.6em;text-shadow:2px 2px 8px #000;margin-bottom:10px;font-weight:bold;}
     #image {
-      width: 700px;
-      height: 500px;
-      object-fit: contain;
-      border: 4px solid #fff;
-      border-radius: 15px;
-      cursor: pointer;
-      box-shadow: 0 0 25px rgba(255,255,255,0.3);
-      transition: transform 0.1s ease, box-shadow 0.3s ease;
+      width:700px; height:500px; object-fit:contain; border:4px solid #fff; border-radius:15px; cursor:pointer;
+      box-shadow:0 0 25px rgba(255,255,255,0.3); transition:transform 0.1s ease,box-shadow 0.3s ease;
     }
-    #image:active {
-      transform: scale(0.97);
-      box-shadow: 0 0 35px rgba(255,255,255,0.8);
-    }
-    .plus-one {
-      position: absolute;
-      color: #00FF7F;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: 2px 2px 8px black;
-      animation: floatUp 1s ease-out forwards;
-      user-select: none;
-      pointer-events: none;
-    }
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0) scale(1); }
-      100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
-    }
+    #image:active {transform:scale(0.97); box-shadow:0 0 35px rgba(255,255,255,0.8);}
+    .plus-one {position:absolute;color:#00FF7F;font-size:2em;font-weight:bold;text-shadow:2px 2px 8px black;animation:floatUp 1s ease-out forwards;user-select:none;pointer-events:none;}
+    @keyframes floatUp {0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-80px) scale(1.3);}}
 
+    /* Boutique */
     .store {
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(180deg, #ffffffcc, #87CEFAaa);
-      padding: 15px;
-      border-radius: 15px;
-      width: 320px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      backdrop-filter: blur(8px);
-      animation: fadeIn 1.5s ease-out;
+      display:flex; flex-direction:column; background:linear-gradient(180deg,#ffffffcc,#87CEFAaa);
+      padding:15px;border-radius:15px;width:320px;box-shadow:0 0 20px rgba(0,0,0,0.3);backdrop-filter:blur(8px);animation:fadeIn 1.5s ease-out;
     }
-    .store h3 {
-      text-align: center;
-      color: #003366;
-      font-size: 1.3em;
-      text-shadow: 1px 1px 2px #fff;
-    }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 6px 0;
-      padding: 6px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 10px;
-      transition: transform 0.2s, background 0.2s;
-      position: relative;
-    }
-    .item:hover {
-      transform: scale(1.03);
-      background: rgba(255,255,255,0.95);
-    }
-    .building-icon-container {
-      position: relative;
-      display: inline-block;
-    }
-    .building-icon-container img {
-      width: 50px;
-      height: 50px;
-      border-radius: 5px;
-      margin-left: 8px;
-    }
-    .building-count {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: #FF4500;
-      color: white;
-      font-size: 12px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      pointer-events: none;
-    }
+    .store h3 {text-align:center;color:#003366;font-size:1.3em;text-shadow:1px 1px 2px #fff;}
+    .item {display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; background:rgba(255,255,255,0.8); border-radius:10px; transition:transform 0.2s, background 0.2s; position:relative;}
+    .item:hover {transform:scale(1.03); background:rgba(255,255,255,0.95);}
+    .building-icon-container {position:relative; display:inline-block;}
+    .building-icon-container img {width:50px; height:50px; border-radius:5px; margin-left:8px;}
+    .building-count {position:absolute; top:-6px; right:-6px; background:#FF4500; color:white; font-size:12px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; pointer-events:none;}
+    button,.reset-button {background:linear-gradient(90deg,#007BFF,#00BFFF); color:white; border:none; border-radius:8px; padding:6px 12px; font-weight:bold; cursor:pointer; box-shadow:0 0 10px rgba(0,0,255,0.5); transition:transform 0.2s ease, background 0.2s ease, box-shadow 0.3s ease;}
+    button:hover,.reset-button:hover {transform:scale(1.1); background:linear-gradient(90deg,#0056b3,#1E90FF); box-shadow:0 0 20px rgba(0,0,255,0.8);}
+    .reset-button {background:linear-gradient(90deg,#FF6347,#FF4500); margin-bottom:10px;}
+    .reset-button:hover {background:linear-gradient(90deg,#FF4500,#FF6347); box-shadow:0 0 20px rgba(255,69,0,0.8);}
+    .flash {position:absolute;width:30px;height:30px;background:radial-gradient(circle, rgba(255,255,0,0.8) 0%, rgba(255,255,0,0) 70%); border-radius:50%; pointer-events:none; animation:flashAnim 0.5s ease-out forwards; z-index:10;}
+    @keyframes flashAnim {0%{transform:scale(0);opacity:1;}100%{transform:scale(2);opacity:0;}}
 
-    button, .reset-button {
-      background: linear-gradient(90deg, #007BFF, #00BFFF);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(0,0,255,0.5);
-      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.3s ease;
-    }
-    button:hover, .reset-button:hover {
-      transform: scale(1.1);
-      background: linear-gradient(90deg, #0056b3, #1E90FF);
-      box-shadow: 0 0 20px rgba(0,0,255,0.8);
-    }
-    .reset-button {
-      background: linear-gradient(90deg, #FF6347, #FF4500);
-      margin-bottom: 10px;
-    }
-    .reset-button:hover {
-      background: linear-gradient(90deg, #FF4500, #FF6347);
-      box-shadow: 0 0 20px rgba(255,69,0,0.8);
-    }
-    .flash {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      background: radial-gradient(circle, rgba(255,255,0,0.8) 0%, rgba(255,255,0,0) 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: flashAnim 0.5s ease-out forwards;
-      z-index: 10;
-    }
-    @keyframes flashAnim {
-      0% { transform: scale(0); opacity: 1; }
-      100% { transform: scale(2); opacity: 0; }
-    }
+    /* Boosts */
+    .boosts {display:flex; flex-direction:column; background:linear-gradient(180deg,#ffe6a1cc,#ffd700aa); padding:15px; border-radius:10px; width:250px; gap:8px; max-height:600px; overflow-y:auto; box-shadow:0 0 15px rgba(0,0,0,0.3);}
+    .boost-item {position:relative;background:#ffffffdd; padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:bold; transition:transform 0.2s, background 0.2s;}
+    .boost-item:hover {transform:scale(1.05); background:#ffff88dd;}
+    .tooltip {position:absolute; left:105%; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.85); color:white; padding:5px 8px; border-radius:5px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.2s; font-size:0.9em; z-index:10;}
+    .boost-item:hover .tooltip {opacity:1;}
   </style>
 </head>
 <body>
   <div class="particles"></div>
-
   <div class="main">
     <div class="game">
       <h2>Bounty Clicker</h2>
@@ -232,224 +90,165 @@
       <button class="reset-button" onclick="resetJeu()">Réinitialiser</button>
       <h3>Magasin de croquettes</h3>
       <div id="storeItems"></div>
+      <h3>Boosts & Bonus</h3>
+      <div id="boostsContainer"></div>
     </div>
   </div>
 
-  <audio id="clickSound">
-    <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
-  </audio>
+  <audio id="clickSound"><source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg"></audio>
 
   <script>
     const particlesContainer = document.querySelector('.particles');
-    for (let i = 0; i < 25; i++) {
-      const p = document.createElement('div');
+    for(let i=0;i<25;i++){
+      const p=document.createElement('div');
       p.classList.add('particle');
-      p.style.left = Math.random() * 100 + '%';
-      p.style.animationDelay = (Math.random() * 10) + 's';
-      p.style.opacity = Math.random();
-      p.style.width = p.style.height = Math.random() * 8 + 'px';
+      p.style.left=Math.random()*100+'%';
+      p.style.animationDelay=(Math.random()*10)+'s';
+      p.style.opacity=Math.random();
+      p.style.width=p.style.height=Math.random()*8+'px';
       particlesContainer.appendChild(p);
     }
 
-    const images = [
-      'image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg','image/bounty4.jpg',
-      'image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg','image/bountygraille.jpg'
-    ];
+    const images=['image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg','image/bounty4.jpg','image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg','image/bountygraille.jpg'];
+    const imgEl=document.getElementById('image');
+    const sound=document.getElementById('clickSound');
+    const counterEl=document.getElementById('counter');
+    const cpsEl=document.getElementById('cps');
+    const storeDiv=document.getElementById('storeItems');
+    const boostsContainer=document.getElementById('boostsContainer');
 
-    const imgEl = document.getElementById('image');
-    const sound = document.getElementById('clickSound');
-    const counterEl = document.getElementById('counter');
-    const cpsEl = document.getElementById('cps');
-    const storeDiv = document.getElementById('storeItems');
+    let lastIndex=-1, count=0, multiplier=1, lastClickTime=0, cps=0;
 
-    let lastIndex = -1;
-    let count = 0;
-    let multiplier = 1;
-    let lastClickTime = 0;
-    let cps = 0;
-
-    const storeItemsData = [
+    const storeItemsData=[
       {name:"Gamelle de croquette", price:10, mult:1, auto:0, owned:0, icon:'image/gamelle.png'},
-      {name:"Cage à croquette", price:50, mult:0, auto:1, owned:0, icon:'image/cage.png'},
-      {name:"Paquet de croquette", price:200, mult:0, auto:5, owned:0, icon:'image/paquet.png'},
-      {name:"Magasin de croquettes", price:500, mult:0, auto:10, owned:0, icon:'image/magasin.png'},
-      {name:"Supermarcher de croquette", price:1000, mult:0, auto:20, owned:0, icon:'image/supermarche.png'},
-      {name:"Hypermarcher de croquettes", price:5000, mult:0, auto:50, owned:0, icon:'image/hypermarcher.png'},
-      {name:"Entrepot de croquettes", price:10000, mult:0, auto:100, owned:0, icon:'image/entrepot.png'},
-      {name:"Usine de croquettes", price:50000, mult:0, auto:500, owned:0, icon:'image/usine.png'},
-      {name:"Temple à croquettes", price:100000, mult:0, auto:1000, owned:0, icon:'image/temple.png'},
-      {name:"Planète de croquette", price:500000, mult:0, auto:5000, owned:0, icon:'image/planete.png'},
-      {name:"Dimension de croquettes", price:2000000, mult:0, auto:20000, owned:0, icon:'image/dimension.png'},
-      {name:"Univers de croquettes", price:10000000, mult:0, auto:100000, owned:0, icon:'image/univers.png'},
-      {name:"Galaxy de croquette", price:50000000, mult:0, auto:500000, owned:0, icon:'image/galaxy.png'}
+      {name:"Cage a croquette", price:20, mult:0, auto:1, owned:0, icon:'image/cage.png'},
+      {name:"Paquet de croquette", price:50, mult:0, auto:1, owned:0, icon:'image/paquet.png'},
+      {name:"Magasin de croquettes", price:200, mult:0, auto:5, owned:0, icon:'image/magasin.png'},
+      {name:"Supermarcher de croquette", price:500, mult:0, auto:10, owned:0, icon:'image/supermarche.png'},
+      {name:"Hypermarcher de croquettes", price:1000, mult:0, auto:20, owned:0, icon:'image/hypermarcher.png'},
+      {name:"Entrepot de croquettes", price:5000, mult:0, auto:50, owned:0, icon:'image/entrepot.png'},
+      {name:"Usine de croquettes", price:10000, mult:0, auto:100, owned:0, icon:'image/usine.png'},
+      {name:"Temple a croquettes", price:30000, mult:0, auto:200, owned:0, icon:'image/temple.png'},
+      {name:"Dimension de croquettes", price:50000, mult:0, auto:500, owned:0, icon:'image/dimension.png'},
+      {name:"Univers de croquettes", price:100000, mult:0, auto:1000, owned:0, icon:'image/univers.png'},
+      {name:"Planete de croquette", price:200000, mult:0, auto:2000, owned:0, icon:'image/planete.png'},
+      {name:"Galaxy de croquette", price:500000, mult:0, auto:5000, owned:0, icon:'image/galaxy.png'}
     ];
 
-    function chargerJeu() {
-      const saved = localStorage.getItem('bountySave');
+    const extraBoostsData=[
+      {name:"Bounty doré", effectDescription:"x1.5 sur les clicks", duration:20, effect:()=>{multiplier*=1.5;}, revert:()=>{multiplier/=1.5;}, active:false},
+      {name:"Employés compétents", effectDescription:"Double les croquettes des bâtiments avec employés", duration:30, effect:()=>{/* à définir */}, revert:()=>{/* à définir */}, active:false},
+      {name:"Marchand louche", effectDescription:"Double ou tout perdre", duration:0, effect:()=>{if(Math.random()<0.5){count*=2;} else {count=0;} updateCounter();}, revert:null, active:false},
+      {name:"Alexis de compagnie", effectDescription:"Réduit prix 20% des 4 premiers items", duration:60, effect:()=>{storeItemsData.slice(0,4).forEach(i=>i.price*=0.8)}, revert:()=>{storeItemsData.slice(0,4).forEach(i=>i.price/=0.8)}, active:false},
+      {name:"Augmentation des droits à Bounty", effectDescription:"Boost rentabilité +5%", duration:60, effect:()=>{multiplier*=1.05}, revert:()=>{multiplier/=1.05}, active:false},
+      // 10 autres boosts déjà proposés
+      {name:"Bâton magique", effectDescription:"x2 multiplicateur 20s", duration:20, effect:()=>{multiplier*=2;}, revert:()=>{multiplier/=2;}, active:false},
+      {name:"Friandise spéciale", effectDescription:"+500 croquettes instant", duration:0, effect:()=>{count+=500; updateCounter();}, revert:null, active:false},
+      {name:"Sac de croquettes", effectDescription:"Auto bâtiments x1.5 60s", duration:60, effect:()=>{storeItemsData.forEach(item=>{if(item.auto>0)item.auto*=1.5;})}, revert:()=>{storeItemsData.forEach(item=>{if(item.auto>0)item.auto/=1.5;})}, active:false},
+      {name:"Cloche d'or", effectDescription:"x3 multiplicateur 30s", duration:30, effect:()=>{multiplier*=3;}, revert:()=>{multiplier/=3;}, active:false},
+      {name:"Chapeau d'employé", effectDescription:"+1 auto bâtiments 45s", duration:45, effect:()=>{storeItemsData.forEach(item=>{if(item.auto>0)item.auto+=1;})}, revert:()=>{storeItemsData.forEach(item=>{if(item.auto>0)item.auto-=1;})}, active:false},
+      {name:"Machine à croquettes", effectDescription:"+50 CPS 60s", duration:60, effect:()=>{cps+=50;}, revert:()=>{cps-=50;}, active:false},
+      {name:"Potion chanceuse", effectDescription:"70% +1000 ou -500", duration:0, effect:()=>{if(Math.random()<0.7){count+=1000;}else{count-=500;if(count<0)count=0;} updateCounter();}, revert:null, active:false},
+      {name:"Tapis volant", effectDescription:"x1.8 multiplicateur 30s", duration:30, effect:()=>{multiplier*=1.8;}, revert:()=>{multiplier/=1.8;}, active:false},
+      {name:"Caisse de bonus", effectDescription:"+1 owned à tous les bâtiments", duration:0, effect:()=>{storeItemsData.forEach(item=>{item.owned+=1;}); updateStore();}, revert:null, active:false},
+      {name:"Feu d'artifice", effectDescription:"x2 multiplicateur et auto 20s", duration:20, effect:()=>{multiplier*=2; storeItemsData.forEach(item=>{if(item.auto>0)item.auto*=2;});}, revert:()=>{multiplier/=2; storeItemsData.forEach(item=>{if(item.auto>0)item.auto/=2;});}, active:false}
+    ];
+
+    function chargerJeu(){
+      const saved=localStorage.getItem('bountySave');
       if(saved){
-        const data = JSON.parse(saved);
-        count = data.count;
-        multiplier = data.multiplier;
-        data.storeItems.forEach((itemSaved, i) => {
-          storeItemsData[i].owned = itemSaved.owned;
-          storeItemsData[i].price = itemSaved.price;
-        });
+        const data=JSON.parse(saved);
+        count=data.count;
+        multiplier=data.multiplier;
+        data.storeItems.forEach((itemSaved,i)=>{storeItemsData[i].owned=itemSaved.owned; storeItemsData[i].price=itemSaved.price;});
       }
     }
 
-    function sauvegarderJeu() {
-      const saveData = {
-        count: count,
-        multiplier: multiplier,
-        storeItems: storeItemsData.map(item => ({owned: item.owned, price: item.price}))
-      };
+    function sauvegarderJeu(){
+      const saveData={count, multiplier, storeItems: storeItemsData.map(item=>({owned:item.owned, price:item.price}))};
       localStorage.setItem('bountySave', JSON.stringify(saveData));
     }
 
-    function updateStore() {
-      storeDiv.innerHTML = '';
-      storeItemsData.forEach((item, index) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'item';
-
-        const nameSpan = document.createElement('span');
-        nameSpan.textContent = `${item.name} (${Math.floor(item.price)} croquettes)`;
-
-        const btn = document.createElement('button');
-        btn.textContent = 'Acheter';
-        btn.disabled = count < item.price;
-        btn.onclick = () => acheterItem(index);
-
-        const iconContainer = document.createElement('div');
-        iconContainer.className = 'building-icon-container';
-
-        const img = document.createElement('img');
-        img.src = item.icon;
-
-        const countDiv = document.createElement('div');
-        countDiv.className = 'building-count';
-        countDiv.textContent = item.owned;
-
-        iconContainer.appendChild(img);
-        iconContainer.appendChild(countDiv);
-
-        itemDiv.appendChild(nameSpan);
-        itemDiv.appendChild(btn);
-        itemDiv.appendChild(iconContainer);
-
+    function updateStore(){
+      storeDiv.innerHTML='';
+      storeItemsData.forEach((item,index)=>{
+        const itemDiv=document.createElement('div'); itemDiv.className='item';
+        const nameSpan=document.createElement('span'); nameSpan.textContent=`${item.name} (${Math.floor(item.price)} croquettes)`;
+        const btn=document.createElement('button'); btn.textContent='Acheter'; btn.disabled=count<item.price; btn.onclick=()=>acheterItem(index);
+        const iconContainer=document.createElement('div'); iconContainer.className='building-icon-container';
+        const img=document.createElement('img'); img.src=item.icon;
+        const countDiv=document.createElement('div'); countDiv.className='building-count'; countDiv.textContent=item.owned;
+        iconContainer.appendChild(img); iconContainer.appendChild(countDiv);
+        itemDiv.appendChild(nameSpan); itemDiv.appendChild(btn); itemDiv.appendChild(iconContainer);
         storeDiv.appendChild(itemDiv);
       });
     }
 
-    function acheterItem(index) {
-      const item = storeItemsData[index];
-      if(count >= item.price){
-        count -= item.price;
+    function updateBoosts(){
+      boostsContainer.innerHTML='';
+      extraBoostsData.forEach((boost,index)=>{
+        const div=document.createElement('div'); div.className='boost-item'; div.textContent=boost.name;
+        const tooltip=document.createElement('div'); tooltip.className='tooltip'; tooltip.textContent=boost.effectDescription;
+        div.appendChild(tooltip);
+        div.onclick=()=>{
+          if(boost.active) return;
+          boost.active=true; boost.effect();
+          if(boost.duration>0){ setTimeout(()=>{ if(boost.revert)boost.revert(); boost.active=false; }, boost.duration*1000);}
+        };
+        boostsContainer.appendChild(div);
+      });
+    }
 
-        if(item.mult > 0) multiplier += item.mult;
+    function acheterItem(index){
+      const item=storeItemsData[index];
+      if(count>=item.price){
+        count-=item.price;
+        if(item.mult>0) multiplier+=item.mult;
+        if(item.name==="Gamelle de croquette"){item.owned+=1;}else if(item.auto>0){item.owned+=1;}
+        item.price*=1.15;
 
-        // Mise à jour du rond rouge uniquement pour la Gamelle
-        if(item.name === "Gamelle de croquette") {
-          item.owned += 1;
-        } else if(item.auto > 0) {
-          item.owned += 1;
-        }
+        // flash
+        const itemDiv=storeDiv.children[index]; const flash=document.createElement('div'); flash.className='flash';
+        flash.style.left=(itemDiv.offsetWidth/2-15)+'px'; flash.style.top=(itemDiv.offsetHeight/2-15)+'px'; itemDiv.appendChild(flash);
+        setTimeout(()=>{flash.remove();},500);
 
-        item.price *= 1.15;
-
-        // Éclat lumineux
-        const itemDiv = storeDiv.children[index];
-        const flash = document.createElement('div');
-        flash.className = 'flash';
-        flash.style.left = (itemDiv.offsetWidth/2 - 15) + 'px';
-        flash.style.top = (itemDiv.offsetHeight/2 - 15) + 'px';
-        itemDiv.appendChild(flash);
-        setTimeout(() => { flash.remove(); }, 500);
-
-        updateCounter();
-        updateStore();
-        sauvegarderJeu();
+        updateCounter(); updateStore(); sauvegarderJeu();
       }
     }
 
-    function clicBounty(event) {
-      const now = Date.now();
-      if (now - lastClickTime < 300) return;
-      lastClickTime = now;
-
-      count += multiplier;
-      updateCounter();
-      changerImage();
-      jouerSon();
-      afficherPlusUn(event);
-      updateStore();
-      sauvegarderJeu();
+    function clicBounty(event){
+      const now=Date.now(); if(now-lastClickTime<300) return; lastClickTime=now;
+      count+=multiplier; updateCounter(); changerImage(); jouerSon(); afficherPlusUn(event); updateStore(); sauvegarderJeu();
     }
 
-    function updateCounter() {
-      counterEl.textContent = `Bounty cliqué : ${Math.floor(count)} (x${multiplier})`;
-      cps = calculCPS();
-      cpsEl.textContent = `CPS : ${cps}`;
+    function updateCounter(){
+      counterEl.textContent=`Bounty cliqué : ${Math.floor(count)} (x${multiplier})`;
+      cps=calculCPS(); cpsEl.textContent=`CPS : ${cps}`;
     }
 
-    function calculCPS() {
-      let total = 0;
-      storeItemsData.forEach(item => {
-        if(item.auto > 0 && item.owned > 0){
-          total += item.auto * item.owned;
-        }
-      });
-      return total;
+    function calculCPS(){let total=0; storeItemsData.forEach(item=>{if(item.auto>0 && item.owned>0){total+=item.auto*item.owned;}}); return total;}
+
+    function changerImage(){let idx; do{idx=Math.floor(Math.random()*images.length);}while(idx===lastIndex); imgEl.src=images[idx]; lastIndex=idx;}
+
+    function jouerSon(){sound.currentTime=0; sound.volume=1; sound.play().catch(()=>{});}
+
+    function afficherPlusUn(event){const plusOne=document.createElement('div'); plusOne.className='plus-one'; plusOne.textContent=`+${multiplier}`;
+      const rect=imgEl.getBoundingClientRect(); const x=event.clientX-rect.left; const y=event.clientY-rect.top;
+      plusOne.style.left=`${x-10}px`; plusOne.style.top=`${y-20}px`; imgEl.parentElement.appendChild(plusOne);
+      setTimeout(()=>{plusOne.remove();},1000);
     }
 
-    function changerImage() {
-      let idx;
-      do { idx = Math.floor(Math.random() * images.length); }
-      while(idx === lastIndex);
-      imgEl.src = images[idx];
-      lastIndex = idx;
-    }
+    function resetJeu(){localStorage.removeItem('bountySave'); location.reload();}
 
-    function jouerSon() {
-      sound.currentTime = 0;
-      sound.volume = 1.0;
-      sound.play().catch(()=>{});
-    }
+    setInterval(()=>{
+      storeItemsData.forEach(item=>{if(item.auto>0 && item.owned){count+=item.auto*item.owned;}});
+      updateCounter(); updateStore();
+    },1000);
 
-    function afficherPlusUn(event) {
-      const plusOne = document.createElement('div');
-      plusOne.className = 'plus-one';
-      plusOne.textContent = `+${multiplier}`;
-      const rect = imgEl.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      plusOne.style.left = `${x - 10}px`;
-      plusOne.style.top = `${y - 20}px`;
-      imgEl.parentElement.appendChild(plusOne);
-      setTimeout(()=>{ plusOne.remove(); },1000);
-    }
+    setInterval(sauvegarderJeu,60000);
 
-    function resetJeu() {
-      localStorage.removeItem('bountySave');
-      location.reload();
-    }
-
-    setInterval(() => {
-      storeItemsData.forEach(item => {
-        if(item.auto > 0 && item.owned){
-          count += item.auto * item.owned;
-        }
-      });
-      updateCounter();
-      updateStore();
-    }, 1000);
-
-    setInterval(sauvegarderJeu, 60000);
-
-    changerImage();
-    chargerJeu();
-    updateCounter();
-    updateStore();
+    // Init
+    changerImage(); chargerJeu(); updateCounter(); updateStore(); updateBoosts();
   </script>
 </body>
 </html>
