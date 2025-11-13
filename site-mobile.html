@@ -73,36 +73,36 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 90%;
-    margin-top: 10px; /* réduit l’espace au-dessus */
+    width: 70%;  /* boutique plus compacte */
+    margin-top: 10px;
   }
 
   .store-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 5px; /* réduit l’espace entre les objets */
+    margin-bottom: 4px; /* moins d'espace */
     width: 100%;
   }
 
   .store-item img {
-    width: 40px;  /* réduit la taille des icônes */
-    height: 40px;
-    margin-left: 8px;
+    width: 30px;  /* icône plus petite */
+    height: 30px;
+    margin-left: 6px;
   }
 
   .button-store {
     margin: 2px;
-    padding: 8px 12px; /* boutique plus compacte */
+    padding: 6px 10px; /* bouton plus petit */
     font-weight: bold;
     border-radius: 6px;
     border: none;
     cursor: pointer;
     background: linear-gradient(90deg, #007BFF, #00BFFF);
     color: white;
-    font-size: 0.9em;
-    width: 75%;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    font-size: 0.8em;
+    width: 70%; /* réduit largeur */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     transition: transform 0.2s, background 0.2s;
   }
 
@@ -153,6 +153,16 @@ if(localStorage.getItem('clickerData')){
   });
 }
 
+// Fonction sauvegarde
+function saveData(){
+  const data = {
+    score: score,
+    clickValue: clickValue,
+    items: items.map(item=>({count:item.count, price:item.price}))
+  };
+  localStorage.setItem('clickerData', JSON.stringify(data));
+}
+
 // Création des boutons du magasin
 const storeDiv = document.getElementById('store');
 items.forEach((item, index)=>{
@@ -170,6 +180,7 @@ items.forEach((item, index)=>{
       item.count++;
       item.price = Math.floor(item.price * 1.2);
       if(item.clickMultiplier > 0) clickValue += item.clickMultiplier;
+      saveData(); // sauvegarde immédiate après achat
     }
     updateScore();
     updateStore();
@@ -184,7 +195,7 @@ document.getElementById('reset-btn').addEventListener('click', ()=>{
     items.forEach(item=>{
       item.count = 0;
       if(item.name === "Gamelle de croquette") item.price = 10;
-      else item.price = item.price / Math.pow(1.2, item.count); // reset approximatif
+      else item.price = item.price / Math.pow(1.2, item.count);
     });
     localStorage.removeItem('clickerData');
     updateScore();
@@ -211,8 +222,9 @@ img.addEventListener('click', ()=>{
   if(!canClick) return;
   score += clickValue;
   updateScore();
+  saveData(); // sauvegarde immédiate après click
   canClick = false;
-  setTimeout(()=>{ canClick = true; }, 300); // 0.3 seconde entre clicks
+  setTimeout(()=>{ canClick = true; }, 300); // 0.3s entre clicks
 });
 
 // CPS automatique
@@ -220,17 +232,11 @@ setInterval(()=>{
   let totalCPS = items.reduce((a,b)=>a+b.cps*b.count,0);
   score += totalCPS;
   updateScore();
+  saveData(); // sauvegarde régulière
 },1000);
 
-// Sauvegarde automatique toutes les 1 minute
-setInterval(()=>{
-  const data = {
-    score: score,
-    clickValue: clickValue,
-    items: items.map(item=>({count:item.count, price:item.price}))
-  };
-  localStorage.setItem('clickerData', JSON.stringify(data));
-}, 60000);
+// Sauvegarde automatique toutes les 1 minute (backup)
+setInterval(saveData, 60000);
 
 updateScore();
 updateStore();
