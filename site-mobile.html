@@ -19,6 +19,7 @@
     font-family: 'Segoe UI', sans-serif;
     overflow-x: hidden;
     position: relative;
+    transition: background-color 0.3s;
   }
 
   h2 {
@@ -138,6 +139,11 @@
     from {opacity: 0;}
     to {opacity: 1;}
   }
+
+  @keyframes flashRed {
+    0% { background-color: rgba(255,0,0,0.4); }
+    100% { background-color: transparent; }
+  }
 </style>
 </head>
 <body>
@@ -154,6 +160,8 @@
 <script>
 let score = 0;
 let clickValue = 1;
+
+const basePrices = [10, 50, 200, 500, 1200, 3000, 7000, 15000, 50000];
 
 const items = [
   {name:"Gamelle de croquette", price:10, cps:0, clickMultiplier:1, icon:'image/icon1.png', count:0},
@@ -220,15 +228,25 @@ function flashButton(id){
   setTimeout(()=>{ btn.style.boxShadow = ""; }, 300);
 }
 
-// Reset
+// Reset avec effet visuel + reset prix de base
 document.getElementById('reset-btn').addEventListener('click', ()=>{
   if(confirm("Réinitialiser le jeu ?")){
     score = 0;
     clickValue = 1;
-    items.forEach(it=>{ it.count=0; it.price=Math.round(it.price/Math.pow(1.2,it.count)); });
+
+    // Réinitialise le magasin à ses valeurs de base
+    items.forEach((item, i) => {
+      item.count = 0;
+      item.price = basePrices[i];
+    });
+
     localStorage.removeItem('clickerData');
     updateScore();
     updateStore();
+
+    // Effet flash rouge
+    document.body.style.animation = "flashRed 0.5s";
+    setTimeout(()=>{ document.body.style.animation = ""; }, 500);
   }
 });
 
