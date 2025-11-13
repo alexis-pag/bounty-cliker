@@ -131,8 +131,8 @@
     }
 
     .building-icon-container img {
-      width: 50px; /* taille modifiée */
-      height: 50px; /* taille modifiée */
+      width: 50px; /* taille icône */
+      height: 50px; /* taille icône */
       margin-left: 5px;
     }
 
@@ -152,6 +152,14 @@
       font-weight: bold;
       pointer-events: none;
     }
+
+    .reset-button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -161,6 +169,7 @@
       <div id="counter">Bounty cliqué : 0</div>
       <div id="cps">CPS : 0</div>
       <img id="image" src="" alt="image aléatoire" onclick="clicBounty(event)">
+      <button class="reset-button" onclick="resetJeu()">Réinitialiser</button>
     </div>
 
     <div class="store">
@@ -203,6 +212,30 @@
       {name:"Dimension de croquettes", price:50000, mult:0, auto:500, owned:0, icon:'image/dimension.png'},
       {name:"Univers de croquettes", price:100000, mult:0, auto:1000, owned:0, icon:'image/univers.png'}
     ];
+
+    // Charger la sauvegarde
+    function chargerJeu() {
+      const saved = localStorage.getItem('bountySave');
+      if(saved){
+        const data = JSON.parse(saved);
+        count = data.count;
+        multiplier = data.multiplier;
+        data.storeItems.forEach((itemSaved, i) => {
+          storeItemsData[i].owned = itemSaved.owned;
+          storeItemsData[i].price = itemSaved.price;
+        });
+      }
+    }
+
+    // Sauvegarder automatiquement
+    function sauvegarderJeu() {
+      const saveData = {
+        count: count,
+        multiplier: multiplier,
+        storeItems: storeItemsData.map(item => ({owned: item.owned, price: item.price}))
+      };
+      localStorage.setItem('bountySave', JSON.stringify(saveData));
+    }
 
     function updateStore() {
       storeDiv.innerHTML = '';
@@ -249,6 +282,7 @@
         updateCounter();
         updateStore();
         popCounter(index);
+        sauvegarderJeu(); // sauvegarde après achat
       }
     }
 
@@ -281,6 +315,7 @@
       jouerSon();
       afficherPlusUn(event);
       updateStore();
+      sauvegarderJeu(); // sauvegarde après clic
     }
 
     function updateCounter() {
@@ -324,6 +359,20 @@
       setTimeout(()=>{ plusOne.remove(); },1000);
     }
 
+    // Réinitialiser le jeu
+    function resetJeu() {
+      localStorage.removeItem('bountySave');
+      count = 0;
+      multiplier = 1;
+      storeItemsData.forEach(item => {
+        item.owned = 0;
+        item.price = item.price / Math.pow(1.15, item.owned);
+      });
+      updateCounter();
+      updateStore();
+    }
+
+    // Clics automatiques
     setInterval(() => {
       storeItemsData.forEach(item => {
         if(item.auto > 0 && item.owned){
@@ -334,8 +383,12 @@
       updateStore();
     }, 1000);
 
+    // Sauvegarde automatique toutes les 1 minute
+    setInterval(sauvegarderJeu, 60000);
+
     // Initialisation
     changerImage();
+    chargerJeu();
     updateCounter();
     updateStore();
   </script>
