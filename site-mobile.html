@@ -34,8 +34,6 @@
     object-fit: contain;
     border: 2px solid #fff;
     margin-top: 20px;
-
-    /* Empêche tout mouvement ou effet au tap sur mobile */
     transition: none !important;
     transform: none !important;
     cursor: default;
@@ -51,24 +49,24 @@
     text-shadow: 1px 1px 5px black;
   }
 
-  .button-store {
-    margin: 5px;
-    padding: 10px 15px;
+  #reset-btn {
+    margin: 10px 0;
+    padding: 8px 12px;
     font-weight: bold;
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    background: linear-gradient(90deg, #007BFF, #00BFFF);
+    background: linear-gradient(90deg, #FF4C4C, #FF7777);
     color: white;
     font-size: 1em;
     width: 80%;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
     transition: transform 0.2s, background 0.2s;
   }
 
-  .button-store:hover {
+  #reset-btn:hover {
     transform: scale(1.05);
-    background: linear-gradient(90deg, #0056b3, #1E90FF);
+    background: linear-gradient(90deg, #cc0000, #ff4c4c);
   }
 
   #store {
@@ -76,21 +74,41 @@
     flex-direction: column;
     align-items: flex-start;
     width: 90%;
-    margin-top: 20px;
+    margin-top: 10px; /* réduit l’espace au-dessus */
   }
 
   .store-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 5px; /* réduit l’espace entre les objets */
     width: 100%;
   }
 
   .store-item img {
-    width: 50px;
-    height: 50px;
-    margin-left: 10px;
+    width: 40px;  /* réduit la taille des icônes */
+    height: 40px;
+    margin-left: 8px;
+  }
+
+  .button-store {
+    margin: 2px;
+    padding: 8px 12px; /* boutique plus compacte */
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, #007BFF, #00BFFF);
+    color: white;
+    font-size: 0.9em;
+    width: 75%;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  .button-store:hover {
+    transform: scale(1.05);
+    background: linear-gradient(90deg, #0056b3, #1E90FF);
   }
 </style>
 </head>
@@ -99,6 +117,9 @@
 <h2>Bounty Clicker Mobile</h2>
 <div id="score">Click : 0</div>
 <img id="image" src="image/bounty.jpg" alt="Bounty">
+
+<!-- Bouton Réinitialiser -->
+<button id="reset-btn">Réinitialiser le jeu</button>
 
 <div id="store"></div>
 
@@ -118,6 +139,19 @@ const items = [
   {name:"Dimension de croquettes", price:15000, cps:250, clickMultiplier:0, icon:'image/icon8.png', count:0},
   {name:"Univers de croquettes", price:50000, cps:500, clickMultiplier:0, icon:'image/icon9.png', count:0},
 ];
+
+// Restauration des données depuis localStorage
+if(localStorage.getItem('clickerData')){
+  const data = JSON.parse(localStorage.getItem('clickerData'));
+  score = data.score;
+  clickValue = data.clickValue;
+  items.forEach((item, index)=>{
+    if(data.items[index]){
+      item.count = data.items[index].count;
+      item.price = data.items[index].price;
+    }
+  });
+}
 
 // Création des boutons du magasin
 const storeDiv = document.getElementById('store');
@@ -140,6 +174,22 @@ items.forEach((item, index)=>{
     updateScore();
     updateStore();
   });
+});
+
+// Réinitialiser le jeu
+document.getElementById('reset-btn').addEventListener('click', ()=>{
+  if(confirm("Voulez-vous vraiment réinitialiser le jeu ?")){
+    score = 0;
+    clickValue = 1;
+    items.forEach(item=>{
+      item.count = 0;
+      if(item.name === "Gamelle de croquette") item.price = 10;
+      else item.price = item.price / Math.pow(1.2, item.count); // reset approximatif
+    });
+    localStorage.removeItem('clickerData');
+    updateScore();
+    updateStore();
+  }
 });
 
 const scoreDiv = document.getElementById('score');
@@ -171,6 +221,16 @@ setInterval(()=>{
   score += totalCPS;
   updateScore();
 },1000);
+
+// Sauvegarde automatique toutes les 1 minute
+setInterval(()=>{
+  const data = {
+    score: score,
+    clickValue: clickValue,
+    items: items.map(item=>({count:item.count, price:item.price}))
+  };
+  localStorage.setItem('clickerData', JSON.stringify(data));
+}, 60000);
 
 updateScore();
 updateStore();
