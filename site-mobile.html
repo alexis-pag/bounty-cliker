@@ -18,6 +18,7 @@
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
     overflow-x: hidden;
+    position: relative;
   }
 
   h2 {
@@ -26,6 +27,7 @@
     font-size: 1.8em;
     margin: 15px 0;
     text-align: center;
+    animation: fadeIn 1s ease-in-out;
   }
 
   #image {
@@ -34,12 +36,15 @@
     object-fit: contain;
     border: 2px solid #fff;
     margin-top: 20px;
-    transition: none !important;
-    transform: none !important;
-    cursor: default;
+    cursor: pointer;
     touch-action: none;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
+  }
+
+  #image:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
   }
 
   #score {
@@ -61,19 +66,20 @@
     font-size: 1em;
     width: 80%;
     box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-    transition: transform 0.2s, background 0.2s;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.3s;
   }
 
   #reset-btn:hover {
     transform: scale(1.05);
     background: linear-gradient(90deg, #cc0000, #ff4c4c);
+    box-shadow: 0 0 10px red;
   }
 
   #store {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 70%;  /* boutique plus compacte */
+    width: 70%;
     margin-top: 10px;
   }
 
@@ -81,19 +87,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 4px; /* moins d'espace */
+    margin-bottom: 4px;
     width: 100%;
   }
 
   .store-item img {
-    width: 30px;  /* icône plus petite */
+    width: 30px;
     height: 30px;
     margin-left: 6px;
   }
 
   .button-store {
     margin: 2px;
-    padding: 6px 10px; /* bouton plus petit */
+    padding: 6px 10px;
     font-weight: bold;
     border-radius: 6px;
     border: none;
@@ -101,14 +107,36 @@
     background: linear-gradient(90deg, #007BFF, #00BFFF);
     color: white;
     font-size: 0.8em;
-    width: 70%; /* réduit largeur */
+    width: 70%;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    transition: transform 0.2s, background 0.2s;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.3s;
   }
 
   .button-store:hover {
     transform: scale(1.05);
     background: linear-gradient(90deg, #0056b3, #1E90FF);
+    box-shadow: 0 0 8px #00BFFF;
+  }
+
+  /* Animation du +1 */
+  .click-anim {
+    position: absolute;
+    color: #FFD700;
+    font-weight: bold;
+    text-shadow: 1px 1px 4px black;
+    animation: floatUp 0.8s ease-out forwards;
+    pointer-events: none;
+    font-size: 1.2em;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
   }
 </style>
 </head>
@@ -127,7 +155,6 @@
 let score = 0;
 let clickValue = 1;
 
-// Objets du magasin
 const items = [
   {name:"Gamelle de croquette", price:10, cps:0, clickMultiplier:1, icon:'image/icon1.png', count:0},
   {name:"Paquet de croquette", price:50, cps:1, clickMultiplier:0, icon:'image/icon2.png', count:0},
@@ -140,63 +167,65 @@ const items = [
   {name:"Univers de croquettes", price:50000, cps:500, clickMultiplier:0, icon:'image/icon9.png', count:0},
 ];
 
-// Restauration des données depuis localStorage
+// Charger sauvegarde
 if(localStorage.getItem('clickerData')){
   const data = JSON.parse(localStorage.getItem('clickerData'));
   score = data.score;
   clickValue = data.clickValue;
-  items.forEach((item, index)=>{
-    if(data.items[index]){
-      item.count = data.items[index].count;
-      item.price = data.items[index].price;
+  items.forEach((item, i)=>{
+    if(data.items[i]){
+      item.count = data.items[i].count;
+      item.price = data.items[i].price;
     }
   });
 }
 
-// Fonction sauvegarde
+// Sauvegarde
 function saveData(){
   const data = {
     score: score,
     clickValue: clickValue,
-    items: items.map(item=>({count:item.count, price:item.price}))
+    items: items.map(i=>({count:i.count, price:i.price}))
   };
   localStorage.setItem('clickerData', JSON.stringify(data));
 }
 
-// Création des boutons du magasin
 const storeDiv = document.getElementById('store');
-items.forEach((item, index)=>{
+items.forEach((item, i)=>{
   const div = document.createElement('div');
   div.className = 'store-item';
   div.innerHTML = `
-    <button class="button-store" id="btn-${index}">${item.name} (${item.price})</button>
-    <img src="${item.icon}" alt="${item.name} Icon">
+    <button class="button-store" id="btn-${i}">${item.name} (${item.price})</button>
+    <img src="${item.icon}" alt="${item.name}">
   `;
   storeDiv.appendChild(div);
-
-  document.getElementById(`btn-${index}`).addEventListener('click', ()=>{
+  document.getElementById(`btn-${i}`).addEventListener('click', ()=>{
     if(score >= item.price){
       score -= item.price;
       item.count++;
       item.price = Math.floor(item.price * 1.2);
       if(item.clickMultiplier > 0) clickValue += item.clickMultiplier;
-      saveData(); // sauvegarde immédiate après achat
+      saveData();
+      flashButton(`btn-${i}`);
     }
     updateScore();
     updateStore();
   });
 });
 
-// Réinitialiser le jeu
+// Animation flash d'achat
+function flashButton(id){
+  const btn = document.getElementById(id);
+  btn.style.boxShadow = "0 0 10px yellow";
+  setTimeout(()=>{ btn.style.boxShadow = ""; }, 300);
+}
+
+// Reset
 document.getElementById('reset-btn').addEventListener('click', ()=>{
-  if(confirm("Voulez-vous vraiment réinitialiser le jeu ?")){
+  if(confirm("Réinitialiser le jeu ?")){
     score = 0;
     clickValue = 1;
-    items.forEach(item=>{
-      item.count = 0;
-      if(item.name === "Gamelle de croquette") item.price = 10;
-      else item.price = item.price / Math.pow(1.2, item.count);
-    });
+    items.forEach(it=>{ it.count=0; it.price=Math.round(it.price/Math.pow(1.2,it.count)); });
     localStorage.removeItem('clickerData');
     updateScore();
     updateStore();
@@ -205,42 +234,52 @@ document.getElementById('reset-btn').addEventListener('click', ()=>{
 
 const scoreDiv = document.getElementById('score');
 function updateScore(){
-  let cpsTotal = items.reduce((a,b)=>a+b.cps*b.count,0);
-  scoreDiv.textContent = `Click : ${score} | CPS : ${cpsTotal}`;
+  let cps = items.reduce((a,b)=>a+b.cps*b.count,0);
+  scoreDiv.textContent = `Click : ${Math.floor(score)} | CPS : ${cps}`;
 }
 
 function updateStore(){
-  items.forEach((item, index)=>{
-    document.getElementById(`btn-${index}`).textContent = `${item.name} (${item.price})`;
+  items.forEach((item, i)=>{
+    document.getElementById(`btn-${i}`).textContent = `${item.name} (${item.price})`;
   });
 }
 
-// Click sur l'image
 const img = document.getElementById('image');
 let canClick = true;
-img.addEventListener('click', ()=>{
+img.addEventListener('click', (e)=>{
   if(!canClick) return;
   score += clickValue;
   updateScore();
-  saveData(); // sauvegarde immédiate après click
+  saveData();
+  createClickAnim(e);
   canClick = false;
-  setTimeout(()=>{ canClick = true; }, 300); // 0.3s entre clicks
+  setTimeout(()=>{ canClick = true; }, 300);
 });
 
-// CPS automatique
+// Animation +1
+function createClickAnim(e){
+  const anim = document.createElement('div');
+  anim.className = 'click-anim';
+  anim.textContent = `+${clickValue}`;
+  anim.style.left = (e.clientX - 20) + 'px';
+  anim.style.top = (e.clientY - 20) + 'px';
+  document.body.appendChild(anim);
+  setTimeout(()=>{ anim.remove(); }, 800);
+}
+
+// Auto CPS
 setInterval(()=>{
-  let totalCPS = items.reduce((a,b)=>a+b.cps*b.count,0);
-  score += totalCPS;
+  let total = items.reduce((a,b)=>a+b.cps*b.count,0);
+  score += total;
   updateScore();
-  saveData(); // sauvegarde régulière
+  saveData();
 },1000);
 
-// Sauvegarde automatique toutes les 1 minute (backup)
+// Sauvegarde backup 1 min
 setInterval(saveData, 60000);
 
 updateScore();
 updateStore();
 </script>
-
 </body>
 </html>
