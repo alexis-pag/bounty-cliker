@@ -55,7 +55,7 @@ button:hover, .reset-button:hover{transform:scale(1.1); background:linear-gradie
 .boosts div{padding:6px; background:rgba(255,255,255,0.8); border-radius:8px; cursor:pointer; position:relative; transition:transform 0.2s, background 0.2s;}
 .boosts div:hover{transform:scale(1.05); background:rgba(255,255,255,0.95);}
 .tooltip{position:absolute; top:-5px; left:105%; background:rgba(0,0,0,0.8); color:white; padding:4px 6px; border-radius:4px; font-size:12px; white-space:nowrap; display:none; z-index:10;}
-.boosts div:hover .tooltip, .item span:hover .tooltip{display:block;}
+.boosts div:hover .tooltip{display:block;}
 </style>
 </head>
 <body>
@@ -110,7 +110,6 @@ const boostsDiv=document.getElementById('boostsContainer');
 
 let lastIndex=-1,count=0,multiplier=1,lastClickTime=0,cps=0;
 
-// === Shop Items ===
 const storeItemsData=[
 {name:"Gamelle de croquette",price:10,mult:1,auto:0,owned:0,icon:'image/gamelle.png'},
 {name:"Cage à croquette",price:25,mult:0,auto:0,owned:0,icon:'image/cage.png'},
@@ -126,52 +125,62 @@ const storeItemsData=[
 {name:"Galaxy de croquettes",price:500000,mult:0,auto:5000,owned:0,icon:'image/galaxy.png'}
 ];
 
-// === Boosts ===
 const boostsData=[
-{name:"Bounty doré",desc:"x1.5 sur les clicks",active:false},
-{name:"Employés compétents",desc:"Double le nombre de croquettes par bâtiment avec employé",active:false},
-{name:"Marchand louche",desc:"Double ou perte aléatoire de croquettes",active:false},
-{name:"Alexis de compagnie",desc:"Réduit le prix des 4 premiers bâtiments de 20%",active:false},
-{name:"Augmentation des droits à Bounty",desc:"Boost la rentabilité des croquettes de 5%",active:false},
-{name:"Bonus mystère 1",desc:"+10% click",active:false},
-{name:"Bonus mystère 2",desc:"+20% CPS",active:false},
-{name:"Bonus mystère 3",desc:"+50 croquettes au hasard",active:false},
-{name:"Bonus mystère 4",desc:"Double le multiplicateur temporairement",active:false},
-{name:"Bonus mystère 5",desc:"Réduit le prix du prochain bâtiment",active:false}
+{name:"Bounty doré",desc:"x1.5 sur les clicks",active:false,tempActive:false},
+{name:"Employés compétents",desc:"Double le nombre de croquettes par bâtiment avec employé",active:false,tempActive:false},
+{name:"Marchand louche",desc:"Double ou perte aléatoire de croquettes",active:false,tempActive:false},
+{name:"Alexis de compagnie",desc:"Réduit le prix des 4 premiers bâtiments de 20%",active:false,tempActive:false},
+{name:"Augmentation des droits à Bounty",desc:"Boost la rentabilité des croquettes de 5%",active:false,tempActive:false},
+{name:"Bonus mystère 1",desc:"+10% click",active:false,tempActive:false},
+{name:"Bonus mystère 2",desc:"+20% CPS",active:false,tempActive:false},
+{name:"Bonus mystère 3",desc:"+50 croquettes au hasard",active:false,tempActive:false},
+{name:"Bonus mystère 4",desc:"Double le multiplicateur temporairement",active:false,tempActive:false},
+{name:"Bonus mystère 5",desc:"Réduit le prix du prochain bâtiment",active:false,tempActive:false}
 ];
 
-// === Affichage des boosts avec tooltip ===
+// === Affichage des boosts ===
 function afficherBoosts(){
   boostsDiv.innerHTML='';
   boostsData.forEach((b,i)=>{
     const div=document.createElement('div');
-    div.textContent=b.name;
-
+    div.textContent=b.name + (b.tempActive?' (Temporaire)':'');
     const tooltip=document.createElement('span');
     tooltip.className='tooltip';
     tooltip.textContent=b.desc;
     div.appendChild(tooltip);
-
-    div.onmouseover = () => tooltip.style.display='block';
-    div.onmouseout = () => tooltip.style.display='none';
-
     div.onclick=()=>{
       b.active=!b.active;
-      div.style.background=b.active?'rgba(0,255,0,0.7)':'rgba(255,255,255,0.8)';
-      updateCounter(); updateStore();
+      div.style.background=b.active?'rgba(0,255,0,0.7)':(b.tempActive?'rgba(255,255,0,0.7)':'rgba(255,255,255,0.8)');
     };
+    div.style.background=b.active?'rgba(0,255,0,0.7)':(b.tempActive?'rgba(255,255,0,0.7)':'rgba(255,255,255,0.8)');
     boostsDiv.appendChild(div);
   });
 }
 
-// === Jeu ===
+// === Boosts aléatoires temporaires ===
+function boostAleatoire() {
+  const inactiveBoosts = boostsData.filter(b => !b.tempActive && !b.active);
+  if (inactiveBoosts.length === 0) return;
+  const randomIndex = Math.floor(Math.random() * inactiveBoosts.length);
+  const selectedBoost = inactiveBoosts[randomIndex];
+  selectedBoost.tempActive = true;
+  afficherBoosts();
+  const duree = 15000 + Math.random() * 15000;
+  setTimeout(() => {
+    selectedBoost.tempActive = false;
+    afficherBoosts();
+    setTimeout(boostAleatoire, 10000 + Math.random() * 20000);
+  }, duree);
+}
+setTimeout(boostAleatoire, 5000);
+
+// === Jeu principal ===
 function chargerJeu(){
   const saved=localStorage.getItem('bountySave');
   if(saved){
     const data=JSON.parse(saved);
-    count=data.count;
-    multiplier=data.multiplier;
-    data.storeItems.forEach((itemSaved,i)=>{storeItemsData[i].owned=itemSaved.owned;storeItemsData[i].price=itemSaved.price;});
+    count=data.count; multiplier=data.multiplier;
+    data.storeItems.forEach((itemSaved,i)=>{storeItemsData[i].owned=itemSaved.owned; storeItemsData[i].price=itemSaved.price;});
   }
 }
 function sauvegarderJeu(){
@@ -179,44 +188,22 @@ function sauvegarderJeu(){
   localStorage.setItem('bountySave',JSON.stringify(saveData));
 }
 
-// === Shop avec tooltip ===
 function updateStore(){
   storeDiv.innerHTML='';
   storeItemsData.forEach((item,index)=>{
-    const itemDiv=document.createElement('div'); 
-    itemDiv.className='item';
-
-    const nameSpan=document.createElement('span'); 
-    nameSpan.textContent=`${item.name} (${Math.floor(item.price)} croquettes)`;
-
-    // Tooltip détaillé
-    const tooltip=document.createElement('span');
-    tooltip.className='tooltip';
-    tooltip.textContent = `Auto: ${item.auto}, Mult: ${item.mult}, Possédés: ${item.owned}`;
-    nameSpan.appendChild(tooltip);
-
-    nameSpan.onmouseover = () => tooltip.style.display='block';
-    nameSpan.onmouseout = () => tooltip.style.display='none';
-
-    const btn=document.createElement('button'); 
-    btn.textContent='Acheter'; 
-    btn.disabled=count<item.price;
+    const itemDiv=document.createElement('div'); itemDiv.className='item';
+    const nameSpan=document.createElement('span'); nameSpan.textContent=`${item.name} (${Math.floor(item.price)} croquettes)`;
+    const btn=document.createElement('button'); btn.textContent='Acheter'; btn.disabled=count<item.price;
     btn.onclick=()=>acheterItem(index);
-
-    const iconContainer=document.createElement('div'); 
-    iconContainer.className='building-icon-container';
+    const iconContainer=document.createElement('div'); iconContainer.className='building-icon-container';
     const img=document.createElement('img'); img.src=item.icon;
     const countDiv=document.createElement('div'); countDiv.className='building-count'; countDiv.textContent=item.owned;
     iconContainer.appendChild(img); iconContainer.appendChild(countDiv);
-
-    itemDiv.appendChild(nameSpan); 
-    itemDiv.appendChild(btn); 
-    itemDiv.appendChild(iconContainer);
+    itemDiv.appendChild(nameSpan); itemDiv.appendChild(btn); itemDiv.appendChild(iconContainer);
     storeDiv.appendChild(itemDiv);
   });
 }
 
-// === Acheter item ===
 function acheterItem(index){
   const item=storeItemsData[index];
   if(count>=item.price){
@@ -233,8 +220,7 @@ function acheterItem(index){
   }
 }
 
-// === Click bounty ===
-function pickRandomIndex(){let idx;do{idx=Math.floor(Math.random()*images.length);}while(idx===lastIndex);return idx;}
+function pickRandomIndex(){let idx; do{idx=Math.floor(Math.random()*images.length);}while(idx===lastIndex); return idx;}
 function changerImage(){const idx=pickRandomIndex(); imgEl.src=images[idx]; lastIndex=idx;}
 function jouerSon(){sound.currentTime=0; sound.volume=1.0; sound.play().catch(()=>{});}
 function afficherPlusUn(event){
@@ -245,57 +231,53 @@ function afficherPlusUn(event){
   plusOne.textContent=`+${Math.floor(bonus)}`; plusOne.style.left=`${x-10}px`; plusOne.style.top=`${y-20}px`;
   imgEl.parentElement.appendChild(plusOne); setTimeout(()=>plusOne.remove(),1000);
 }
+
 function clicBounty(event){
   const now=Date.now(); if(now-lastClickTime<300) return; lastClickTime=now;
   let bonus=multiplier;
-  if(boostsData[0].active) bonus*=1.5;
-  if(boostsData[2].active){ if(Math.random()<0.5) bonus=0; else bonus*=2; }
+  if(boostsData[0].active || boostsData[0].tempActive) bonus*=1.5;
+  if(boostsData[2].active || boostsData[2].tempActive){ if(Math.random()<0.5) bonus=0; else bonus*=2; }
   count+=bonus; updateCounter(); changerImage(); jouerSon(); afficherPlusUn(event); updateStore(); sauvegarderJeu();
 }
 
-// === Compteurs ===
 function updateCounter(){
   counterEl.textContent=`Croquettes : ${Math.floor(count)} (x${multiplier})`;
   cps=calculCPS(); cpsEl.textContent=`CPS : ${Math.floor(cps)}`;
 }
+
 function calculCPS(){
   let total=0;
   storeItemsData.forEach(item=>{
     if(item.auto>0 && item.owned>0){
       let gain=item.auto*item.owned;
-      if(boostsData[1].active) gain*=2;
-      if(boostsData[4].active) gain*=1.05;
+      if(boostsData[1].active || boostsData[1].tempActive) gain*=2;
+      if(boostsData[4].active || boostsData[4].tempActive) gain*=1.05;
       total+=gain;
     }
   });
   return total;
 }
 
-// === Reset complet ===
 function resetJeu(){
-  count=0; multiplier=1; lastClickTime=0;
-  storeItemsData.forEach(item=>{item.owned=0; item.price=Math.max(item.price/Math.pow(1.15,item.owned),item.price)}); // Reset prix original
-  boostsData.forEach(boost=>boost.active=false);
   localStorage.removeItem('bountySave');
+  count=0; multiplier=1;
+  storeItemsData.forEach(item=>{item.owned=0; item.price=Math.floor(item.price/(1.15**item.owned));});
+  boostsData.forEach(b=>{b.active=false; b.tempActive=false;});
   updateCounter(); updateStore(); afficherBoosts();
 }
 
-// === Intervalle CPS automatique ===
-setInterval(()=>{
-  storeItemsData.forEach(item=>{
-    if(item.auto>0 && item.owned){
-      let gain=item.auto*item.owned;
-      if(boostsData[1].active) gain*=2;
-      if(boostsData[4].active) gain*=1.05;
-      count+=gain;
-    }
-  });
-  updateCounter(); updateStore();
-},1000);
+// Intervalle CPS automatique
+setInterval(()=>{ storeItemsData.forEach(item=>{
+  if(item.auto>0 && item.owned){
+    let gain=item.auto*item.owned;
+    if(boostsData[1].active || boostsData[1].tempActive) gain*=2;
+    if(boostsData[4].active || boostsData[4].tempActive) gain*=1.05;
+    count+=gain;
+  }}; updateCounter(); updateStore(); },1000);
 
 setInterval(sauvegarderJeu,60000);
 
-// === Initialisation ===
+// Initialisation
 changerImage(); chargerJeu(); updateCounter(); updateStore(); afficherBoosts();
 </script>
 </body>
