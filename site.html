@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Bounty Clicker - Boosts permanents (Option B)</title>
+<title>Bounty Clicker</title>
 <style>
 /* === Fond animé et particules === */
 body {
@@ -13,16 +13,10 @@ body {
   margin:0; height:100vh; overflow:hidden;
   display:flex; justify-content:center; align-items:flex-start;
 }
-@keyframes gradientShift {
-  0% { background-position:0% 50%; }
-  50% { background-position:100% 50%; }
-  100% { background-position:0% 50%; }
-}
+@keyframes gradientShift {0% { background-position:0% 50%; }50% { background-position:100% 50%; }100% { background-position:0% 50%; }}
 .particles{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:-1;}
-.particle{position:absolute;border-radius:50%;animation:floatParticle 10s linear infinite;}
+.particle{position:absolute;width:6px;height:6px;background:rgba(255,255,255,0.8);border-radius:50%;animation:floatParticle 10s linear infinite;}
 @keyframes floatParticle{0%{transform:translateY(100vh) scale(0.8);opacity:0;}25%{opacity:1;}100%{transform:translateY(-10vh) scale(1.2);opacity:0;}}
-
-/* === Structure principale === */
 .main{display:flex; flex-direction:row; align-items:flex-start; gap:40px; margin-top:50px;}
 .game{display:flex; flex-direction:column; align-items:center; background:rgba(255,255,255,0.1); border-radius:20px; box-shadow:0 0 25px rgba(255,255,255,0.3); padding:20px; backdrop-filter:blur(10px);}
 h2{color:#fff; text-shadow:2px 2px 10px #000; margin-bottom:10px; font-size:1.8em;}
@@ -31,10 +25,8 @@ h2{color:#fff; text-shadow:2px 2px 10px #000; margin-bottom:10px; font-size:1.8e
 #image:active{transform:scale(0.97); box-shadow:0 0 35px rgba(255,255,255,0.8);}
 .plus-one{position:absolute; color:#00FF7F; font-size:2em; font-weight:bold; text-shadow:2px 2px 8px black; animation:floatUp 1s ease-out forwards; user-select:none; pointer-events:none;}
 @keyframes floatUp{0%{opacity:1; transform:translateY(0) scale(1);} 100%{opacity:0; transform:translateY(-80px) scale(1.3);}}
-
-/* === Boutique et Boosts côte à côte === */
 .store-container{display:flex; flex-direction:row; gap:15px;}
-.store{flex:1; display:flex; flex-direction:column; background:linear-gradient(180deg,#ffffffcc,#87CEFAaa); padding:15px; border-radius:15px; width:320px; box-shadow:0 0 20px rgba(0,0,0,0.3); backdrop-filter:blur(8px); max-height:640px; overflow:auto;}
+.store{flex:1; display:flex; flex-direction:column; background:linear-gradient(180deg,#ffffffcc,#87CEFAaa); padding:15px; border-radius:15px; width:320px; box-shadow:0 0 20px rgba(0,0,0,0.3); backdrop-filter:blur(8px);}
 .store h3{text-align:center; color:#003366; font-size:1.3em; text-shadow:1px 1px 2px #fff;}
 .item{display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; background:rgba(255,255,255,0.8); border-radius:10px; transition:transform 0.2s, background 0.2s; position:relative;}
 .item:hover{transform:scale(1.03); background:rgba(255,255,255,0.95);}
@@ -45,21 +37,17 @@ button, .reset-button{background:linear-gradient(90deg,#007BFF,#00BFFF); color:w
 button:hover, .reset-button:hover{transform:scale(1.1); background:linear-gradient(90deg,#0056b3,#1E90FF); box-shadow:0 0 20px rgba(0,0,255,0.8);}
 .reset-button{background:linear-gradient(90deg,#FF6347,#FF4500); margin-bottom:10px;}
 .reset-button:hover{background:linear-gradient(90deg,#FF4500,#FF6347); box-shadow:0 0 20px rgba(255,69,0,0.8);}
-
-/* === Boosts === */
-.boosts{flex:0 0 300px; display:flex; flex-direction:column; background:linear-gradient(180deg,#ffe6a1cc,#ffd700aa); padding:15px; border-radius:10px; gap:8px; max-height:640px; overflow-y:auto; box-shadow:0 0 15px rgba(0,0,0,0.3);}
-.boost-item{padding:8px; background:rgba(255,255,255,0.9); border-radius:8px; display:flex; justify-content:space-between; align-items:center;}
-.boost-item.purchased{background:linear-gradient(90deg,#d3ffd3,#a8ffb0); box-shadow:0 0 6px rgba(0,200,0,0.15);}
-.tooltip{position:absolute; top:-5px; left:105%; background:rgba(0,0,0,0.8); color:white; padding:4px 6px; border-radius:4px; font-size:12px; white-space:nowrap; display:none; z-index:10;}
-.boost-item:hover .tooltip{display:block;}
-.small{font-size:0.9em; color:#333;}
 .flash{position:absolute; width:30px; height:30px; background:radial-gradient(circle,rgba(255,255,0,0.8)0%,rgba(255,255,0,0)70%); border-radius:50%; pointer-events:none; animation:flashAnim 0.5s ease-out forwards; z-index:10;}
 @keyframes flashAnim{0%{transform:scale(0);opacity:1;}100%{transform:scale(2);opacity:0;}}
+.boosts{flex:0 0 250px; display:flex; flex-direction:column; background:linear-gradient(180deg,#ffe6a1cc,#ffd700aa); padding:15px; border-radius:10px; gap:8px; max-height:600px; overflow-y:auto; box-shadow:0 0 15px rgba(0,0,0,0.3);}
+.boosts div{padding:6px; background:rgba(255,255,255,0.8); border-radius:8px; cursor:pointer; position:relative; transition:transform 0.2s, background 0.2s;}
+.boosts div:hover{transform:scale(1.05); background:rgba(255,255,255,0.95);}
+.tooltip{position:absolute; top:-5px; left:105%; background:rgba(0,0,0,0.8); color:white; padding:4px 6px; border-radius:4px; font-size:12px; white-space:nowrap; display:none; z-index:10;}
+.boosts div:hover .tooltip{display:block;}
 </style>
 </head>
 <body>
 <div class="particles"></div>
-
 <div class="main">
   <div class="game">
     <h2>Bounty Clicker</h2>
@@ -67,388 +55,83 @@ button:hover, .reset-button:hover{transform:scale(1.1); background:linear-gradie
     <div id="cps">CPS : 0</div>
     <img id="image" src="image/bounty.jpg" alt="Bounty" onclick="clicBounty(event)">
   </div>
-
   <div class="store-container">
     <div class="store">
       <button class="reset-button" onclick="resetJeu()">Réinitialiser</button>
       <h3>Magasin de croquettes</h3>
       <div id="storeItems"></div>
     </div>
-
     <div class="boosts" id="boostsContainer">
-      <h3>Boosts disponibles</h3>
-      <div id="boostsList" style="display:flex;flex-direction:column;gap:8px;"></div>
-      <div style="margin-top:8px;font-size:0.9em;color:#222;">Les boosts apparaissent aléatoirement ici. Achetez-les pour les activer définitivement.</div>
+      <h3>Boosts & Bonus</h3>
     </div>
   </div>
 </div>
-
-<audio id="clickSound">
-  <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
-</audio>
-
+<audio id="clickSound"><source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg"></audio>
 <script>
-// ----------------------- Particules -----------------------
+// === Particules ===
 const particlesContainer=document.querySelector('.particles');
-for(let i=0;i<30;i++){
-  const p=document.createElement('div'); p.className='particle';
-  p.style.left=`${Math.random()*100}%`;
-  p.style.width=p.style.height=`${2 + Math.random()*8}px`;
-  p.style.background=`rgba(255,255,255,${0.2 + Math.random()*0.7})`;
-  p.style.animationDelay=`${Math.random()*10}s`;
-  particlesContainer.appendChild(p);
-}
+for(let i=0;i<25;i++){const p=document.createElement('div');p.classList.add('particle');p.style.left=Math.random()*100+'%';p.style.animationDelay=(Math.random()*10)+'s';p.style.opacity=Math.random();p.style.width=p.style.height=Math.random()*8+'px';particlesContainer.appendChild(p);}
 
-// ----------------------- Variables & DOM -----------------------
-const images = ['image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg','image/bounty4.jpg','image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg','image/bountygraille.jpg'];
-const imgEl = document.getElementById('image');
-const sound = document.getElementById('clickSound');
-const counterEl = document.getElementById('counter');
-const cpsEl = document.getElementById('cps');
-const storeDiv = document.getElementById('storeItems');
-const boostsContainer = document.getElementById('boostsList');
+// === Variables ===
+const images=['image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg','image/bounty4.jpg','image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg','image/bountygraille.jpg'];
+const imgEl=document.getElementById('image');
+const sound=document.getElementById('clickSound');
+const counterEl=document.getElementById('counter');
+const cpsEl=document.getElementById('cps');
+const storeDiv=document.getElementById('storeItems');
+const boostsDiv=document.getElementById('boostsContainer');
+let lastIndex=-1,count=0,multiplier=1,lastClickTime=0,cps=0;
 
-let lastIndex = -1;
-let count = 0;
-let multiplier = 1;
-let lastClickTime = 0;
-let cps = 0;
-
-// ----------------------- Shop items (original) -----------------------
-const storeItemsData = [
-  {name:"Gamelle de croquette",price:10,mult:1,auto:0,owned:0,icon:'image/gamelle.png'},
-  {name:"Cage à croquette",price:25,mult:0,auto:0,owned:0,icon:'image/cage.png'},
-  {name:"Paquet de croquette",price:50,mult:0,auto:1,owned:0,icon:'image/paquet.png'},
-  {name:"Magasin de croquettes",price:200,mult:0,auto:5,owned:0,icon:'image/magasin.png'},
-  {name:"Supermarcher de croquette",price:500,mult:0,auto:10,owned:0,icon:'image/supermarche.png'},
-  {name:"Hypermarcher de croquettes",price:1000,mult:0,auto:20,owned:0,icon:'image/hypermarcher.png'},
-  {name:"Entrepot de croquettes",price:5000,mult:0,auto:50,owned:0,icon:'image/entrepot.png'},
-  {name:"Usine de croquettes",price:10000,mult:0,auto:100,owned:0,icon:'image/usine.png'},
-  {name:"Temple à croquettes",price:50000,mult:0,auto:300,owned:0,icon:'image/temple.png'},
-  {name:"Dimension de croquettes",price:50000,mult:0,auto:500,owned:0,icon:'image/dimension.png'},
-  {name:"Univers de croquettes",price:100000,mult:0,auto:1000,owned:0,icon:'image/univers.png'},
-  {name:"Galaxy de croquettes",price:500000,mult:0,auto:5000,owned:0,icon:'image/galaxy.png'}
+// === Shop Items ===
+const storeItemsData=[
+{name:"Gamelle de croquette",price:10,mult:1,auto:0,owned:0,icon:'image/gamelle.png'},
+{name:"Cage à croquette",price:25,mult:0,auto:0,owned:0,icon:'image/cage.png'},
+{name:"Paquet de croquette",price:50,mult:0,auto:1,owned:0,icon:'image/paquet.png'},
+{name:"Magasin de croquettes",price:200,mult:0,auto:5,owned:0,icon:'image/magasin.png'},
+{name:"Supermarcher de croquette",price:500,mult:0,auto:10,owned:0,icon:'image/supermarche.png'},
+{name:"Hypermarcher de croquettes",price:1000,mult:0,auto:20,owned:0,icon:'image/hypermarcher.png'},
+{name:"Entrepot de croquettes",price:5000,mult:0,auto:50,owned:0,icon:'image/entrepot.png'},
+{name:"Usine de croquettes",price:10000,mult:0,auto:100,owned:0,icon:'image/usine.png'},
+{name:"Temple à croquettes",price:50000,mult:0,auto:300,owned:0,icon:'image/temple.png'},
+{name:"Dimension de croquettes",price:50000,mult:0,auto:500,owned:0,icon:'image/dimension.png'},
+{name:"Univers de croquettes",price:100000,mult:0,auto:1000,owned:0,icon:'image/univers.png'},
+{name:"Galaxy de croquettes",price:500000,mult:0,auto:5000,owned:0,icon:'image/galaxy.png'}
 ];
 
-// ----------------------- Boosts (Option B: permanent upgrades that spawn randomly into the boosts column) -----------------------
-// note: 'purchased' tracks permanent purchase; when purchased -> active permanently
-const boostsData = [
-  {id: 'gold_bounty', name:"Bounty doré", desc:"x1.5 sur les clicks", cost:150, purchased:false, active:false},
-  {id: 'skilled_workers', name:"Employés compétents", desc:"Double le CPS des bâtiments", cost:400, purchased:false, active:false},
-  {id: 'shady_merchant', name:"Marchand louche", desc:"50% chance double click / 50% nothing", cost:300, purchased:false, active:false},
-  {id: 'alexis', name:"Alexis de compagnie", desc:"Réduit le prix des 4 premiers bâtiments de 20%", cost:500, purchased:false, active:false},
-  {id: 'tax_increase', name:"Augmentation des droits à Bounty", desc:"Boost la rentabilité des croquettes de 5%", cost:450, purchased:false, active:false},
-  {id: 'mystery1', name:"Bonus mystère 1", desc:"+10% click", cost:600, purchased:false, active:false},
-  {id: 'mystery2', name:"Bonus mystère 2", desc:"+20% CPS", cost:700, purchased:false, active:false},
-  {id: 'mystery3', name:"Bonus mystère 3", desc:"+50 croquettes au hasard", cost:250, purchased:false, active:false},
-  {id: 'mystery4', name:"Bonus mystère 4", desc:"Double le multiplicateur temporairement (permanent purchase gives +x)", cost:1000, purchased:false, active:false},
-  {id: 'mystery5', name:"Bonus mystère 5", desc:"Réduit le prix du prochain bâtiment de 10%", cost:350, purchased:false, active:false}
+// === Boosts ===
+const boostsData=[
+{name:"Bounty doré",desc:"x1.5 sur les clicks",active:false},
+{name:"Employés compétents",desc:"Double le nombre de croquettes par bâtiment avec employé",active:false},
+{name:"Marchand louche",desc:"Double ou perte aléatoire de croquettes",active:false},
+{name:"Alexis de compagnie",desc:"Réduit le prix des 4 premiers bâtiments de 20%",active:false},
+{name:"Augmentation des droits à Bounty",desc:"Boost la rentabilité des croquettes de 5%",active:false},
+{name:"Bonus mystère 1",desc:"+10% click",active:false},
+{name:"Bonus mystère 2",desc:"+20% CPS",active:false},
+{name:"Bonus mystère 3",desc:"+50 croquettes au hasard",active:false},
+{name:"Bonus mystère 4",desc:"Double le multiplicateur temporairement",active:false},
+{name:"Bonus mystère 5",desc:"Réduit le prix du prochain bâtiment",active:false}
 ];
 
-// ----------------------- Persistence -----------------------
-function saveGame(){
-  const save = {
-    count, multiplier,
-    storeItems: storeItemsData.map(it => ({ owned: it.owned, price: it.price })),
-    boosts: boostsData.map(b => ({ id: b.id, purchased: b.purchased, active: b.active }))
-  };
-  localStorage.setItem('bountySave', JSON.stringify(save));
-}
+// === Fonctions ===
+function afficherBoosts(){boostsDiv.innerHTML='';boostsData.forEach(b=>{const div=document.createElement('div');div.textContent=b.name;const tooltip=document.createElement('span');tooltip.className='tooltip';tooltip.textContent=b.desc;div.appendChild(tooltip);div.onclick=()=>{b.active=!b.active;div.style.background=b.active?'rgba(0,255,0,0.7)':'rgba(255,255,255,0.8)';};boostsDiv.appendChild(div);});}
+function updateCounter(){counterEl.textContent=`Croquettes : ${Math.floor(count)} (x${multiplier})`;cpsEl.textContent=`CPS : ${Math.floor(calculCPS())}`;}
+function calculCPS(){let total=0;storeItemsData.forEach(item=>{if(item.auto>0&&item.owned>0){let gain=item.auto*item.owned;if(boostsData[1].active) gain*=2;if(boostsData[4].active) gain*=1.05;total+=gain;}});return total;}
+function afficherPlusUn(e){const plusOne=document.createElement('div');plusOne.className='plus-one';plusOne.textContent=`+${Math.floor(multiplier)}`;const rect=imgEl.getBoundingClientRect();plusOne.style.left=`${e.clientX-rect.left-10}px`;plusOne.style.top=`${e.clientY-rect.top-20}px`;imgEl.parentElement.appendChild(plusOne);setTimeout(()=>plusOne.remove(),1000);}
+function clicBounty(e){const now=Date.now();if(now-lastClickTime<300)return;lastClickTime=now;let bonus=multiplier;if(boostsData[0].active) bonus*=1.5;if(boostsData[2].active){if(Math.random()<0.5) bonus=0; else bonus*=2;}count+=bonus;updateCounter();changerImage();jouerSon();afficherPlusUn(e);updateStore();sauvegarderJeu();}
+function resetJeu(){count=0;multiplier=1;storeItemsData.forEach(item=>{item.owned=0;});boostsData.forEach(b=>b.active=false);updateCounter();updateStore();afficherBoosts();localStorage.removeItem('bountySave');changerImage();}
+function updateStore(){storeDiv.innerHTML='';storeItemsData.forEach((item,index)=>{const div=document.createElement('div');div.className='item';const nameSpan=document.createElement('span');nameSpan.textContent=`${item.name} (${Math.floor(item.price)} croquettes)`;const btn=document.createElement('button');btn.textContent='Acheter';btn.disabled=count<item.price;btn.onclick=()=>acheterItem(index);const iconContainer=document.createElement('div');iconContainer.className='building-icon-container';const img=document.createElement('img');img.src=item.icon;const countDiv=document.createElement('div');countDiv.className='building-count';countDiv.textContent=item.owned;iconContainer.appendChild(img);iconContainer.appendChild(countDiv);div.appendChild(nameSpan);div.appendChild(btn);div.appendChild(iconContainer);storeDiv.appendChild(div);});}
+function acheterItem(index){const item=storeItemsData[index];if(count>=item.price){count-=item.price;if(item.mult>0) multiplier+=item.mult;if(boostsData[3].active && index<4) item.price*=0.8;item.owned+=1;item.price*=1.15;const itemDiv=storeDiv.children[index];const flash=document.createElement('div');flash.className='flash';flash.style.left=(itemDiv.offsetWidth/2-15)+'px';flash.style.top=(itemDiv.offsetHeight/2-15)+'px';itemDiv.appendChild(flash);setTimeout(()=>flash.remove(),500);updateCounter();updateStore();sauvegarderJeu();}}
+function jouerSon(){sound.currentTime=0;sound.volume=1.0;sound.play().catch(()=>{});}
+function pickRandomIndex(){let idx;do{idx=Math.floor(Math.random()*images.length);}while(idx===lastIndex);return idx;}
+function changerImage(){const idx=pickRandomIndex();imgEl.src=images[idx];lastIndex=idx;}
+function chargerJeu(){const saved=localStorage.getItem('bountySave');if(saved){const data=JSON.parse(saved);count=data.count;multiplier=data.multiplier;data.storeItems.forEach((itemSaved,i)=>{storeItemsData[i].owned=itemSaved.owned;storeItemsData[i].price=itemSaved.price;});}}
+function sauvegarderJeu(){const saveData={count:count,multiplier:multiplier,storeItems:storeItemsData.map(item=>({owned:item.owned,price:item.price}))};localStorage.setItem('bountySave',JSON.stringify(saveData));}
 
-function loadGame(){
-  const raw = localStorage.getItem('bountySave');
-  if(!raw) return;
-  try{
-    const data = JSON.parse(raw);
-    if(typeof data.count === 'number') count = data.count;
-    if(typeof data.multiplier === 'number') multiplier = data.multiplier;
-    if(Array.isArray(data.storeItems)){
-      data.storeItems.forEach((s,i)=>{ if(storeItemsData[i]){ storeItemsData[i].owned = s.owned || 0; storeItemsData[i].price = s.price || storeItemsData[i].price; }});
-    }
-    if(Array.isArray(data.boosts)){
-      data.boosts.forEach(b=>{
-        const found = boostsData.find(x=>x.id===b.id);
-        if(found){ found.purchased = !!b.purchased; found.active = !!b.active; }
-      });
-    }
-  }catch(e){ console.warn('Save corrupt'); }
-}
+setInterval(()=>{storeItemsData.forEach(item=>{if(item.auto>0&&item.owned){let gain=item.auto*item.owned;if(boostsData[1].active) gain*=2;if(boostsData[4].active) gain*=1.05;count+=gain;}};updateCounter();updateStore();},1000);
+setInterval(sauvegarderJeu,60000);
 
-// ----------------------- UI rendering -----------------------
-function updateStoreUI(){
-  storeDiv.innerHTML = '';
-  storeItemsData.forEach((item, index) => {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'item';
-
-    const left = document.createElement('div');
-    left.style.display = 'flex';
-    left.style.alignItems = 'center';
-    const spanName = document.createElement('span');
-    spanName.textContent = `${item.name} (${Math.floor(item.price)} croquettes)`;
-    left.appendChild(spanName);
-
-    const right = document.createElement('div');
-    const btn = document.createElement('button');
-    btn.textContent = 'Acheter';
-    btn.disabled = count < item.price;
-    btn.onclick = (e) => { e.stopPropagation(); buyItem(index); };
-    const iconContainer = document.createElement('div'); iconContainer.className='building-icon-container';
-    const img = document.createElement('img'); img.src = item.icon;
-    const countDiv = document.createElement('div'); countDiv.className='building-count'; countDiv.textContent = item.owned;
-    iconContainer.appendChild(img); iconContainer.appendChild(countDiv);
-
-    itemDiv.appendChild(left);
-    itemDiv.appendChild(btn);
-    itemDiv.appendChild(iconContainer);
-    storeDiv.appendChild(itemDiv);
-  });
-}
-
-function renderBoostsColumn(){
-  boostsContainer.innerHTML = '';
-  boostsData.forEach(b => {
-    // if purchased -> show as purchased (no buy button)
-    if(b.purchased){
-      const d = document.createElement('div');
-      d.className = 'boost-item purchased';
-      d.innerHTML = `<div><strong>${b.name}</strong><div class="small">${b.desc}</div></div><div class="small">Acheté</div>`;
-      boostsContainer.appendChild(d);
-    } else if (b.spawnedInShop){
-      // spawned and visible in shop -> show buy button
-      const d = document.createElement('div'); d.className='boost-item';
-      const info = document.createElement('div');
-      info.innerHTML = `<strong>${b.name}</strong><div class="small">${b.desc}</div>`;
-      const right = document.createElement('div');
-      const price = document.createElement('div'); price.className='small'; price.textContent = `${b.cost} Croquettes`;
-      const buyBtn = document.createElement('button'); buyBtn.textContent = 'Acheter';
-      buyBtn.disabled = count < b.cost;
-      buyBtn.onclick = (e) => { e.stopPropagation(); buyBoost(b.id); };
-      right.appendChild(price); right.appendChild(buyBtn);
-      d.appendChild(info); d.appendChild(right);
-      boostsContainer.appendChild(d);
-    } else {
-      // not spawned yet & not purchased -> don't display
-    }
-  });
-}
-
-// ----------------------- Purchases -----------------------
-function buyItem(index){
-  const item = storeItemsData[index];
-  if(count < item.price) return;
-  count -= item.price;
-  if(item.mult) multiplier += item.mult;
-  item.owned += 1;
-  item.price = Math.floor(item.price * 1.15);
-  // visual flash on buy
-  updateCounter();
-  updateStoreUI();
-  saveGame();
-}
-
-function buyBoost(boostId){
-  const b = boostsData.find(x=>x.id===boostId);
-  if(!b || b.purchased) return;
-  if(count < b.cost) return;
-  count -= b.cost;
-  b.purchased = true;
-  b.active = true; // permanent effect from purchase
-  b.spawnedInShop = false;
-  applyBoostEffect(b);
-  updateCounter();
-  updateStoreUI();
-  renderBoostsColumn();
-  saveGame();
-}
-
-// ----------------------- Boost effects -----------------------
-function applyBoostEffect(b){
-  // Effects are permanent on purchase (Option B)
-  switch(b.id){
-    case 'gold_bounty':
-      // x1.5 to clicks: we'll handle in clicBounty by checking b.active
-      break;
-    case 'skilled_workers':
-      // double CPS: handled in calculCPS by checking this boost active
-      break;
-    case 'shady_merchant':
-      // handled during click logic (50% double / 50% nothing)
-      break;
-    case 'alexis':
-      // reduce price of first 4 buildings by 20%
-      for(let i=0;i<4 && i<storeItemsData.length;i++){
-        storeItemsData[i].price = Math.max(1, Math.floor(storeItemsData[i].price * 0.8));
-      }
-      break;
-    case 'tax_increase':
-      // handled in calculCPS as a 5% boost on building yield
-      break;
-    case 'mystery1':
-      // +10% per click: adjust multiplier permanently by +10%
-      multiplier *= 1.10;
-      break;
-    case 'mystery2':
-      // +20% CPS: handled in calculCPS as a 20% multiplier
-      break;
-    case 'mystery3':
-      // grant 50 croquettes immediately
-      count += 50;
-      break;
-    case 'mystery4':
-      // increase multiplier permanently by +1 (example interpretation)
-      multiplier *= 2;
-      break;
-    case 'mystery5':
-      // reduce next building price by 10%: we set a flag
-      window._nextBuildingDiscount = 0.10;
-      break;
-  }
-  updateStoreUI();
-}
-
-// ----------------------- Click logic -----------------------
-function pickRandomImageIndex(){
-  let idx;
-  do { idx = Math.floor(Math.random()*images.length); } while(idx === lastIndex);
-  lastIndex = idx;
-  return idx;
-}
-function changerImage(){ imgEl.src = images[pickRandomImageIndex()]; }
-function jouerSon(){ if(sound){ sound.currentTime = 0; sound.play().catch(()=>{});} }
-function afficherPlusUn(event, value){
-  const plus = document.createElement('div'); plus.className='plus-one';
-  plus.textContent = `+${Math.floor(value)}`;
-  const rect = imgEl.getBoundingClientRect();
-  plus.style.left = `${event.clientX - rect.left - 10}px`;
-  plus.style.top = `${event.clientY - rect.top - 20}px`;
-  imgEl.parentElement.appendChild(plus);
-  setTimeout(()=>plus.remove(),900);
-}
-
-function clicBounty(event){
-  const now = Date.now();
-  if(now - lastClickTime < 150) return; // anti-spam (150ms)
-  lastClickTime = now;
-
-  // base click value = multiplier (which includes click bonuses)
-  let base = multiplier;
-
-  // If shady merchant purchased -> 50% chance double, 50% chance 0 on click
-  const shady = boostsData.find(b => b.id === 'shady_merchant' && b.purchased);
-  if(shady){
-    if(Math.random() < 0.5){ base = 0; } else { base *= 2; }
-  }
-
-  // gold bounty
-  const gold = boostsData.find(b => b.id === 'gold_bounty' && b.purchased);
-  if(gold) base *= 1.5;
-
-  // other purchased per-click modifiers (mystery1 already applied into multiplier on purchase)
-
-  count += base;
-  updateCounter();
-  changerImage();
-  jouerSon();
-  afficherPlusUn(event, base);
-  updateStoreUI();
-  saveGame();
-}
-
-// ----------------------- CPS calculation & interval -----------------------
-function calculCPS(){
-  let total = 0;
-  storeItemsData.forEach(item=>{
-    if(item.auto > 0 && item.owned > 0){
-      let gain = item.auto * item.owned;
-      // skilled workers (double CPS) purchased?
-      if(boostsData.find(b=>b.id==='skilled_workers' && b.purchased)) gain *= 2;
-      // tax_increase +5%
-      if(boostsData.find(b=>b.id==='tax_increase' && b.purchased)) gain *= 1.05;
-      // mystery2 +20% CPS
-      if(boostsData.find(b=>b.id==='mystery2' && b.purchased)) gain *= 1.20;
-      total += gain;
-    }
-  });
-  return total;
-}
-
-function updateCounter(){
-  cps = calculCPS();
-  // Do not auto-add CPS here repeatedly — CPS is added in the interval below.
-  counterEl.textContent = `Croquettes : ${Math.floor(count)} (x${(Math.round(multiplier*100)/100)})`;
-  cpsEl.textContent = `CPS : ${Math.floor(cps)}`;
-}
-
-// Add CPS to count every second
-setInterval(()=>{
-  const perSecond = calculCPS();
-  if(perSecond > 0){
-    count += perSecond;
-    updateCounter();
-    updateStoreUI();
-    saveGame();
-  } else {
-    updateCounter();
-  }
-}, 1000);
-
-// ----------------------- Boost spawn logic (Option B) -----------------------
-function spawnBoostToShop(){
-  // pick a boost that is not purchased and not already spawned
-  const candidate = boostsData.filter(b => !b.purchased && !b.spawnedInShop);
-  if(candidate.length === 0) return;
-  const pick = candidate[Math.floor(Math.random()*candidate.length)];
-  pick.spawnedInShop = true;
-  renderBoostsColumn();
-  // Keep it visible until purchased (Option B). Save state to persist spawned status.
-  saveGame();
-}
-
-function scheduleNextBoostSpawn(){
-  // Random interval between 30s and 180s
-  const interval = 30000 + Math.random()*150000;
-  setTimeout(()=>{
-    spawnBoostToShop();
-    scheduleNextBoostSpawn();
-  }, interval);
-}
-
-// ----------------------- Initialization, save/load, UI bake -----------------------
-function resetJeu(){
-  if(confirm('Réinitialiser la partie ?')){
-    localStorage.removeItem('bountySave');
-    location.reload();
-  }
-}
-
-function initialApplyPurchasedBoosts(){
-  boostsData.forEach(b => {
-    if(b.purchased){
-      b.active = true;
-      applyBoostEffect(b);
-    }
-  });
-}
-
-// On load
-loadGame();
-initialApplyPurchasedBoosts();
-updateStoreUI();
-renderBoostsColumn();
-updateCounter();
-
-// Start spawning boosts if there are any not purchased
-scheduleNextBoostSpawn();
-
-// Periodic autosave
-setInterval(saveGame, 60000);
-
-// Ensure UI buttons disabled/enabled working - re-render every 1s to update buy button states
-setInterval(()=>{
-  updateStoreUI();
-  renderBoostsColumn();
-}, 1000);
+// Initialisation
+changerImage();chargerJeu();updateCounter();updateStore();afficherBoosts();
 </script>
 </body>
 </html>
