@@ -1,40 +1,67 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<title>Bounty Clicker</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bounty Clicker — Layout schéma</title>
+<link rel="stylesheet" href="script/style.css">
 </head>
 <body>
-<div class="particles"></div>
+  <div class="particles" aria-hidden="true"></div>
 
-<div class="main">
-  <div class="game">
-    <h2>Bounty Clicker</h2>
-    <div id="counter">Croquettes : 0</div>
-    <div id="cps">CPS : 0</div>
-    <img id="image" src="image/bounty.jpg" alt="Bounty" onclick="clicBounty(event)">
+  <div class="container">
+    <!-- Left: Clicker zone -->
+    <section class="panel clicker" id="clickerPanel">
+      <header class="panel-header">
+        <h1>Bounty Clicker</h1>
+        <div class="counters">
+          <div id="counter">Croquettes : 0</div>
+          <div id="cps">CPS : 0</div>
+        </div>
+      </header>
+
+      <main class="panel-body">
+        <div class="image-wrap">
+          <img id="image" src="image/bounty.jpg" alt="Bounty" />
+        </div>
+      </main>
+    </section>
+
+    <!-- Middle: Shop -->
+    <aside class="panel shop" id="shopPanel">
+      <div class="panel-header">
+        <h3>Boutique</h3>
+      </div>
+      <div class="panel-body">
+        <div id="storeItems" class="list"></div>
+      </div>
+    </aside>
+
+    <!-- Right: Boosts -->
+    <aside class="panel boosts" id="boostsPanel">
+      <div class="panel-header">
+        <h3>Boosts & Bonus</h3>
+      </div>
+      <div class="panel-body">
+        <div id="boostsContainer" class="list"></div>
+      </div>
+    </aside>
   </div>
 
-  <div class="store-container">
-    <div class="store">
-      <button class="reset-button" onclick="resetJeu()">Réinitialiser</button>
-      <h3>Magasin de croquettes</h3>
-      <div id="storeItems"></div>
+  <!-- Bottom bar with reset centered -->
+  <footer class="bottom-bar">
+    <div class="bottom-inner">
+      <button id="resetButton" class="reset-button">Réinitialiser le jeu</button>
     </div>
+  </footer>
 
-    <div class="boosts" id="boostsContainer">
-      <h3>Boosts & Bonus</h3>
-    </div>
-  </div>
-</div>
+  <audio id="clickSound">
+    <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
+  </audio>
 
-<audio id="clickSound">
-  <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
-</audio>
-
-<script src="script/game.js"></script>
-<script src="script/boutique.js"></script>
-<script src="script/boost.js"></script>
+  <!-- Scripts (defer to load after DOM) -->
+  <script src="script/boutique.js" defer></script>
+  <script src="script/boost.js" defer></script>
+  <script src="script/main.js" defer></script>
 </body>
 </html>
