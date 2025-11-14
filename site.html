@@ -13,10 +13,16 @@ body {
   margin:0; height:100vh; overflow:hidden;
   display:flex; justify-content:center; align-items:flex-start;
 }
-@keyframes gradientShift {0% { background-position:0% 50%; }50% { background-position:100% 50%; }100% { background-position:0% 50%; }}
+@keyframes gradientShift {
+  0% { background-position:0% 50%; }
+  50% { background-position:100% 50%; }
+  100% { background-position:0% 50%; }
+}
 .particles{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:-1;}
 .particle{position:absolute;width:6px;height:6px;background:rgba(255,255,255,0.8);border-radius:50%;animation:floatParticle 10s linear infinite;}
 @keyframes floatParticle{0%{transform:translateY(100vh) scale(0.8);opacity:0;}25%{opacity:1;}100%{transform:translateY(-10vh) scale(1.2);opacity:0;}}
+
+/* === Structure principale === */
 .main{display:flex; flex-direction:row; align-items:flex-start; gap:40px; margin-top:50px;}
 .game{display:flex; flex-direction:column; align-items:center; background:rgba(255,255,255,0.1); border-radius:20px; box-shadow:0 0 25px rgba(255,255,255,0.3); padding:20px; backdrop-filter:blur(10px);}
 h2{color:#fff; text-shadow:2px 2px 10px #000; margin-bottom:10px; font-size:1.8em;}
@@ -25,6 +31,8 @@ h2{color:#fff; text-shadow:2px 2px 10px #000; margin-bottom:10px; font-size:1.8e
 #image:active{transform:scale(0.97); box-shadow:0 0 35px rgba(255,255,255,0.8);}
 .plus-one{position:absolute; color:#00FF7F; font-size:2em; font-weight:bold; text-shadow:2px 2px 8px black; animation:floatUp 1s ease-out forwards; user-select:none; pointer-events:none;}
 @keyframes floatUp{0%{opacity:1; transform:translateY(0) scale(1);} 100%{opacity:0; transform:translateY(-80px) scale(1.3);}}
+
+/* === Boutique et Boosts côte à côte === */
 .store-container{display:flex; flex-direction:row; gap:15px;}
 .store{flex:1; display:flex; flex-direction:column; background:linear-gradient(180deg,#ffffffcc,#87CEFAaa); padding:15px; border-radius:15px; width:320px; box-shadow:0 0 20px rgba(0,0,0,0.3); backdrop-filter:blur(8px);}
 .store h3{text-align:center; color:#003366; font-size:1.3em; text-shadow:1px 1px 2px #fff;}
@@ -37,8 +45,12 @@ button, .reset-button{background:linear-gradient(90deg,#007BFF,#00BFFF); color:w
 button:hover, .reset-button:hover{transform:scale(1.1); background:linear-gradient(90deg,#0056b3,#1E90FF); box-shadow:0 0 20px rgba(0,0,255,0.8);}
 .reset-button{background:linear-gradient(90deg,#FF6347,#FF4500); margin-bottom:10px;}
 .reset-button:hover{background:linear-gradient(90deg,#FF4500,#FF6347); box-shadow:0 0 20px rgba(255,69,0,0.8);}
+
+/* === Flash lumineux === */
 .flash{position:absolute; width:30px; height:30px; background:radial-gradient(circle,rgba(255,255,0,0.8)0%,rgba(255,255,0,0)70%); border-radius:50%; pointer-events:none; animation:flashAnim 0.5s ease-out forwards; z-index:10;}
 @keyframes flashAnim{0%{transform:scale(0);opacity:1;}100%{transform:scale(2);opacity:0;}}
+
+/* === Boosts === */
 .boosts{flex:0 0 250px; display:flex; flex-direction:column; background:linear-gradient(180deg,#ffe6a1cc,#ffd700aa); padding:15px; border-radius:10px; gap:8px; max-height:600px; overflow-y:auto; box-shadow:0 0 15px rgba(0,0,0,0.3);}
 .boosts div{padding:6px; background:rgba(255,255,255,0.8); border-radius:8px; cursor:pointer; position:relative; transition:transform 0.2s, background 0.2s;}
 .boosts div:hover{transform:scale(1.05); background:rgba(255,255,255,0.95);}
@@ -48,6 +60,7 @@ button:hover, .reset-button:hover{transform:scale(1.1); background:linear-gradie
 </head>
 <body>
 <div class="particles"></div>
+
 <div class="main">
   <div class="game">
     <h2>Bounty Clicker</h2>
@@ -55,22 +68,36 @@ button:hover, .reset-button:hover{transform:scale(1.1); background:linear-gradie
     <div id="cps">CPS : 0</div>
     <img id="image" src="image/bounty.jpg" alt="Bounty" onclick="clicBounty(event)">
   </div>
+
   <div class="store-container">
     <div class="store">
       <button class="reset-button" onclick="resetJeu()">Réinitialiser</button>
       <h3>Magasin de croquettes</h3>
       <div id="storeItems"></div>
     </div>
+
     <div class="boosts" id="boostsContainer">
       <h3>Boosts & Bonus</h3>
     </div>
   </div>
 </div>
-<audio id="clickSound"><source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg"></audio>
+
+<audio id="clickSound">
+  <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 // === Particules ===
 const particlesContainer=document.querySelector('.particles');
-for(let i=0;i<25;i++){const p=document.createElement('div');p.classList.add('particle');p.style.left=Math.random()*100+'%';p.style.animationDelay=(Math.random()*10)+'s';p.style.opacity=Math.random();p.style.width=p.style.height=Math.random()*8+'px';particlesContainer.appendChild(p);}
+for(let i=0;i<25;i++){
+  const p=document.createElement('div');
+  p.classList.add('particle');
+  p.style.left=Math.random()*100+'%';
+  p.style.animationDelay=(Math.random()*10)+'s';
+  p.style.opacity=Math.random();
+  p.style.width=p.style.height=Math.random()*8+'px';
+  particlesContainer.appendChild(p);
+}
 
 // === Variables ===
 const images=['image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg','image/bounty4.jpg','image/bounty5.jpg','image/bounty6.jpg','image/bounty7.jpg','image/bounty8.jpg','image/bountygraille.jpg'];
@@ -80,9 +107,10 @@ const counterEl=document.getElementById('counter');
 const cpsEl=document.getElementById('cps');
 const storeDiv=document.getElementById('storeItems');
 const boostsDiv=document.getElementById('boostsContainer');
+
 let lastIndex=-1,count=0,multiplier=1,lastClickTime=0,cps=0;
 
-// === Shop Items ===
+// === Shop items ===
 const storeItemsData=[
 {name:"Gamelle de croquette",price:10,mult:1,auto:0,owned:0,icon:'image/gamelle.png'},
 {name:"Cage à croquette",price:25,mult:0,auto:0,owned:0,icon:'image/cage.png'},
@@ -112,26 +140,143 @@ const boostsData=[
 {name:"Bonus mystère 5",desc:"Réduit le prix du prochain bâtiment",active:false}
 ];
 
-// === Fonctions ===
-function afficherBoosts(){boostsDiv.innerHTML='';boostsData.forEach(b=>{const div=document.createElement('div');div.textContent=b.name;const tooltip=document.createElement('span');tooltip.className='tooltip';tooltip.textContent=b.desc;div.appendChild(tooltip);div.onclick=()=>{b.active=!b.active;div.style.background=b.active?'rgba(0,255,0,0.7)':'rgba(255,255,255,0.8)';};boostsDiv.appendChild(div);});}
-function updateCounter(){counterEl.textContent=`Croquettes : ${Math.floor(count)} (x${multiplier})`;cpsEl.textContent=`CPS : ${Math.floor(calculCPS())}`;}
-function calculCPS(){let total=0;storeItemsData.forEach(item=>{if(item.auto>0&&item.owned>0){let gain=item.auto*item.owned;if(boostsData[1].active) gain*=2;if(boostsData[4].active) gain*=1.05;total+=gain;}});return total;}
-function afficherPlusUn(e){const plusOne=document.createElement('div');plusOne.className='plus-one';plusOne.textContent=`+${Math.floor(multiplier)}`;const rect=imgEl.getBoundingClientRect();plusOne.style.left=`${e.clientX-rect.left-10}px`;plusOne.style.top=`${e.clientY-rect.top-20}px`;imgEl.parentElement.appendChild(plusOne);setTimeout(()=>plusOne.remove(),1000);}
-function clicBounty(e){const now=Date.now();if(now-lastClickTime<300)return;lastClickTime=now;let bonus=multiplier;if(boostsData[0].active) bonus*=1.5;if(boostsData[2].active){if(Math.random()<0.5) bonus=0; else bonus*=2;}count+=bonus;updateCounter();changerImage();jouerSon();afficherPlusUn(e);updateStore();sauvegarderJeu();}
-function resetJeu(){count=0;multiplier=1;storeItemsData.forEach(item=>{item.owned=0;});boostsData.forEach(b=>b.active=false);updateCounter();updateStore();afficherBoosts();localStorage.removeItem('bountySave');changerImage();}
-function updateStore(){storeDiv.innerHTML='';storeItemsData.forEach((item,index)=>{const div=document.createElement('div');div.className='item';const nameSpan=document.createElement('span');nameSpan.textContent=`${item.name} (${Math.floor(item.price)} croquettes)`;const btn=document.createElement('button');btn.textContent='Acheter';btn.disabled=count<item.price;btn.onclick=()=>acheterItem(index);const iconContainer=document.createElement('div');iconContainer.className='building-icon-container';const img=document.createElement('img');img.src=item.icon;const countDiv=document.createElement('div');countDiv.className='building-count';countDiv.textContent=item.owned;iconContainer.appendChild(img);iconContainer.appendChild(countDiv);div.appendChild(nameSpan);div.appendChild(btn);div.appendChild(iconContainer);storeDiv.appendChild(div);});}
-function acheterItem(index){const item=storeItemsData[index];if(count>=item.price){count-=item.price;if(item.mult>0) multiplier+=item.mult;if(boostsData[3].active && index<4) item.price*=0.8;item.owned+=1;item.price*=1.15;const itemDiv=storeDiv.children[index];const flash=document.createElement('div');flash.className='flash';flash.style.left=(itemDiv.offsetWidth/2-15)+'px';flash.style.top=(itemDiv.offsetHeight/2-15)+'px';itemDiv.appendChild(flash);setTimeout(()=>flash.remove(),500);updateCounter();updateStore();sauvegarderJeu();}}
-function jouerSon(){sound.currentTime=0;sound.volume=1.0;sound.play().catch(()=>{});}
-function pickRandomIndex(){let idx;do{idx=Math.floor(Math.random()*images.length);}while(idx===lastIndex);return idx;}
-function changerImage(){const idx=pickRandomIndex();imgEl.src=images[idx];lastIndex=idx;}
-function chargerJeu(){const saved=localStorage.getItem('bountySave');if(saved){const data=JSON.parse(saved);count=data.count;multiplier=data.multiplier;data.storeItems.forEach((itemSaved,i)=>{storeItemsData[i].owned=itemSaved.owned;storeItemsData[i].price=itemSaved.price;});}}
-function sauvegarderJeu(){const saveData={count:count,multiplier:multiplier,storeItems:storeItemsData.map(item=>({owned:item.owned,price:item.price}))};localStorage.setItem('bountySave',JSON.stringify(saveData));}
+// === Affichage des boosts ===
+function afficherBoosts(){
+  boostsDiv.innerHTML='';
+  boostsData.forEach((b,i)=>{
+    const div=document.createElement('div');
+    div.textContent=b.name;
+    const tooltip=document.createElement('span');
+    tooltip.className='tooltip';
+    tooltip.textContent=b.desc;
+    div.appendChild(tooltip);
+    div.onclick=()=>{ b.active=!b.active; div.style.background=b.active?'rgba(0,255,0,0.7)':'rgba(255,255,255,0.8)'; };
+    boostsDiv.appendChild(div);
+  });
+}
 
-setInterval(()=>{storeItemsData.forEach(item=>{if(item.auto>0&&item.owned){let gain=item.auto*item.owned;if(boostsData[1].active) gain*=2;if(boostsData[4].active) gain*=1.05;count+=gain;}};updateCounter();updateStore();},1000);
+// === Jeu ===
+function chargerJeu(){
+  const saved=localStorage.getItem('bountySave');
+  if(saved){
+    const data=JSON.parse(saved);
+    count=data.count;
+    multiplier=data.multiplier;
+    data.storeItems.forEach((itemSaved,i)=>{storeItemsData[i].owned=itemSaved.owned; storeItemsData[i].price=itemSaved.price;});
+    data.boosts.forEach((bSaved,i)=>{boostsData[i].active=bSaved.active;});
+  }
+}
+
+function sauvegarderJeu(){
+  const saveData={
+    count:count,
+    multiplier:multiplier,
+    storeItems:storeItemsData.map(item=>({owned:item.owned,price:item.price})),
+    boosts:boostsData.map(b=>({active:b.active}))
+  };
+  localStorage.setItem('bountySave',JSON.stringify(saveData));
+}
+
+// === Update store ===
+function updateStore(){
+  storeDiv.innerHTML='';
+  storeItemsData.forEach((item,index)=>{
+    const itemDiv=document.createElement('div'); itemDiv.className='item';
+    const nameSpan=document.createElement('span'); nameSpan.textContent=`${item.name} (${Math.floor(item.price)} croquettes)`;
+    const btn=document.createElement('button'); btn.textContent='Acheter'; btn.disabled=count<item.price;
+    btn.onclick=()=>acheterItem(index);
+    const iconContainer=document.createElement('div'); iconContainer.className='building-icon-container';
+    const img=document.createElement('img'); img.src=item.icon;
+    const countDiv=document.createElement('div'); countDiv.className='building-count'; countDiv.textContent=item.owned;
+    iconContainer.appendChild(img); iconContainer.appendChild(countDiv);
+    itemDiv.appendChild(nameSpan); itemDiv.appendChild(btn); itemDiv.appendChild(iconContainer);
+    storeDiv.appendChild(itemDiv);
+  });
+}
+
+// === Acheter item ===
+function acheterItem(index){
+  const item=storeItemsData[index];
+  if(count>=item.price){
+    count-=item.price;
+    if(item.mult>0) multiplier+=item.mult;
+    if(boostsData[3].active && index<4) item.price*=0.8;
+    item.owned+=1;
+    item.price*=1.15;
+    const itemDiv=storeDiv.children[index];
+    const flash=document.createElement('div'); flash.className='flash';
+    flash.style.left=(itemDiv.offsetWidth/2-15)+'px'; flash.style.top=(itemDiv.offsetHeight/2-15)+'px';
+    itemDiv.appendChild(flash); setTimeout(()=>flash.remove(),500);
+    updateCounter(); updateStore(); sauvegarderJeu();
+  }
+}
+
+// === Click sur l'image ===
+function pickRandomIndex(){let idx; do{idx=Math.floor(Math.random()*images.length);}while(idx===lastIndex); return idx;}
+function changerImage(){const idx=pickRandomIndex(); imgEl.src=images[idx]; lastIndex=idx;}
+function jouerSon(){sound.currentTime=0; sound.volume=1.0; sound.play().catch(()=>{});}
+function afficherPlusUn(event){
+  const plusOne=document.createElement('div'); plusOne.className='plus-one';
+  let bonus=multiplier;
+  const rect=imgEl.getBoundingClientRect();
+  const x=event.clientX-rect.left; const y=event.clientY-rect.top;
+  plusOne.textContent=`+${Math.floor(bonus)}`; plusOne.style.left=`${x-10}px`; plusOne.style.top=`${y-20}px`;
+  imgEl.parentElement.appendChild(plusOne); setTimeout(()=>plusOne.remove(),1000);
+}
+
+function clicBounty(event){
+  const now=Date.now(); if(now-lastClickTime<300) return; lastClickTime=now;
+  let bonus=multiplier;
+  if(boostsData[0].active) bonus*=1.5;
+  if(boostsData[2].active){ if(Math.random()<0.5) bonus=0; else bonus*=2; }
+  count+=bonus; updateCounter(); changerImage(); jouerSon(); afficherPlusUn(event); updateStore(); sauvegarderJeu();
+}
+
+// === Counter et CPS ===
+function updateCounter(){
+  counterEl.textContent=`Croquettes : ${Math.floor(count)} (x${multiplier})`;
+  cps=calculCPS(); cpsEl.textContent=`CPS : ${Math.floor(cps)}`;
+}
+
+function calculCPS(){
+  let total=0;
+  storeItemsData.forEach(item=>{
+    if(item.auto>0 && item.owned>0){
+      let gain=item.auto*item.owned;
+      if(boostsData[1].active) gain*=2;
+      if(boostsData[4].active) gain*=1.05;
+      total+=gain;
+    }
+  });
+  return total;
+}
+
+// === Reset complet ===
+function resetJeu(){
+  count=0; multiplier=1; lastClickTime=0;
+  storeItemsData.forEach(item=>{item.owned=0; item.price=item.price/Math.pow(1.15,item.owned);});
+  boostsData.forEach(b=>b.active=false);
+  localStorage.removeItem('bountySave');
+  updateCounter(); updateStore(); afficherBoosts();
+}
+
+// === Intervalles CPS automatique ===
+setInterval(()=>{
+  storeItemsData.forEach(item=>{
+    if(item.auto>0 && item.owned){
+      let gain=item.auto*item.owned;
+      if(boostsData[1].active) gain*=2;
+      if(boostsData[4].active) gain*=1.05;
+      count+=gain;
+    }
+  });
+  updateCounter(); updateStore();
+},1000);
+
 setInterval(sauvegarderJeu,60000);
 
-// Initialisation
-changerImage();chargerJeu();updateCounter();updateStore();afficherBoosts();
+// === Initialisation ===
+changerImage(); chargerJeu(); updateCounter(); updateStore(); afficherBoosts();
 </script>
 </body>
 </html>
