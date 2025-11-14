@@ -1,134 +1,67 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Accueil Bounty</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <style>
-    /* Fond plein écran */
-    body {
-      background-image: url('image/bounty.jpg'); /* remplace par ton fond */
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    /* Titre animé */
-    h2 {
-      color: #FFD700;
-      text-shadow: 2px 2px 10px black;
-      font-size: 2em;
-      margin-bottom: 15px;
-      text-align: center;
-      animation: bounce 2s infinite;
-    }
-
-    /* Paragraphes animés */
-    p {
-      color: #FFFFFF;
-      text-shadow: 1px 1px 5px black;
-      font-size: 1.2em;
-      margin: 5px 0;
-      animation: fadeIn 2s ease-in-out;
-      text-align: center;
-    }
-
-    /* Boutons stylisés */
-    button {
-      margin: 10px;
-      padding: 12px 25px;
-      font-weight: bold;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      background: linear-gradient(90deg, #007BFF, #00BFFF);
-      color: white;
-      font-size: 1em;
-      transition: transform 0.3s, background 0.3s;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      animation: floatButton 2s infinite alternate;
-    }
-
-    button:hover {
-      transform: scale(1.1) rotate(-2deg);
-      background: linear-gradient(90deg, #0056b3, #1E90FF);
-    }
-
-    /* Image Bounty */
-    #image {
-      width: 400px;
-      height: 300px;
-      object-fit: contain;
-      border: 2px solid #fff;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-      transition: transform 0.2s, box-shadow 0.3s;
-      margin-top: 20px;
-    }
-
-    #image:hover {
-      transform: scale(1.05) rotate(-1deg);
-      box-shadow: 0 0 30px rgba(255,255,255,0.7);
-    }
-
-    /* Animations clés */
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes floatButton {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-8px); }
-    }
-
-    /* Responsive */
-    @media(max-width: 500px){
-      #image {
-        width: 90%;
-        height: auto;
-      }
-      button {
-        width: 80%;
-        font-size: 1em;
-        padding: 10px;
-      }
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bounty Clicker — Layout schéma</title>
+<link rel="stylesheet" href="script/style.css">
 </head>
 <body>
-  <h2>Bienvenue sur le site de Bounty !</h2>
-  <p>Cliquer pour entrer sur le site (zoom 100%).</p>
-  <p>Vous trouverez ici des images de Bounty (mon lapin).</p>
+  <div class="particles" aria-hidden="true"></div>
 
-  <!-- Boutons avec liens absolus -->
-  <button onclick="ouvrirPage1()">bounty cliker version PC</button>
-  <button onclick="ouvrirPage2()">bounty cliker version mobile</button>
+  <div class="container">
+    <!-- Left: Clicker zone -->
+    <section class="panel clicker" id="clickerPanel">
+      <header class="panel-header">
+        <h1>Bounty Clicker</h1>
+        <div class="counters">
+          <div id="counter">Croquettes : 0</div>
+          <div id="cps">CPS : 0</div>
+        </div>
+      </header>
 
-  <!-- Image décorative -->
-  <img id="image" src="image/bounty.jpg" alt="Image Bounty">
+      <main class="panel-body">
+        <div class="image-wrap">
+          <img id="image" src="image/bounty.jpg" alt="Bounty" />
+        </div>
+      </main>
+    </section>
 
-  <script>
-    // Liens absolus GitHub Pages
-    function ouvrirPage1() {
-      window.location.href = 'https://alexis-pag.github.io/paglierusco-alexis/site.html';
-    }
+    <!-- Middle: Shop -->
+    <aside class="panel shop" id="shopPanel">
+      <div class="panel-header">
+        <h3>Boutique</h3>
+      </div>
+      <div class="panel-body">
+        <div id="storeItems" class="list"></div>
+      </div>
+    </aside>
 
-    function ouvrirPage2() {
-      window.location.href = 'https://alexis-pag.github.io/paglierusco-alexis/site-mobile.html';
-    }
-  </script>
+    <!-- Right: Boosts -->
+    <aside class="panel boosts" id="boostsPanel">
+      <div class="panel-header">
+        <h3>Boosts & Bonus</h3>
+      </div>
+      <div class="panel-body">
+        <div id="boostsContainer" class="list"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Bottom bar with reset centered -->
+  <footer class="bottom-bar">
+    <div class="bottom-inner">
+      <button id="resetButton" class="reset-button">Réinitialiser le jeu</button>
+    </div>
+  </footer>
+
+  <audio id="clickSound">
+    <source src="audio/Mouse Click Sound Effect.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Scripts (defer to load after DOM) -->
+  <script src="script/shop.js" defer></script>
+  <script src="script/boost.js" defer></script>
+  <script src="script/main.js" defer></script>
 </body>
 </html>
