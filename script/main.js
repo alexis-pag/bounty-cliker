@@ -1,5 +1,4 @@
 (() => {
-  // Ensure shared object
   window.BountyGame = window.BountyGame || {};
   if (window.BountyGame.count === undefined) window.BountyGame.count = 0;
   if (window.BountyGame.multiplier === undefined) window.BountyGame.multiplier = 1;
@@ -10,182 +9,128 @@
   const resetButton = document.getElementById('resetButton');
   const clickSound = document.getElementById('clickSound');
 
-  // helper: play sound safely
-  function jouerSon(){
-    try{ clickSound.currentTime = 0; clickSound.volume = 0.9; clickSound.play(); } catch(e){}
-  }
+  function jouerSon(){ try{ clickSound.currentTime=0; clickSound.volume=0.9; clickSound.play(); }catch(e){} }
 
-  // change image for click feedback (random)
   const images = [
     'image/bounty.jpg','image/bounty2.jpg','image/bounty3.jpg',
     'image/bounty4.jpg','image/bounty5.jpg','image/bounty6.jpg',
     'image/bounty7.jpg','image/bounty8.jpg','image/bountygraille.jpg'
   ];
   let lastIndex = -1;
-  function changerImage(){
-    let idx;
-    do { idx = Math.floor(Math.random() * images.length); } while (idx === lastIndex);
-    lastIndex = idx;
-    imgEl.src = images[idx];
-  }
+  function changerImage(){ let idx; do { idx = Math.floor(Math.random()*images.length); } while(idx===lastIndex); lastIndex=idx; imgEl.src=images[idx]; }
 
-  // +1 visual
-  function afficherPlusUn(x, y, value){
-    const el = document.createElement('div');
-    el.className = 'plus-one';
-    el.textContent = `+${Math.floor(value)}`;
-    document.body.appendChild(el);
-    const left = Math.min(window.innerWidth - 40, Math.max(8, x));
-    const top = Math.min(window.innerHeight - 40, Math.max(8, y));
-    el.style.left = left + 'px';
-    el.style.top = top + 'px';
-    setTimeout(()=>el.remove(), 950);
-  }
+  function afficherPlusUn(x,y,value){ const el=document.createElement('div'); el.className='plus-one'; el.textContent=`+${Math.floor(value)}`; document.body.appendChild(el); const left=Math.min(window.innerWidth-40,Math.max(8,x)); const top=Math.min(window.innerHeight-40,Math.max(8,y)); el.style.left=left+'px'; el.style.top=top+'px'; setTimeout(()=>el.remove(),950); }
 
-  // ------------------------
-  // Nouveau : calcul exact du clic
-  function getClickGain() {
-    let gain = 1; // clic de base
+  // ----------------------------
+  // calcul du gain par clic
+  function getClickGain(){
+    let gain = 1;
     const items = window.storeItemsData || [];
-    if (items[0]) gain += (items[0].owned * (items[0].bonusClick || 0)); // Gamelle
-    if (items[1]) gain += (items[1].owned * (items[1].bonusClick || 0)); // Cage
+    if(items[0]) gain += items[0].owned * (items[0].bonusClick || 0);
+    if(items[1]) gain += items[1].owned * (items[1].bonusClick || 0);
     return gain;
   }
-  // ------------------------
+  // ----------------------------
 
-  // click handler
-  let lastClickTime = 0;
-  imgEl.addEventListener('click', (ev) => {
-    const now = Date.now();
-    if (now - lastClickTime < 180) return; // anti-spam
-    lastClickTime = now;
+  let lastClickTime=0;
+  imgEl.addEventListener('click',(ev)=>{
+    const now=Date.now(); if(now-lastClickTime<180)return; lastClickTime=now;
 
-    const baseGain = getClickGain(); // gain de base + bonus items
+    const baseGain = getClickGain();
     let totalGain = baseGain;
 
-    // Appliquer uniquement les boosts existants
     const boosts = window.boostsData || [];
-    if (boosts[0] && boosts[0].active) totalGain *= 1.5;
-    if (boosts[2] && boosts[2].active){
-      if (Math.random() < 0.5) totalGain = 0;
-      else totalGain *= 2;
-    }
-    if (boosts[5] && boosts[5].active) totalGain *= 1.10;
-    if (boosts[8] && boosts[8].active) totalGain *= 2;
+    if(boosts[0] && boosts[0].active) totalGain *= 1.5;
+    if(boosts[2] && boosts[2].active){ if(Math.random()<0.5) totalGain=0; else totalGain*=2; }
+    if(boosts[5] && boosts[5].active) totalGain*=1.10;
+    if(boosts[8] && boosts[8].active) totalGain*=2;
 
     window.BountyGame.count += totalGain;
-
-    afficherPlusUn(ev.clientX, ev.clientY, totalGain);
+    afficherPlusUn(ev.clientX,ev.clientY,totalGain);
     changerImage();
     jouerSon();
     updateCounterUI();
-    if (window.updateStore) window.updateStore();
-    if (window.sauvegarderJeu) window.sauvegarderJeu();
+    if(window.updateStore) window.updateStore();
+    if(window.sauvegarderJeu) window.sauvegarderJeu();
   });
 
-  // CPS calculation
   function calculCPS(){
-    let total = 0;
-    const items = window.storeItemsData || [];
-    const boosts = window.boostsData || [];
-    items.forEach(it => {
-      if (it.auto > 0 && it.owned > 0) {
-        let gain = it.auto * it.owned;
-        if (boosts[1] && boosts[1].active) gain *= 2; // employés compétents
-        if (boosts[4] && boosts[4].active) gain *= 1.05; // augmentation droits
-        total += gain;
+    let total=0;
+    const items=window.storeItemsData||[];
+    const boosts=window.boostsData||[];
+    items.forEach(it=>{
+      if(it.auto>0 && it.owned>0){
+        let gain = it.auto*it.owned;
+        if(boosts[1]&&boosts[1].active) gain*=2;
+        if(boosts[4]&&boosts[4].active) gain*=1.05;
+        total+=gain;
       }
     });
     return total;
   }
 
-  // update UI counters
-  function updateCounterUI(){
-    counterEl.textContent = `Croquettes : ${Math.floor(window.BountyGame.count)} (x${window.BountyGame.multiplier})`;
-    cpsEl.textContent = `CPS : ${Math.floor(calculCPS())}`;
-  }
+  function updateCounterUI(){ counterEl.textContent=`Croquettes : ${Math.floor(window.BountyGame.count)} (x${window.BountyGame.multiplier})`; cpsEl.textContent=`CPS : ${Math.floor(calculCPS())}`; }
   window.updateCounterUI = updateCounterUI;
 
-  // automatic CPS income
-  setInterval(() => {
-    const items = window.storeItemsData || [];
-    const boosts = window.boostsData || [];
-    items.forEach(it => {
-      if (it.auto > 0 && it.owned > 0) {
-        let gain = it.auto * it.owned;
-        if (boosts[1] && boosts[1].active) gain *= 2;
-        if (boosts[4] && boosts[4].active) gain *= 1.05;
+  setInterval(()=>{
+    const items=window.storeItemsData||[];
+    const boosts=window.boostsData||[];
+    items.forEach(it=>{
+      if(it.auto>0 && it.owned>0){
+        let gain = it.auto*it.owned;
+        if(boosts[1]&&boosts[1].active) gain*=2;
+        if(boosts[4]&&boosts[4].active) gain*=1.05;
         window.BountyGame.count += gain;
       }
     });
     updateCounterUI();
-    if (window.updateStore) window.updateStore();
-  }, 1000);
+    if(window.updateStore) window.updateStore();
+  },1000);
 
-  // save/load
-  function sauvegarderJeu(){
-    const data = {
-      count: window.BountyGame.count,
-      multiplier: window.BountyGame.multiplier,
-      storeItems: (window.storeItemsData || []).map(it => ({ owned: it.owned, price: it.price })),
-      boosts: (window.boostsData || []).map(b => ({ active: b.active, permanent: b.permanent }))
-    };
-    localStorage.setItem('bountySave', JSON.stringify(data));
-  }
-  window.sauvegarderJeu = sauvegarderJeu;
+  function sauvegarderJeu(){ const data={ count:window.BountyGame.count, multiplier:window.BountyGame.multiplier, storeItems:(window.storeItemsData||[]).map(it=>({owned:it.owned,price:it.price})), boosts:(window.boostsData||[]).map(b=>({active:b.active,permanent:b.permanent})) }; localStorage.setItem('bountySave',JSON.stringify(data)); }
+  window.sauvegarderJeu=sauvegarderJeu;
 
   function chargerJeu(){
-    const raw = localStorage.getItem('bountySave');
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw);
-      window.BountyGame.count = data.count ?? window.BountyGame.count;
-      window.BountyGame.multiplier = data.multiplier ?? window.BountyGame.multiplier;
-      if (Array.isArray(data.storeItems) && Array.isArray(window.storeItemsData)) {
-        data.storeItems.forEach((s, i) => {
-          if (window.storeItemsData[i]) {
-            window.storeItemsData[i].owned = s.owned ?? window.storeItemsData[i].owned;
-            window.storeItemsData[i].price = s.price ?? window.storeItemsData[i].price;
-          }
+    const raw=localStorage.getItem('bountySave'); if(!raw)return;
+    try{
+      const data=JSON.parse(raw);
+      window.BountyGame.count=data.count??window.BountyGame.count;
+      window.BountyGame.multiplier=data.multiplier??window.BountyGame.multiplier;
+      if(Array.isArray(data.storeItems)&&Array.isArray(window.storeItemsData)){
+        data.storeItems.forEach((s,i)=>{
+          if(window.storeItemsData[i]){ window.storeItemsData[i].owned=s.owned??window.storeItemsData[i].owned; window.storeItemsData[i].price=s.price??window.storeItemsData[i].price; }
         });
       }
-      if (Array.isArray(data.boosts) && Array.isArray(window.boostsData)) {
-        data.boosts.forEach((b, i) => {
-          if (window.boostsData[i]) {
-            window.boostsData[i].active = !!b.active;
-            window.boostsData[i].permanent = !!b.permanent;
-            if (window.boostsData[i].permanent) window.boostsData[i].available = false;
-          }
+      if(Array.isArray(data.boosts)&&Array.isArray(window.boostsData)){
+        data.boosts.forEach((b,i)=>{
+          if(window.boostsData[i]){ window.boostsData[i].active=!!b.active; window.boostsData[i].permanent=!!b.permanent; if(window.boostsData[i].permanent) window.boostsData[i].available=false; }
         });
       }
-    } catch (e) { console.warn("Load error", e); }
+    }catch(e){console.warn("Load error",e);}
   }
-  window.chargerJeu = chargerJeu;
+  window.chargerJeu=chargerJeu;
 
-  // reset
-  resetButton.addEventListener('click', () => {
-    if (!confirm("Réinitialiser le jeu et supprimer la sauvegarde ?")) return;
-    window.BountyGame.count = 0;
-    window.BountyGame.multiplier = 1;
-    (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
-    (window.boostsData || []).forEach(b => { b.active = false; b.available = false; b.permanent = false; });
+  resetButton.addEventListener('click',()=>{
+    if(!confirm("Réinitialiser le jeu et supprimer la sauvegarde ?")) return;
+    window.BountyGame.count=0;
+    window.BountyGame.multiplier=1;
+    (window.storeItemsData||[]).forEach(it=>{it.owned=0;it.price=it.basePrice??it.price;});
+    (window.boostsData||[]).forEach(b=>{b.active=false;b.available=false;b.permanent=false;});
     sauvegarderJeu();
-    if (window.updateStore) window.updateStore();
-    if (window.afficherBoosts) window.afficherBoosts();
+    if(window.updateStore) window.updateStore();
+    if(window.afficherBoosts) window.afficherBoosts();
     updateCounterUI();
   });
 
-  // initial load
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
+  document.addEventListener('DOMContentLoaded',()=>{
+    setTimeout(()=>{
       chargerJeu();
-      if (window.updateStore) window.updateStore();
-      if (window.afficherBoosts) window.afficherBoosts();
+      if(window.updateStore) window.updateStore();
+      if(window.afficherBoosts) window.afficherBoosts();
       updateCounterUI();
       changerImage();
-    }, 60);
+    },60);
   });
 
-  // periodic save
-  setInterval(sauvegarderJeu, 60000);
+  setInterval(sauvegarderJeu,60000);
 })();
