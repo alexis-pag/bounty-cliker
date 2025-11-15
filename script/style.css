@@ -106,3 +106,30 @@ html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,Poppins,Arial;bac
 /* bottom bar */
 .bottom-bar{position:fixed;left:0;right:0;bottom:14px;display:flex;justify-content:center;pointer-events:none}
 .bottom-bar .btn{pointer-events:all}
+/* Tooltips animés pour les boutons de la boutique */
+.btn.buy {
+  position: relative; /* nécessaire pour le tooltip */
+}
+
+.tooltip{
+  position:absolute;
+  left:calc(100% + 12px);
+  top:50%;
+  transform:translateY(-50%) translateX(-10px); /* départ légèrement décalé */
+  background:rgba(2,6,20,0.95);
+  padding:8px 10px;
+  border-radius:8px;
+  color:#fff;
+  font-size:13px;
+  white-space:nowrap;
+  box-shadow:0 14px 40px rgba(0,0,0,0.6);
+  opacity:0;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+  pointer-events:none; /* ne bloque pas la souris */
+  z-index:10;
+}
+
+.btn.buy:hover .tooltip {
+  opacity:1;
+  transform:translateY(-50%) translateX(0); /* glisse vers la position finale */
+}
