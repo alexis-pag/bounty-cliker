@@ -1,7 +1,7 @@
 (() => {
   window.storeItemsData = [
-    { name: "Gamelle de croquette", price: 10, mult: 0, auto: 0, owned: 0, icon: "script/image/gamelle.png", bonusClick: 1 },
-    { name: "Cage à croquette", price: 50, mult: 0, auto: 0, owned: 0, icon: "script/image/cage.png", bonusClick: 5 },
+    { name: "Gamelle de croquette", price: 10, mult: 1, auto: 0, owned: 0, icon: "script/image/gamelle.png", bonusClick: 1 },
+    { name: "Cage à croquette", price: 50, mult: 5, auto: 0, owned: 0, icon: "script/image/cage.png", bonusClick: 5 },
     { name: "Paquet de croquette", price: 100, mult: 0, auto: 1, owned: 0, icon: "script/image/paquet.png" },
     { name: "Magasin de croquettes", price: 500, mult: 0, auto: 5, owned: 0, icon: "script/image/magasin.png" },
     { name: "Supermarcher de croquette", price: 1000, mult: 0, auto: 10, owned: 0, icon: "script/image/supermarche.png" },
