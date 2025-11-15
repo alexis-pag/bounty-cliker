@@ -3,16 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bounty Clicker — Néon</title>
+  <title>Bounty Clicker</title>
   <link rel="stylesheet" href="script/style.css">
-</head>
 
+  <style>
+    /* Scroll uniquement dans la liste */
+    .shop-scroll {
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .shop-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .shop-scroll::-webkit-scrollbar-thumb {
+      background: rgba(0,255,180,0.35);
+      border-radius: 10px;
+    }
+    .shop-scroll::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.03);
+    }
+  </style>
+</head>
 <body>
   <div class="bg-animated"></div>
 
   <div class="layout">
-
-    <!-- LEFT : CLICKER -->
+    <!-- Left: Clicker -->
     <section class="panel clicker">
       <header class="panel-header">
         <h1>Bounty Clicker</h1>
@@ -29,23 +47,21 @@
       </main>
     </section>
 
-    <!-- MIDDLE : SHOP avec scroll -->
+    <!-- Middle: Shop with scroll -->
     <aside class="panel shop">
       <header class="panel-header"><h2>Boutique</h2></header>
-
-      <div class="panel-main shop-scroll">
-        <div id="storeItems" class="list"></div>
+      <div class="panel-main">
+        <div id="storeItems" class="list shop-scroll"></div>
       </div>
     </aside>
 
-    <!-- RIGHT : BOOSTS -->
+    <!-- Right: Boosts -->
     <aside class="panel boosts">
       <header class="panel-header"><h2>Boosts & Bonus</h2></header>
-      <div class="panel-main boosts-scroll">
+      <div class="panel-main">
         <div id="boostsContainer" class="list"></div>
       </div>
     </aside>
-
   </div>
 
   <footer class="bottom-bar">
@@ -54,7 +70,7 @@
 
   <audio id="clickSound" src="script/audio/Mouse Click Sound Effect.mp3" preload="auto"></audio>
 
-  <!-- Scripts -->
+  <!-- scripts: boutique & boost first, main last -->
   <script src="script/boutique.js" defer></script>
   <script src="script/boost.js" defer></script>
   <script src="script/main.js" defer></script>
