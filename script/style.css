@@ -50,6 +50,7 @@ html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,Poppins,Arial;bac
 .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .panel-header h1{font-size:1.6rem;margin:0;color:var(--neon-blue);text-shadow:0 4px 18px rgba(0,212,255,0.12)}
 .panel-header h2{font-size:1.05rem;margin:0;color:var(--neon-green)}
+.panel-header{cursor:pointer} /* menu déroulant indicatif */
 
 /* counters */
 .counters{display:flex;gap:10px;align-items:center}
@@ -95,7 +96,7 @@ html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,Poppins,Arial;bac
 /* tooltip */
 .tooltip{
   position:absolute;
-  bottom:120%; /* positionné au-dessus du bouton */
+  bottom:120%;
   left:50%;
   transform:translateX(-50%) translateY(-5px);
   background:rgba(2,6,20,0.95);
@@ -110,7 +111,8 @@ html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,Poppins,Arial;bac
   pointer-events:none;
   z-index:10;
 }
-.tooltip::after {
+
+.tooltip::after{
   content:'';
   position:absolute;
   top:100%;
@@ -120,60 +122,26 @@ html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,Poppins,Arial;bac
   border-style:solid;
   border-color: rgba(2,6,20,0.95) transparent transparent transparent;
 }
-.btn.buy:hover .tooltip {
+
+.btn.buy:hover .tooltip{
   opacity:1;
   transform:translateX(-50%) translateY(0);
 }
 
-/* animated boost appear */
 .boost-appear{animation:boostPop .8s cubic-bezier(.2,.9,.2,1)}
 @keyframes boostPop{0%{transform:scale(.3);opacity:0;filter:brightness(3)}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1;filter:none}}
 
-/* active boost visual */
 .boost-active{box-shadow:0 0 18px rgba(155,255,122,0.16);border:1px solid rgba(155,255,122,0.18)}
 
-/* bottom bar */
 .bottom-bar{position:fixed;left:0;right:0;bottom:14px;display:flex;justify-content:center;pointer-events:none}
 .bottom-bar .btn{pointer-events:all}
 
-/* ---------- Boutique déroulante ---------- */
-.shop {
-  width: 360px; /* visible par défaut */
-  overflow: hidden;
-  transition: width 0.3s ease;
-  cursor: pointer;
-  position: relative;
-}
-.shop.closed {
-  width: 60px; /* repliée */
-}
-
-/* flèche indicatrice */
-.shop-toggle {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 16px;
-  height: 16px;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(45deg);
-  transition: transform 0.3s ease;
-  pointer-events: none;
-}
-.shop.closed .shop-toggle {
-  transform: rotate(-135deg);
-}
-
-/* panel header et contenu */
-.shop .panel-header,
+/* Menu déroulant boutique */
 .shop .panel-main {
-  opacity: 1;
-  transition: opacity 0.3s ease;
-  pointer-events: all;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
 }
-.shop.closed .panel-header,
-.shop.closed .panel-main {
-  opacity: 0;
-  pointer-events: none;
+.shop.open .panel-main {
+  max-height: 2000px; /* assez pour tous les items */
 }
