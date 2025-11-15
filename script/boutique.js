@@ -110,6 +110,21 @@
     });
   }
 
+  // Calcul du gain exact au clic
+  function getClickGain() {
+    let gain = 1; // clic de base si aucun item acheté
+
+    const gamelle = storeItemsData[0];
+    const cage = storeItemsData[1];
+
+    if (gamelle.owned > 0 || cage.owned > 0) {
+      gain = (gamelle.owned * (gamelle.bonusClick || 0)) + (cage.owned * (cage.bonusClick || 0));
+    }
+
+    gain *= window.BountyGame.multiplier || 1;
+    return gain;
+  }
+
   window.updateStore = updateStore;
   window.acheterItem = acheterItem;
 
@@ -120,22 +135,8 @@
     const img = document.getElementById('image');
     if (img) {
       img.addEventListener('click', () => {
-        // calcul du gain exact
-        let totalClick = 0;
-
-        // additionne uniquement les bonusClick des items 0 et 1
-        for (let i = 0; i <= 1; i++) {
-          if (storeItemsData[i].owned) totalClick += storeItemsData[i].owned * (storeItemsData[i].bonusClick || 0);
-        }
-
-        // si aucun item acheté → clic de base = 1
-        if (totalClick === 0) totalClick = 1;
-
-        // appliquer multiplicateur global
-        const totalGain = totalClick * (window.BountyGame.multiplier || 1);
-
+        const totalGain = getClickGain();
         window.BountyGame.count += totalGain;
-
         updateCounterUI && updateCounterUI();
       });
     }
