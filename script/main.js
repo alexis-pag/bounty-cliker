@@ -1,7 +1,3 @@
-/* main.js
-   - click, +1, cps, save/load, reset
-   - depends on storeItemsData & boostsData from other scripts
-*/
 (() => {
   // Ensure shared object
   window.BountyGame = window.BountyGame || {};
@@ -39,13 +35,23 @@
     el.className = 'plus-one';
     el.textContent = `+${Math.floor(value)}`;
     document.body.appendChild(el);
-    // position near cursor but within viewport
     const left = Math.min(window.innerWidth - 40, Math.max(8, x));
     const top = Math.min(window.innerHeight - 40, Math.max(8, y));
     el.style.left = left + 'px';
     el.style.top = top + 'px';
     setTimeout(()=>el.remove(), 950);
   }
+
+  // ------------------------
+  // Nouveau : calcul exact du clic
+  function getClickGain() {
+    let gain = 1; // clic de base
+    const items = window.storeItemsData || [];
+    if (items[0]) gain += (items[0].owned * (items[0].bonusClick || 0)); // Gamelle
+    if (items[1]) gain += (items[1].owned * (items[1].bonusClick || 0)); // Cage
+    return gain;
+  }
+  // ------------------------
 
   // click handler
   let lastClickTime = 0;
@@ -54,25 +60,22 @@
     if (now - lastClickTime < 180) return; // anti-spam
     lastClickTime = now;
 
-    // compute bonus (multiplier + boosts)
-    let bonus = window.BountyGame.multiplier || 1;
+    const baseGain = getClickGain(); // gain de base + bonus items
+    let totalGain = baseGain;
+
+    // Appliquer uniquement les boosts existants
     const boosts = window.boostsData || [];
-
-    // Bounty doré
-    if (boosts[0] && boosts[0].active) bonus *= 1.5;
-    // Marchand louche (50% loss / double)
+    if (boosts[0] && boosts[0].active) totalGain *= 1.5;
     if (boosts[2] && boosts[2].active){
-      if (Math.random() < 0.5) bonus = 0;
-      else bonus *= 2;
+      if (Math.random() < 0.5) totalGain = 0;
+      else totalGain *= 2;
     }
-    // other temporary or permanent bonuses
-    if (boosts[5] && boosts[5].active) bonus *= 1.10; // mystère +10%
-    if (boosts[8] && boosts[8].active) bonus *= 2; // mystère 4 double multiplier
+    if (boosts[5] && boosts[5].active) totalGain *= 1.10;
+    if (boosts[8] && boosts[8].active) totalGain *= 2;
 
-    // add
-    window.BountyGame.count += bonus;
+    window.BountyGame.count += totalGain;
 
-    afficherPlusUn(ev.clientX, ev.clientY, bonus);
+    afficherPlusUn(ev.clientX, ev.clientY, totalGain);
     changerImage();
     jouerSon();
     updateCounterUI();
@@ -151,7 +154,6 @@
           if (window.boostsData[i]) {
             window.boostsData[i].active = !!b.active;
             window.boostsData[i].permanent = !!b.permanent;
-            // if permanent -> ensure available false (bought)
             if (window.boostsData[i].permanent) window.boostsData[i].available = false;
           }
         });
@@ -173,7 +175,7 @@
     updateCounterUI();
   });
 
-  // initial load (wait briefly so boutique/boost scripts ran)
+  // initial load
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       chargerJeu();
