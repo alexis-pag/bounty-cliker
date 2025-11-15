@@ -120,17 +120,20 @@
     const img = document.getElementById('image');
     if (img) {
       img.addEventListener('click', () => {
-        // calcul des bonus cumulés pour Gamelle et Cage
+        // calcul du gain exact
         let totalClick = 0;
+
+        // additionne uniquement les bonusClick des items 0 et 1
         for (let i = 0; i <= 1; i++) {
           if (storeItemsData[i].owned) totalClick += storeItemsData[i].owned * (storeItemsData[i].bonusClick || 0);
         }
 
-        // si aucun item acheté, clic de base = 1
+        // si aucun item acheté → clic de base = 1
         if (totalClick === 0) totalClick = 1;
 
         // appliquer multiplicateur global
         const totalGain = totalClick * (window.BountyGame.multiplier || 1);
+
         window.BountyGame.count += totalGain;
 
         updateCounterUI && updateCounterUI();
