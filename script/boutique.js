@@ -14,10 +14,10 @@
     { name: "Galaxy de croquettes", price: 5000000, mult: 0, auto: 5000, owned: 0, icon: "script/image/galaxy.png" }
   ];
 
-  // initialisation basePrice
+  // basePrice pour reset
   window.storeItemsData.forEach(it => { if (it.basePrice === undefined) it.basePrice = it.price; });
 
-  // initialisation BountyGame si nécessaire
+  // initialisation BountyGame
   window.BountyGame = window.BountyGame || {};
   window.BountyGame.count = window.BountyGame.count || 0;
   window.BountyGame.multiplier = window.BountyGame.multiplier || 1;
@@ -39,14 +39,13 @@
     btn.disabled = !(window.BountyGame && window.BountyGame.count >= item.price);
     btn.addEventListener('click', (e) => { e.stopPropagation(); acheterItem(idx); });
 
-    // --- TOOLTIP ANIMÉ AU-DESSUS ---
+    // TOOLTIP animé
     const tooltip = document.createElement('span');
     tooltip.className = 'tooltip';
     if (item.bonusClick) tooltip.textContent = `+${item.bonusClick} par clic !`;
     else if (item.mult > 0) tooltip.textContent = `+${item.mult} multiplicateur !`;
     else tooltip.textContent = `+${item.auto} auto-croquettes !`;
     btn.appendChild(tooltip);
-    // ------------------------------
 
     right.appendChild(btn);
 
@@ -71,7 +70,7 @@
     if (window.BountyGame.count >= item.price) {
       window.BountyGame.count -= item.price;
 
-      // --- Bonus par clic pour Gamelle / Cage ---
+      // Bonus par clic pour Gamelle/Cage
       if (item.bonusClick) {
         window.BountyGame.bonusClick += item.bonusClick;
       }
@@ -82,7 +81,7 @@
       item.owned += 1;
       item.price = Math.round(item.price * 1.40);
 
-      // purchase flash
+      // Flash achat
       const node = storeDiv.children[idx];
       const flash = document.createElement('div'); flash.className = 'boost-appear';
       flash.style.position = 'absolute'; flash.style.inset = '0';
@@ -92,7 +91,6 @@
       if (window.sauvegarderJeu) window.sauvegarderJeu();
       updateStore();
     } else {
-      // not enough
       const old = document.body.style.filter;
       document.body.style.filter = 'brightness(.85)';
       setTimeout(()=>document.body.style.filter = old, 220);
@@ -105,12 +103,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => updateStore(), 40);
 
-    // clic principal sur l'image
+    // Clic principal sur l'image
     const img = document.getElementById('image');
     if (img) {
       img.addEventListener('click', () => {
-        const gain = 1 + (window.BountyGame.bonusClick || 0);
-        window.BountyGame.count += gain;
+        const gainBase = 1; // clic de base
+        const bonus = window.BountyGame.bonusClick || 0;
+        const totalGain = (gainBase + bonus) * (window.BountyGame.multiplier || 1);
+        window.BountyGame.count += totalGain;
         if (window.updateCounterUI) window.updateCounterUI();
       });
     }
