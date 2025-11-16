@@ -1,7 +1,3 @@
-/* boost.js
-   - boostsData with price & permanent flag
-   - afficherBoosts, spawn/respawn logic, purchase (permanent)
-*/
 (() => {
   window.boostsData = [
     { name: "Bounty doré", desc: "x1.5 sur les clicks", price: 500, active: false, available: false, permanent: false },
@@ -21,22 +17,34 @@
   function makeBoostNode(b, idx) {
     const root = document.createElement('div');
     root.className = 'boost-node';
-    root.style.display = b.available ? 'flex' : 'none';
     if (b.active || b.permanent) root.classList.add('boost-active');
     if (b.available && !b.active) root.classList.add('boost-appear');
 
-    const left = document.createElement('div'); left.innerHTML = `<strong>${b.name}</strong><div style="font-size:12px;color:rgba(255,255,255,0.75)">Prix: ${b.price}</div>`;
-    const right = document.createElement('div');
-    const btn = document.createElement('button'); btn.className = 'btn activate'; btn.textContent = b.active ? 'Actif' : 'Acheter';
+    const left = document.createElement('div');
+    left.innerHTML = `<strong>${b.name}</strong><div style="font-size:12px;color:rgba(255,255,255,0.75)">Prix: ${b.price}</div>`;
 
+    const right = document.createElement('div');
+    const btn = document.createElement('button');
+    btn.className = 'btn activate';
+    btn.textContent = b.active ? 'Actif' : 'Acheter';
+
+    // CORRECTION : bouton activable si le joueur a assez de croquettes
     btn.disabled = !(window.BountyGame && window.BountyGame.count >= b.price);
+
     btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
       purchaseBoost(idx);
     });
 
-    const tooltip = document.createElement('div'); tooltip.className = 'tooltip'; tooltip.textContent = b.desc;
-    root.appendChild(left); right.appendChild(btn); root.appendChild(right); root.appendChild(tooltip);
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = b.desc;
+
+    root.appendChild(left);
+    right.appendChild(btn);
+    root.appendChild(right);
+    root.appendChild(tooltip);
+
     return root;
   }
 
@@ -51,53 +59,43 @@
     const b = window.boostsData[idx];
     if (!b) return;
     if (window.BountyGame.count >= b.price) {
-      // pay & make permanent
       window.BountyGame.count -= b.price;
       b.active = true;
       b.permanent = true;
       b.available = false;
 
-      // apply immediate effects if some boosts give instant reward
-      if (b.name.includes('Bonus mystère 3')) {
-        window.BountyGame.count += 50; // immediate 50 croquettes
-      }
+      if (b.name.includes('Bonus mystère 3')) window.BountyGame.count += 50;
+
       if (window.updateCounterUI) window.updateCounterUI();
       if (window.sauvegarderJeu) window.sauvegarderJeu();
       if (window.updateStore) window.updateStore();
       afficherBoosts();
     } else {
-      // not enough
       const old = document.body.style.filter;
       document.body.style.filter = 'brightness(.85)';
-      setTimeout(()=>document.body.style.filter = old, 220);
+      setTimeout(() => document.body.style.filter = old, 220);
     }
   }
 
-  // spawn algorithm: show 1-2 boosts available for a limited time, then hide if not bought
   function scheduleSpawn() {
-    // hide all availables first (except permanent ones)
     window.boostsData.forEach(b => { if (!b.permanent) b.available = false; });
 
     const pool = window.boostsData.filter(b => !b.permanent);
     if (pool.length === 0) return;
 
-    // choose how many to show: mostly 1, sometimes 2, rarely 3
-    const r = Math.random();
     let n = 1;
+    const r = Math.random();
     if (r < 0.18) n = 2;
     if (r < 0.05) n = 3;
 
-    // pick n distinct
     for (let i = 0; i < n; i++) {
       if (pool.length === 0) break;
       const idx = Math.floor(Math.random() * pool.length);
       const chosen = pool.splice(idx, 1)[0];
       chosen.available = true;
-      // rare visual flag
       chosen.rare = Math.random() < 0.08;
 
-      // schedule disappearance if not bought
-      const timeVisible = 15000 + Math.random() * 30000; // 15 - 45s
+      const timeVisible = 15000 + Math.random() * 30000;
       setTimeout(() => {
         if (!chosen.permanent && chosen.available) {
           chosen.available = false;
@@ -108,12 +106,10 @@
 
     if (window.afficherBoosts) window.afficherBoosts();
 
-    // schedule next spawn between 20s and 90s
     const nextIn = 20000 + Math.random() * 70000;
     setTimeout(scheduleSpawn, nextIn);
   }
 
-  // initial render & start spawns on DOM ready
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       afficherBoosts();
