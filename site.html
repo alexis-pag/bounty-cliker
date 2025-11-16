@@ -47,10 +47,13 @@
       </main>
     </section>
 
-    <!-- Middle: Shop with scroll -->
-    <aside class="panel shop">
-      <header class="panel-header"><h2>Boutique</h2></header>
-      <div class="panel-main">
+    <!-- Middle: Shop — AVEC MENU DÉROULANT -->
+    <aside class="panel shop" id="shopPanel">
+      <header class="panel-header" id="shopHeader">
+        <h2>Boutique</h2>
+      </header>
+
+      <div class="panel-main" id="shopContent">
         <div id="storeItems" class="list shop-scroll"></div>
       </div>
     </aside>
@@ -74,5 +77,19 @@
   <script src="script/boutique.js" defer></script>
   <script src="script/boost.js" defer></script>
   <script src="script/main.js" defer></script>
+
+  <!-- SCRIPT DU MENU DÉROULANT DU SHOP -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const shopPanel = document.getElementById('shopPanel');
+      const shopHeader = document.getElementById('shopHeader');
+
+      shopPanel.classList.remove('open'); // fermé au début
+
+      shopHeader.addEventListener('click', () => {
+        shopPanel.classList.toggle('open');
+      });
+    });
+  </script>
 </body>
 </html>
