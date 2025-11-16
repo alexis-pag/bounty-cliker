@@ -17,6 +17,7 @@
   function makeBoostNode(b, idx) {
     const root = document.createElement('div');
     root.className = 'boost-node';
+    root.style.display = b.available || b.permanent ? 'flex' : 'none';
     if (b.active || b.permanent) root.classList.add('boost-active');
     if (b.available && !b.active) root.classList.add('boost-appear');
 
@@ -28,8 +29,8 @@
     btn.className = 'btn activate';
     btn.textContent = b.active ? 'Actif' : 'Acheter';
 
-    // CORRECTION : bouton activable si le joueur a assez de croquettes
-    btn.disabled = !(window.BountyGame && window.BountyGame.count >= b.price);
+    // bouton activable si le joueur a assez de croquettes et boost pas déjà actif/permanent
+    btn.disabled = !(window.BountyGame && window.BountyGame.count >= b.price) || b.active || b.permanent;
 
     btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
@@ -64,6 +65,7 @@
       b.permanent = true;
       b.available = false;
 
+      // effets instantanés
       if (b.name.includes('Bonus mystère 3')) window.BountyGame.count += 50;
 
       if (window.updateCounterUI) window.updateCounterUI();
@@ -77,6 +79,7 @@
     }
   }
 
+  // spawn aléatoire avec disparition temporaire
   function scheduleSpawn() {
     window.boostsData.forEach(b => { if (!b.permanent) b.available = false; });
 
@@ -95,7 +98,7 @@
       chosen.available = true;
       chosen.rare = Math.random() < 0.08;
 
-      const timeVisible = 15000 + Math.random() * 30000;
+      const timeVisible = 15000 + Math.random() * 30000; // 15-45s
       setTimeout(() => {
         if (!chosen.permanent && chosen.available) {
           chosen.available = false;
