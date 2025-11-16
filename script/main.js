@@ -54,3 +54,15 @@ document.getElementById("resetButton").addEventListener("click", () => {
 
     updateUI();
 });
+document.addEventListener('DOMContentLoaded', () => {
+  const shopPanel = document.querySelector('.shop');
+  const shopHeader = shopPanel.querySelector('.panel-header');
+
+  // bascule ouverture/fermeture
+  shopHeader.addEventListener('click', () => {
+    shopPanel.classList.toggle('open');
+  });
+
+  // shop fermé au début
+  shopPanel.classList.remove('open');
+});
