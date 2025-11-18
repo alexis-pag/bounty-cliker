@@ -24,9 +24,32 @@
     .shop-scroll::-webkit-scrollbar-track {
       background: rgba(255,255,255,0.03);
     }
+
+    /* Bouton GitHub en haut à gauche */
+    #githubButton {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 10px 15px;
+      background-color: #24292e;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1000;
+      text-decoration: none;
+    }
+
+    #githubButton:hover {
+      background-color: #444c56;
+    }
   </style>
 </head>
 <body>
+  <!-- Bouton GitHub en haut à gauche -->
+  <a href="https://github.com/alexis-pag/paglierusco-alexis" id="githubButton" target="_blank">GitHub</a>
+
   <div class="bg-animated"></div>
 
   <div class="layout">
@@ -68,9 +91,9 @@
   </div>
 
   <div id="rebirthContainer">
-  <button id="rebirthButton">Rebirth</button>
-  <div id="rebirthCount">Rebirths : 0</div>
-</div>
+    <button id="rebirthButton">Rebirth</button>
+    <div id="rebirthCount">Rebirths : 0</div>
+  </div>
 
   <footer class="bottom-bar">
     <button id="resetButton" class="btn reset">Réinitialiser</button>
