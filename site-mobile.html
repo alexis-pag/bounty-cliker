@@ -2,9 +2,23 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Optimisation mobile Android + iPhone -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <meta name="touch-action" content="manipulation">
+
+  <!-- Icônes (facultatif, tu peux remplacer les fichiers) -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" sizes="192x192" href="icons/icon-192.png">
+
   <title>Bounty Clicker - Mobile</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="script/css-mobile.css" />
 </head>
 
 <body>
@@ -49,6 +63,13 @@
   <script src="script/main.js" defer></script>
 
   <script>
+    /* Activation audio iPhone */
+    document.addEventListener("touchstart", () => {
+      const s = document.getElementById("clickSound");
+      s.volume = 1;
+    }, { once: true });
+
+    /* Animation du clic + +1 */
     document.addEventListener('DOMContentLoaded', () => {
       const image = document.getElementById("image");
 
