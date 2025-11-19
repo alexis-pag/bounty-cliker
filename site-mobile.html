@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Bounty Clicker - Mobile</title>
-  <!-- CSS mobile -->
   <link rel="stylesheet" href="script/css-mobile.css">
 </head>
 <body>
@@ -13,7 +12,6 @@
   <div class="bg-animated"></div>
 
   <div class="layout">
-    <!-- Clicker -->
     <section class="panel clicker">
       <header class="panel-header">
         <h1>Bounty Clicker</h1>
@@ -29,7 +27,6 @@
       </main>
     </section>
 
-    <!-- Shop -->
     <aside class="panel shop" id="shopPanel">
       <header class="panel-header" id="shopHeader">
         <h2>Boutique</h2>
@@ -39,7 +36,6 @@
       </div>
     </aside>
 
-    <!-- Boosts -->
     <aside class="panel boosts">
       <header class="panel-header"><h2>Boosts & Bonus</h2></header>
       <div class="panel-main">
@@ -57,13 +53,11 @@
     <button id="resetButton" class="btn reset">Réinitialiser</button>
   </footer>
 
-  <!-- scripts -->
   <script src="script/boutique.js" defer></script>
   <script src="script/boost.js" defer></script>
   <script src="script/main.js" defer></script>
 
   <script>
-    // Menu déroulant shop
     document.addEventListener('DOMContentLoaded', () => {
       const shopPanel = document.getElementById('shopPanel');
       const shopHeader = document.getElementById('shopHeader');
