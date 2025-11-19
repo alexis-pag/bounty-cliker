@@ -1,8 +1,4 @@
-/* ================================== */
-/* Bounty Clicker - CSS Mobile        */
-/* ================================== */
 
-/* Variables couleurs & style neon */
 :root {
   --glass: rgba(255,255,255,0.06);
   --panel-radius: 14px;
@@ -12,7 +8,7 @@
   --bg-dark: #071025;
 }
 
-/* Reset & base */
+
 * { box-sizing: border-box; }
 html, body {
   height: 100%;
@@ -23,7 +19,7 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Animated background */
+
 .bg-animated {
   position: fixed;
   inset: 0;
@@ -39,7 +35,7 @@ html, body {
   100% { background-position:0% 50%; }
 }
 
-/* Layout mobile: colonne unique ou 2 colonnes */
+
 .layout {
   display: flex;
   flex-direction: column;
@@ -49,7 +45,6 @@ html, body {
   align-items: center;
 }
 
-/* Panel base */
 .panel {
   border-radius: var(--panel-radius);
   padding: 10px;
@@ -60,12 +55,12 @@ html, body {
   max-width: 360px;
 }
 
-/* Panel colors */
+
 .clicker { border-left: 4px solid var(--neon-blue); }
 .shop { border-left: 4px solid var(--neon-green); }
 .boosts { border-left: 4px solid var(--neon-pink); }
 
-/* Scrollable areas */
+
 .shop-scroll,
 .boosts-scroll {
   max-height: 300px;
@@ -73,18 +68,18 @@ html, body {
   padding-right: 6px;
 }
 
-/* Scrollbar custom */
+
 .shop-scroll::-webkit-scrollbar,
 .boosts-scroll::-webkit-scrollbar { width: 6px; }
 .shop-scroll::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
 .boosts-scroll::-webkit-scrollbar-thumb { background: var(--neon-pink); border-radius: 10px; }
 
-/* Headers */
+
 .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .panel-header h1 { font-size: 1.4rem; margin:0; color: var(--neon-blue); text-shadow:0 3px 12px rgba(0,212,255,0.12); }
 .panel-header h2 { font-size: 1rem; margin:0; color: var(--neon-green); }
 
-/* Counters */
+
 .counters { display: flex; gap: 8px; align-items: center; }
 #counter, #cps {
   background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -96,9 +91,7 @@ html, body {
   font-size: 0.85rem;
 }
 
-/* ========================= */
-/* IMAGE CLICKER MOBILE       */
-/* ========================= */
+
 .image-wrap {
   display: flex;
   justify-content: center;
@@ -110,7 +103,7 @@ html, body {
 
 #image {
   width: 80%;
-  max-width: 280px;      /* mobile friendly */
+  max-width: 280px;      
   height: auto;
   object-fit: contain;
   border-radius: 12px;
@@ -124,7 +117,6 @@ html, body {
   box-shadow: 0 12px 35px rgba(0,0,0,0.6);
 }
 
-/* Plus-one feedback */
 .plus-one {
   position: fixed;
   pointer-events: none;
@@ -139,7 +131,7 @@ html, body {
   100% { opacity:0; transform: translateY(-70px) scale(1.15); }
 }
 
-/* Lists */
+
 .list { display: flex; flex-direction: column; gap: 8px; }
 .item, .boost-node {
   display: flex;
@@ -159,7 +151,7 @@ html, body {
 .icon { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,255,255,0.03); }
 .count-badge { position: absolute; top:-6px; right:-6px; background:#ff4d6e; color:#fff; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; }
 
-/* Buttons */
+
 .btn {
   padding: 6px 10px;
   border-radius: 6px;
@@ -173,7 +165,7 @@ html, body {
 .activate { background: linear-gradient(90deg,var(--neon-pink),#ff8ed6); color:#14031f; box-shadow:0 6px 15px rgba(255,60,172,0.08); }
 .reset { background: linear-gradient(90deg,#ff5a5a,#ff2d55); color:#fff; box-shadow:0 8px 25px rgba(255,0,60,0.12); padding:10px 16px; }
 
-/* Tooltip */
+
 .tooltip {
   position: absolute;
   bottom: 120%;
@@ -203,10 +195,10 @@ html, body {
 }
 .btn.buy:hover .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Boost active effect */
+
 .boost-active { box-shadow: 0 0 14px rgba(155,255,122,0.16); border:1px solid rgba(155,255,122,0.18); }
 
-/* Bottom bar */
+
 .bottom-bar {
   position: fixed;
   left:0;
@@ -218,8 +210,8 @@ html, body {
 }
 .bottom-bar .btn { pointer-events: all; }
 
-/* ========================= */
-/* MENU DÉROULANT SHOP       */
+
+
 .shop {
   overflow: hidden;
   transition: max-height 0.4s ease;
@@ -229,8 +221,8 @@ html, body {
 .shop .panel-header { cursor: pointer; user-select: none; }
 .shop .panel-header h2 { pointer-events: none; }
 
-/* ========================= */
-/* REBIRTH BUTTON NEON       */
+
+
 #rebirthContainer {
   position: fixed;
   left: 10px;
