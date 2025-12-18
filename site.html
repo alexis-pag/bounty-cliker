@@ -1,10 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Bounty Clicker</title>
-  <link rel="stylesheet" href="script/style.css">
+  <link rel="stylesheet" href="style/style.css">
 
   <style>
     .shop-scroll { max-height: 600px; overflow-y: auto; padding-right: 6px; }
@@ -17,7 +17,7 @@
 </head>
 <body>
   <!-- Bouton GitHub -->
-  <a href="https://github.com/alexis-pag/paglierusco-alexis" id="githubButton" target="_blank">code source</a>
+  <a href="https://github.com/alexis-pag/paglierusco-alexis" id="githubButton" target="_blank">Code source</a>
 
   <div class="bg-animated"></div>
 
@@ -66,11 +66,12 @@
 
   <audio id="clickSound" src="script/audio/Mouse Click Sound Effect.mp3" preload="auto"></audio>
 
+  <!-- Scripts du jeu -->
   <script src="script/boutique.js" defer></script>
-  <!--<script src="script/boost.js" defer></script>-->
   <script src="script/main.js" defer></script>
 
   <script>
+    // Toggle shop panel
     document.addEventListener('DOMContentLoaded', () => {
       const shopPanel = document.getElementById('shopPanel');
       const shopHeader = document.getElementById('shopHeader');
@@ -81,7 +82,21 @@
 
   <!-- Firebase Auth -->
   <script type="module">
-    import { auth, onAuthStateChanged } from "./script/auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    // Remplace cette config par celle de ton projet
+    const firebaseConfig = {
+      apiKey: "TA_CLE",
+      authDomain: "ton-projet.firebaseapp.com",
+      projectId: "ton-projet",
+      storageBucket: "ton-projet.appspot.com",
+      messagingSenderId: "XXXX",
+      appId: "XXXX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     onAuthStateChanged(auth, user => {
       if (!user) {
