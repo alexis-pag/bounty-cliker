@@ -2,12 +2,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-// Configuration Firebase
+// Ta configuration Firebase
 const firebaseConfig = {
-    apiKey: "TA_CLE",
-    authDomain: "TON_DOMAINE.firebaseapp.com",
-    projectId: "TON_ID",
-    appId: "TON_APP_ID"
+  apiKey: "AIzaSyBxEuc36jSRacu6SzIhhdjVWvb53UXl5KI",
+  authDomain: "bounty-clicker-a2404.firebaseapp.com",
+  projectId: "bounty-clicker-a2404",
+  storageBucket: "bounty-clicker-a2404.firebasestorage.app",
+  messagingSenderId: "1015535363894",
+  appId: "1:1015535363894:web:09a0649a01ec20bd3cf597"
 };
 
 const app = initializeApp(firebaseConfig);
