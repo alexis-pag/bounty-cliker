@@ -1,12 +1,13 @@
-(() => {
+import { auth, db } from './auth.js';
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+(() => {
   window.BountyGame = window.BountyGame || {};
   if (window.BountyGame.count === undefined) window.BountyGame.count = 0;
   if (window.BountyGame.clickValue === undefined) window.BountyGame.clickValue = 1;
   if (window.BountyGame.addClickBonus === undefined) window.BountyGame.addClickBonus = 0; 
   if (window.BountyGame.addCageBonus === undefined) window.BountyGame.addCageBonus = 0;  
   if (window.BountyGame.cps === undefined) window.BountyGame.cps = 0;
-
   if (window.BountyGame.rebirths === undefined) window.BountyGame.rebirths = 0;
   if (window.BountyGame.rebirthBonusClick === undefined) window.BountyGame.rebirthBonusClick = 0;
   if (window.BountyGame.rebirthBonusCPS === undefined) window.BountyGame.rebirthBonusCPS = 0;
@@ -17,7 +18,6 @@
   const cpsEl = document.getElementById('cps');
   const resetButton = document.getElementById('resetButton');
   const clickSound = document.getElementById('clickSound');
-
   const storeDiv = document.getElementById('storeItems');
   const boostsDiv = document.getElementById('boostsContainer');
 
@@ -68,7 +68,6 @@
     });
 
     total += (window.BountyGame.rebirthBonusCPS || 0);
-
     return total;
   }
 
@@ -77,7 +76,6 @@
       try { if (clickSound) { clickSound.currentTime = 0; clickSound.volume = 0.9; clickSound.play(); } } catch(e){}
 
       let bonus = window.BountyGame.multiplier ?? 1;
-
       const boosts = window.boostsData || [];
       if (boosts[0] && boosts[0].active) bonus *= 1.5;
       if (boosts[2] && boosts[2].active) {
@@ -99,8 +97,6 @@
       if (typeof window.updateStore === 'function') window.updateStore();
       if (typeof window.sauvegarderJeu === 'function') window.sauvegarderJeu();
     });
-  } else {
-    console.warn("main.js — élément #image introuvable");
   }
 
   setInterval(() => {
@@ -111,14 +107,8 @@
     if (typeof window.updateStore === 'function') window.updateStore();
   }, 1000);
 
-  function sauvegarderJeu(){
-    const prevRaw = localStorage.getItem('bountySave');
-    let prev = {};
-    if (prevRaw) {
-      try { prev = JSON.parse(prevRaw); } catch(e){ prev = {}; }
-    }
-
-    const data = Object.assign({}, prev, {
+  async function sauvegarderJeu(){
+    const data = {
       count: window.BountyGame.count,
       multiplier: window.BountyGame.multiplier ?? 1,
       clickValue: window.BountyGame.clickValue,
@@ -131,46 +121,61 @@
       rebirthBonusCPS: window.BountyGame.rebirthBonusCPS,
       storeItems: (window.storeItemsData || []).map(it=>({ owned: it.owned, price: it.price })),
       boosts: (window.boostsData || []).map(b=>({ active: !!b.active, permanent: !!b.permanent }))
-    });
+    };
 
     localStorage.setItem('bountySave', JSON.stringify(data));
+
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(db, 'users', auth.currentUser.uid), data);
+      } catch(e) { console.error("Erreur Firestore save:", e); }
+    }
   }
   window.sauvegarderJeu = sauvegarderJeu;
 
-  function chargerJeu(){
+  async function chargerJeu(){
+    let data = {};
     const raw = localStorage.getItem('bountySave');
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw);
-      window.BountyGame.count = data.count ?? window.BountyGame.count;
-      window.BountyGame.multiplier = data.multiplier ?? window.BountyGame.multiplier ?? 1;
-      window.BountyGame.clickValue = data.clickValue ?? window.BountyGame.clickValue;
-      window.BountyGame.addClickBonus = data.addClickBonus ?? window.BountyGame.addClickBonus;
-      window.BountyGame.addCageBonus = data.addCageBonus ?? window.BountyGame.addCageBonus;
-      window.BountyGame.cps = data.cps ?? window.BountyGame.cps;
+    if (raw) {
+      try { data = JSON.parse(raw); } catch(e){ data = {}; }
+    }
 
-      window.BountyGame.rebirths = data.rebirths ?? window.BountyGame.rebirths;
-      window.BountyGame.rebirthPrice = data.rebirthPrice ?? window.BountyGame.rebirthPrice;
-      applyRebirthBonus();
+    if (auth.currentUser) {
+      try {
+        const docRef = doc(db, 'users', auth.currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) data = docSnap.data();
+      } catch(e) { console.error("Erreur Firestore load:", e); }
+    }
 
-      if (Array.isArray(data.storeItems) && Array.isArray(window.storeItemsData)) {
-        data.storeItems.forEach((s,i) => {
-          if (window.storeItemsData[i]) {
-            window.storeItemsData[i].owned = s.owned ?? window.storeItemsData[i].owned;
-            window.storeItemsData[i].price = s.price ?? window.storeItemsData[i].price;
-          }
-        });
-      }
-      if (Array.isArray(data.boosts) && Array.isArray(window.boostsData)) {
-        data.boosts.forEach((b,i) => {
-          if (window.boostsData[i]) {
-            window.boostsData[i].active = !!b.active;
-            window.boostsData[i].permanent = !!b.permanent;
-            if (window.boostsData[i].permanent) window.boostsData[i].available = false;
-          }
-        });
-      }
-    } catch (e) { console.warn("Load error", e); }
+    window.BountyGame.count = data.count ?? window.BountyGame.count;
+    window.BountyGame.multiplier = data.multiplier ?? window.BountyGame.multiplier ?? 1;
+    window.BountyGame.clickValue = data.clickValue ?? window.BountyGame.clickValue;
+    window.BountyGame.addClickBonus = data.addClickBonus ?? window.BountyGame.addClickBonus;
+    window.BountyGame.addCageBonus = data.addCageBonus ?? window.BountyGame.addCageBonus;
+    window.BountyGame.cps = data.cps ?? window.BountyGame.cps;
+
+    window.BountyGame.rebirths = data.rebirths ?? window.BountyGame.rebirths;
+    window.BountyGame.rebirthPrice = data.rebirthPrice ?? window.BountyGame.rebirthPrice;
+    applyRebirthBonus();
+
+    if (Array.isArray(data.storeItems) && Array.isArray(window.storeItemsData)) {
+      data.storeItems.forEach((s,i) => {
+        if (window.storeItemsData[i]) {
+          window.storeItemsData[i].owned = s.owned ?? window.storeItemsData[i].owned;
+          window.storeItemsData[i].price = s.price ?? window.storeItemsData[i].price;
+        }
+      });
+    }
+    if (Array.isArray(data.boosts) && Array.isArray(window.boostsData)) {
+      data.boosts.forEach((b,i) => {
+        if (window.boostsData[i]) {
+          window.boostsData[i].active = !!b.active;
+          window.boostsData[i].permanent = !!b.permanent;
+          if (window.boostsData[i].permanent) window.boostsData[i].available = false;
+        }
+      });
+    }
   }
   window.chargerJeu = chargerJeu;
 
@@ -183,13 +188,9 @@
       window.BountyGame.addClickBonus = 0;
       window.BountyGame.addCageBonus = 0;
       window.BountyGame.cps = 0;
-
       (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
       (window.boostsData || []).forEach(b => { b.active = false; b.available = false; });
-
-      // Le rebirth reste et applique son bonus
       applyRebirthBonus();
-
       sauvegarderJeu();
       if (typeof window.updateStore === 'function') window.updateStore();
       if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
@@ -206,7 +207,6 @@
 
   function ensureRebirthUI(){
     if (document.getElementById('rebirthContainer')) return document.getElementById('rebirthContainer');
-
     const container = document.createElement('div');
     container.id = 'rebirthContainer';
     container.style.position = 'absolute';
@@ -218,20 +218,17 @@
     container.style.gap = '8px';
     container.style.zIndex = 10;
     document.body.appendChild(container);
-
     const btn = document.createElement('button');
     btn.id = 'rebirthButton';
     btn.className = 'btn reset';
     btn.style.width = '140px';
     container.appendChild(btn);
-
     const info = document.createElement('div');
     info.id = 'rebirthInfo';
     info.style.color = '#fff';
     info.style.fontWeight = '700';
     info.textContent = 'Rebirths : 0';
     container.appendChild(info);
-
     return container;
   }
 
@@ -249,26 +246,19 @@
   if (rebirthBtn) {
     rebirthBtn.addEventListener('click', () => {
       const price = window.BountyGame.rebirthPrice || 1000000;
-      if (window.BountyGame.count < price) {
-        alert(`Il faut ${price.toLocaleString()} croquettes pour rebirth.`);
-        return;
-      }
-      if (!confirm(`Faire un Rebirth pour ${price.toLocaleString()} croquettes ? Votre progression sera réinitialisée, mais vous gagnerez un bonus permanent.`)) return;
+      if (window.BountyGame.count < price) return alert(`Il faut ${price.toLocaleString()} croquettes pour rebirth.`);
+      if (!confirm(`Faire un Rebirth pour ${price.toLocaleString()} croquettes ?`)) return;
 
-      window.BountyGame.rebirths = (window.BountyGame.rebirths || 0) + 1;
+      window.BountyGame.rebirths += 1;
       window.BountyGame.count = 0;
       window.BountyGame.clickValue = 1;
       window.BountyGame.addClickBonus = 0;
       window.BountyGame.addCageBonus = 0;
       window.BountyGame.cps = 0;
-
       (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
       (window.boostsData || []).forEach(b => { b.active = false; b.available = false; });
-
       applyRebirthBonus();
-
-      window.BountyGame.rebirthPrice = (window.BountyGame.rebirthPrice || 0) + 2_000_000;
-
+      window.BountyGame.rebirthPrice += 2_000_000;
       updateCounterUI();
       if (typeof window.updateStore === 'function') window.updateStore();
       if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
@@ -277,9 +267,9 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      chargerJeu();
+  document.addEventListener('DOMContentLoaded', async () => {
+    setTimeout(async () => {
+      await chargerJeu();
       if (typeof window.updateStore === 'function') window.updateStore();
       if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
       applyRebirthBonus();
@@ -290,7 +280,6 @@
   });
 
   setInterval(sauvegarderJeu, 60000);
-
   window.updateRebirthUI = updateRebirthUI;
   window.applyRebirthBonus = applyRebirthBonus;
 })();
