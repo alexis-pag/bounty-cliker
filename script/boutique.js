@@ -1,44 +1,39 @@
 (() => {
   window.storeItemsData = [
-   
-const items = [];
+    { name: "Gamelle à carottes", price: 15, bonusClick: 1, auto: 0, owned: 0, icon: "script/image/gamelle.png" },
+    { name: "Clapier amélioré", price: 65, bonusClick: 5, auto: 0, owned: 0, icon: "script/image/clapier.png" },
+    { name: "Botte de carottes", price: 130, bonusClick: 0, auto: 1, owned: 0, icon: "script/image/botte.png" },
+    { name: "Petit sac de carottes", price: 260, bonusClick: 0, auto: 2, owned: 0, icon: "script/image/petit_sac.png" },
+    { name: "Arbre à carottes", price: 455, bonusClick: 0, auto: 3, owned: 0, icon: "script/image/arbre.png" },
+    { name: "Potager du lapin", price: 650, bonusClick: 0, auto: 5, owned: 0, icon: "script/image/potager.png" },
+    { name: "Moyen sac de carottes", price: 1040, bonusClick: 0, auto: 8, owned: 0, icon: "script/image/moyen_sac.png" },
+    { name: "Grand sac de carottes", price: 1560, bonusClick: 0, auto: 12, owned: 0, icon: "script/image/grand_sac.png" },
+    { name: "Chariot à carottes", price: 2600, bonusClick: 0, auto: 20, owned: 0, icon: "script/image/chariot.png" },
+    { name: "Ferme de carottes", price: 4550, bonusClick: 0, auto: 30, owned: 0, icon: "script/image/ferme.png" },
+    { name: "Lapin cultivateur", price: 6500, bonusClick: 0, auto: 80, owned: 0, icon: "script/image/lapin.png" },
+    { name: "Mini usine végétale", price: 10400, bonusClick: 0, auto: 120, owned: 0, icon: "script/image/mini_usine.png" },
+    { name: "Usine de carottes", price: 15600, bonusClick: 0, auto: 180, owned: 0, icon: "script/image/usine.png" },
+    { name: "Station agricole lapine", price: 26000, bonusClick: 0, auto: 300, owned: 0, icon: "script/image/station.png" },
+    { name: "Machine à carottes automatique", price: 39000, bonusClick: 0, auto: 450, owned: 0, icon: "script/image/machine.png" },
+    { name: "Atelier végétal", price: 65000, bonusClick: 0, auto: 700, owned: 0, icon: "script/image/atelier.png" },
+    { name: "Chariot volant agricole", price: 97500, bonusClick: 0, auto: 1000, owned: 0, icon: "script/image/chariot_volant.png" },
+    { name: "Petit robot fermier", price: 130000, bonusClick: 0, auto: 1400, owned: 0, icon: "script/image/robot_petit.png" },
+    { name: "Robot fermier avancé", price: 260000, bonusClick: 0, auto: 2500, owned: 0, icon: "script/image/robot_avance.png" },
+    { name: "Complexe agricole", price: 520000, bonusClick: 0, auto: 5000, owned: 0, icon: "script/image/complexe.png" },
+    { name: "Tour végétale", price: 975000, bonusClick: 0, auto: 10000, owned: 0, icon: "script/image/tour.png" },
+    { name: "Temple sacré du lapin", price: 1300000, bonusClick: 0, auto: 20000, owned: 0, icon: "script/image/temple.png" },
+    { name: "Laboratoire agricole", price: 2000000, bonusClick: 0, auto: 35000, owned: 0, icon: "script/image/labo.png" },
+    { name: "Centre de recherche lapin", price: 3500000, bonusClick: 0, auto: 60000, owned: 0, icon: "script/image/recherche.png" },
+    { name: "Drone agricole", price: 6000000, bonusClick: 0, auto: 100000, owned: 0, icon: "script/image/drone.png" },
+    { name: "Méga usine automatisée", price: 18000000, bonusClick: 0, auto: 320000, owned: 0, icon: "script/image/mega_usine.png" },
+    { name: "IA agricole", price: 30000000, bonusClick: 0, auto: 550000, owned: 0, icon: "script/image/ia.png" },
+    { name: "Réseau agricole mondial", price: 52000000, bonusClick: 0, auto: 900000, owned: 0, icon: "script/image/reseau.png" },
+    { name: "Station orbitale agricole", price: 90000000, bonusClick: 0, auto: 1500000, owned: 0, icon: "script/image/orbite.png" },
+    { name: "Portail dimensionnel végétal", price: 150000000, bonusClick: 0, auto: 2500000, owned: 0, icon: "script/image/portail.png" },
+    { name: "Entité ancestrale des carottes", price: 300000000, bonusClick: 0, auto: 5000000, owned: 0, icon: "script/image/dieu.png" }
+  ];
 
-let basePrice = 15;       // prix initial
-let baseAuto = 0;         // production auto initiale
-let baseClick = 1;        // bonus clic initial
-
-for (let i = 1; i <= 100; i++) {
-    // nom généré automatiquement selon le palier
-    let name = "";
-    if (i <= 10) name = `Petit item ${i}`;
-    else if (i <= 20) name = `Moyen item ${i}`;
-    else if (i <= 40) name = `Grand item ${i}`;
-    else if (i <= 60) name = `Usine ${i}`;
-    else if (i <= 80) name = `Station ${i}`;
-    else if (i <= 95) name = `Complexe ${i}`;
-    else name = `Divinité lapin ${i}`;
-
-    // scaling exponentiel
-    const price = Math.floor(basePrice * Math.pow(1.15, i));
-    const auto = Math.floor(baseAuto + Math.pow(1.5, i / 5));
-    const bonusClick = i <= 5 ? i : 0; // premiers items donnent bonus clic
-    const icon = `script/image/item${i}.png`;
-
-    items.push({
-        name,
-        price,
-        auto,
-        bonusClick,
-        owned: 0,
-        icon
-    });
-}
-
-console.log(items);
-
-
-
-
+  // Définit basePrice si absent
   window.storeItemsData.forEach(it => { if (it.basePrice === undefined) it.basePrice = it.price; });
 
   const storeDiv = document.getElementById('storeItems');
@@ -85,7 +80,7 @@ console.log(items);
       window.BountyGame.count -= item.price;
       if (item.bonusClick) window.BountyGame.multiplier += item.bonusClick;
       item.owned += 1;
-      item.price = Math.ceil(item.price * 1.4 / 5) * 5; // arrondi à 5 ou 10
+      item.price = Math.ceil(item.price * 1.4 / 5) * 5; // arrondi à 5
 
       const node = storeDiv.children[idx];
       const flash = document.createElement('div'); flash.className = 'boost-appear';
@@ -109,3 +104,4 @@ console.log(items);
     setTimeout(() => updateStore(), 40);
   });
 })();
+
