@@ -56,7 +56,6 @@ const items = [
     { name: "Dieu suprême des carottes", price: 30000000000000, bonusClick: 0, auto: 500000000000, owned: 0 }
 ];
 
-  ];
 
 
   window.storeItemsData.forEach(it => { if (it.basePrice === undefined) it.basePrice = it.price; });
