@@ -1,7 +1,7 @@
 // script/auth.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged as _onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // Config Firebase
 const firebaseConfig = {
@@ -37,4 +37,30 @@ export function onUserReady(callback) {
     if (user) callback(user);
     else window.location.href = "login.html";
   });
+}
+
+// FIRESTORE: Récupération et sauvegarde des données
+export async function getGameData(uid) {
+  const docRef = doc(db, "users", uid);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data().gameData;
+  } else {
+    const initialData = { counter: 0, cps: 0, boosts: [], items: {}, lastSaved: Date.now() };
+    await setDoc(docRef, { gameData: initialData });
+    return initialData;
+  }
+}
+
+export async function saveGameData(uid, gameData) {
+  const docRef = doc(db, "users", uid);
+  await updateDoc(docRef, { gameData: { ...gameData, lastSaved: Date.now() } });
+}
+
+// Sauvegarde automatique toutes les 5 secondes
+export function autoSave(uid, getCurrentGameData, interval = 5000) {
+  setInterval(async () => {
+    const data = getCurrentGameData();
+    if (data) await saveGameData(uid, data);
+  }, interval);
 }
