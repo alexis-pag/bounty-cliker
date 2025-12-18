@@ -16,10 +16,7 @@
   </style>
 </head>
 <body>
-  <!-- Bouton GitHub -->
   <a href="https://github.com/alexis-pag/paglierusco-alexis" id="githubButton" target="_blank">Code source</a>
-
-  <div class="bg-animated"></div>
 
   <div class="layout">
     <section class="panel clicker">
@@ -39,9 +36,7 @@
     </section>
 
     <aside class="panel shop" id="shopPanel">
-      <header class="panel-header" id="shopHeader">
-        <h2>Boutique</h2>
-      </header>
+      <header class="panel-header" id="shopHeader"><h2>Boutique</h2></header>
       <div class="panel-main" id="shopContent">
         <div id="storeItems" class="list shop-scroll"></div>
       </div>
@@ -66,12 +61,10 @@
 
   <audio id="clickSound" src="script/audio/Mouse Click Sound Effect.mp3" preload="auto"></audio>
 
-  <!-- Scripts du jeu -->
   <script src="script/boutique.js" defer></script>
   <script src="script/main.js" defer></script>
 
   <script>
-    // Toggle shop panel
     document.addEventListener('DOMContentLoaded', () => {
       const shopPanel = document.getElementById('shopPanel');
       const shopHeader = document.getElementById('shopHeader');
@@ -80,28 +73,11 @@
     });
   </script>
 
-  <!-- Firebase Auth -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-    // Remplace cette config par celle de ton projet
-    const firebaseConfig = {
-      apiKey: "TA_CLE",
-      authDomain: "ton-projet.firebaseapp.com",
-      projectId: "ton-projet",
-      storageBucket: "ton-projet.appspot.com",
-      messagingSenderId: "XXXX",
-      appId: "XXXX"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    import { auth, onAuthStateChanged } from './script/auth.js';
 
     onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = "login.html";
-      }
+      if (!user) window.location.href = "login.html";
     });
   </script>
 </body>
