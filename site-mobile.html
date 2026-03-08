@@ -4,7 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Bounty Clicker - Mobile</title>
-  <link rel="stylesheet" href="script/css-mobile.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/autoclick-warning.css">
 </head>
 <body>
 
@@ -12,7 +13,7 @@
 
 <div class="bg-animated"></div>
 
-<div class="layout">
+<div class="game-layout">
   <section class="panel clicker">
     <header class="panel-header">
       <h1>Bounty Clicker</h1>
@@ -51,17 +52,25 @@
 </div>
 
 <footer class="bottom-bar">
-  <button id="resetButton" class="btn reset">Réinitialiser</button>
+  <button id="saveButton" class="btn buy" style="margin-right: 10px;">Save</button>
+  <button id="resetButton" class="btn reset">Reset</button>
 </footer>
 
-<!-- Bouton pour revenir au menu de choix version -->
-<div style="position:fixed; top:10px; right:10px; z-index:999;">
-  <button onclick="resetChoice()">Changer de version</button>
+<!-- Boutons en haut à gauche -->
+<div style="position:fixed; top:10px; left:10px; z-index:999; display: flex; gap: 5px;">
+  <button class="btn buy" style="padding: 6px 10px;" onclick="window.location.href='leaderboard.html'">Trophée</button>
+  <button class="btn activate" style="padding: 6px 10px;" onclick="window.location.href='market.html'">Bourse</button>
 </div>
 
-<script src="script/boutique.js" defer></script>
-<script src="script/boost.js" defer></script>
-<script src="script/main.js" defer></script>
+<!-- Boutons en haut à droite -->
+<div style="position:fixed; top:10px; right:10px; z-index:999; display: flex; gap: 5px;">
+  <button class="btn btn-secondary" onclick="resetChoice()">Menu</button>
+  <button class="btn btn-logout" onclick="window.logout()">Log out</button>
+</div>
+
+<script src="js/boutique.js" defer></script>
+<script src="js/boost.js" defer></script>
+<script type="module" src="js/main.js" defer></script>
 
 <script>
   // Fonction pour revenir au menu de choix

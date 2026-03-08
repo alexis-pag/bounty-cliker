@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Bounty Clicker</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 77, 110, 0.3);
+        }
+        .user-info {
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .btn {
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .btn-primary {
+            background-color: #ff4d6e;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #4a4a4a;
+            color: white;
+        }
+        .btn-logout {
+            background-color: #333;
+            color: #ff4d6e;
+            border: 1px solid #ff4d6e;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div class="container">
+            <h1>Bienvenue sur Bounty Clicker</h1>
+            <div class="user-info" id="userInfo">
+                Chargement de votre profil...
+            </div>
+            
+            <div class="actions">
+                <button class="btn btn-primary" id="playDesktop">Jouer (Version PC)</button>
+                <button class="btn btn-secondary" id="playMobile">Jouer (Version Mobile)</button>
+                <button class="btn btn-trading" id="openTrading" style="background-color: #2962ff; color: white;">Open Trading Market</button>
+                <button class="btn btn-logout" id="logoutBtn">Se déconnecter</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { checkAuth, logout } from './js/auth.js';
+        import { loadUserData } from './js/database.js';
+
+        checkAuth(async (user) => {
+            const userInfoEl = document.getElementById('userInfo');
+            userInfoEl.textContent = `Connecté en tant que : ${user.email}`;
+
+            // On peut charger un petit aperçu des données si on veut
+            try {
+                const data = await loadUserData(user.uid);
+                if (data && data.gameData) {
+                    const stats = document.createElement('p');
+                    stats.innerHTML = `Progression : <strong>${Math.floor(data.gameData.count)}</strong> croquettes<br>Rebirths : <strong>${data.gameData.rebirths}</strong>`;
+                    userInfoEl.appendChild(stats);
+                }
+            } catch (error) {
+                console.error("Erreur lors du chargement des stats:", error);
+            }
+        });
+
+        document.getElementById('playDesktop').addEventListener('click', () => {
+            localStorage.setItem("bc-version", "desktop");
+            window.location.href = 'site.html';
+        });
+
+        document.getElementById('playMobile').addEventListener('click', () => {
+            localStorage.setItem("bc-version", "mobile");
+            window.location.href = 'site-mobile.html';
+        });
+
+        document.getElementById('openTrading').addEventListener('click', () => {
+            window.location.href = 'market.html';
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await logout();
+        });
+    </script>
+</body>
+</html>

@@ -4,31 +4,56 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inscription - Bounty Game</title>
-<link rel="stylesheet" href="script/style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="layout">
   <div class="panel">
     <h1>Inscription</h1>
-    <input type="text" id="regUser" placeholder="Nom d'utilisateur">
+    <input type="email" id="regEmail" placeholder="Email">
     <input type="password" id="regPass" placeholder="Mot de passe">
+    <input type="password" id="regPassConfirm" placeholder="Confirmer le mot de passe">
     <button id="regBtn">S'inscrire</button>
     <p>Déjà inscrit ? <a href="login.html">Connexion</a></p>
-    <p id="regError" style="color:red;"></p>
+    <p id="regError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px;"></p>
   </div>
 </div>
-<script src="script/auth.js"></script>
-<script>
-document.getElementById('regBtn').addEventListener('click', () => {
-  const user = document.getElementById('regUser').value;
-  const pass = document.getElementById('regPass').value;
-  if (register(user, pass)) {
-    alert('Inscription réussie ! Connectez-vous.');
-    window.location.href = 'login.html';
-  } else {
-    document.getElementById('regError').textContent = "Nom d'utilisateur déjà pris.";
-  }
-});
+
+<script type="module">
+  import { register } from './js/auth.js';
+
+  document.getElementById('regBtn').addEventListener('click', async () => {
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPass').value;
+    const passConfirm = document.getElementById('regPassConfirm').value;
+    const errorEl = document.getElementById('regError');
+
+    errorEl.textContent = "";
+
+    if (pass !== passConfirm) {
+      errorEl.textContent = "Les mots de passe ne correspondent pas.";
+      return;
+    }
+
+    try {
+      await register(email, pass);
+      alert('Inscription réussie !');
+      window.location.href = 'dashboard.html';
+    } catch (error) {
+      console.error("Erreur d'inscription détaillée:", error);
+      if (error.code === 'auth/email-already-in-use') {
+        errorEl.textContent = "Cet email est déjà utilisé.";
+      } else if (error.code === 'auth/weak-password') {
+        errorEl.textContent = "Le mot de passe est trop faible (6 caractères min).";
+      } else if (error.code === 'auth/invalid-email') {
+        errorEl.textContent = "L'adresse email n'est pas valide.";
+      } else if (error.code === 'permission-denied') {
+        errorEl.textContent = "Accès refusé. Vérifiez les règles de sécurité Firestore.";
+      } else {
+        errorEl.textContent = `Erreur : ${error.message || "Une erreur est survenue lors de l'inscription."}`;
+      }
+    }
+  });
 </script>
 </body>
 </html>

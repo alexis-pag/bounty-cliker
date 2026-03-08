@@ -4,30 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion - Bounty Game</title>
-<link rel="stylesheet" href="script/style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="layout">
   <div class="panel">
     <h1>Connexion</h1>
-    <input type="text" id="loginUser" placeholder="Nom d'utilisateur">
+    <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPass" placeholder="Mot de passe">
     <button id="loginBtn">Se connecter</button>
     <p>Pas encore inscrit ? <a href="register.html">Inscription</a></p>
-    <p id="loginError" style="color:red;"></p>
+    <p id="loginError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px;"></p>
   </div>
 </div>
-<script src="script/auth.js"></script>
-<script>
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const user = document.getElementById('loginUser').value;
-  const pass = document.getElementById('loginPass').value;
-  if (login(user, pass)) {
-    window.location.href = 'site.html';
-  } else {
-    document.getElementById('loginError').textContent = "Utilisateur ou mot de passe incorrect.";
-  }
-});
+
+<script type="module">
+  import { login } from './js/auth.js';
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPass').value;
+    const errorEl = document.getElementById('loginError');
+
+    errorEl.textContent = "";
+
+    try {
+      await login(email, pass);
+      window.location.href = 'dashboard.html';
+    } catch (error) {
+      console.error(error);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        errorEl.textContent = "Email ou mot de passe incorrect.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorEl.textContent = "L'adresse email n'est pas valide.";
+      } else {
+        errorEl.textContent = "Une erreur est survenue lors de la connexion.";
+      }
+    }
+  });
 </script>
 </body>
 </html>

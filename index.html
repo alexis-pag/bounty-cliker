@@ -3,36 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bounty Clicker – Choix Version</title>
-  <link rel="stylesheet" href="script/style.css">
+  <title>Bounty Clicker – Accueil</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<div id="choice" style="text-align:center; margin-top:50px;">
-  <h1>Choisir la version</h1>
-  <button id="btn-desktop">Version PC</button>
-  <button id="btn-mobile">Version Mobile</button>
+<div style="text-align:center; margin-top:100px; color: #e6f7ff; font-family: sans-serif;">
+  <h1>Bounty Clicker</h1>
+  <div id="status" style="margin-top: 20px;">Chargement du jeu...</div>
 </div>
 
-<script>
-  // Vérifier si un choix est déjà enregistré
-  const savedChoice = localStorage.getItem("bc-version");
-  if (savedChoice === "desktop") {
-    window.location.href = "site.html";
-  } else if (savedChoice === "mobile") {
-    window.location.href = "site-mobile.html";
-  }
-
-  // Gestion du clic sur les boutons
-  document.getElementById("btn-desktop").addEventListener("click", () => {
-    localStorage.setItem("bc-version", "desktop");
-    window.location.href = "site.html";
-  });
-
-  document.getElementById("btn-mobile").addEventListener("click", () => {
-    localStorage.setItem("bc-version", "mobile");
-    window.location.href = "site-mobile.html";
-  });
+<script type="module">
+  import { checkAuth } from './js/auth.js';
+  
+  const statusEl = document.getElementById('status');
+  
+  // checkAuth redirigera automatiquement vers login.html si pas de session
+  checkAuth((user) => {
+    if (user) {
+      statusEl.textContent = "Authentifié ! Redirection...";
+      window.location.href = "dashboard.html";
+    }
+  }, true);
 </script>
 
 </body>

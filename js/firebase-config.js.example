@@ -1,0 +1,15 @@
+// script/firebase-config.js.example
+// Remplacer avec vos propres informations Firebase
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+
+export const firebaseConfig = {
+  apiKey: "VOTRE_API_KEY",
+  authDomain: "VOTRE_PROJET_ID.firebaseapp.com",
+  projectId: "VOTRE_PROJET_ID",
+  storageBucket: "VOTRE_PROJET_ID.firebasestorage.app",
+  messagingSenderId: "VOTRE_SENDER_ID",
+  appId: "VOTRE_APP_ID"
+};
+
+// Singleton initialization
+export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();

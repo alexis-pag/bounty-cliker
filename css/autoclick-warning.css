@@ -1,0 +1,91 @@
+/* autoclick-warning.css */
+
+.autoclick-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #ff4d6e;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    transition: opacity 0.5s ease-in-out;
+}
+
+.autoclick-overlay.hidden {
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.autoclick-content {
+    max-width: 500px;
+    background: #1a1a1a;
+    padding: 40px;
+    border-radius: 20px;
+    border: 2px solid #ff4d6e;
+    box-shadow: 0 0 30px rgba(255, 77, 110, 0.5);
+    animation: pulse-border 2s infinite;
+}
+
+.autoclick-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.autoclick-content p {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-bottom: 30px;
+}
+
+.autoclick-timer {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #ffcc00;
+}
+
+.autoclick-btn {
+    background: #ff4d6e;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.autoclick-btn:hover {
+    background: #ff1a4a;
+    transform: scale(1.05);
+}
+
+.autoclick-btn:disabled {
+    background: #4a4a4a;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 20px rgba(255, 77, 110, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(255, 77, 110, 0.7); }
+    100% { box-shadow: 0 0 20px rgba(255, 77, 110, 0.3); }
+}
+
+/* Blur effect for the background game */
+.game-layout.blurred {
+    filter: blur(8px);
+    pointer-events: none;
+}

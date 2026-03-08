@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrot Market Terminal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="market.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="trading-body">
+    <div class="bg-animated"></div>
+    
+    <header class="trading-header">
+        <div class="logo">CARROT<span>EX</span></div>
+        <div class="market-summary">
+            <div class="summary-item">
+                <span class="label">PRICE</span>
+                <span id="market-price" class="value">--.--</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">24H CHANGE</span>
+                <span id="market-change" class="value">--.--%</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">TREND</span>
+                <span id="market-trend" class="value">STABLE</span>
+            </div>
+        </div>
+        <button class="btn btn-secondary" onclick="window.location.href='index.html'">EXIT TERMINAL</button>
+    </header>
+
+    <main class="trading-grid">
+        <!-- Left: Chart -->
+        <section class="chart-container card">
+            <div class="card-header">
+                <h3>LIVE CARROT PRICE (CRRT)</h3>
+                <div class="chart-controls">
+                    <button id="btn-line" class="btn-small active">Line</button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="tradingChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Right: Order Panel -->
+        <section class="order-panel card">
+            <div class="tabs">
+                <button id="tab-buy" class="tab active">BUY</button>
+                <button id="tab-sell" class="tab">SELL</button>
+            </div>
+            
+            <div class="order-form">
+                <div class="order-types">
+                    <label><input type="radio" name="orderType" value="market" checked> Market</label>
+                    <label><input type="radio" name="orderType" value="limit"> Limit</label>
+                </div>
+
+                <div id="limit-price-group" class="input-group hidden">
+                    <label>Limit Price</label>
+                    <input type="number" id="limit-price" step="0.01" placeholder="0.00">
+                </div>
+
+                <div class="input-group">
+                    <label>Amount (Shares)</label>
+                    <input type="number" id="order-amount" step="1" min="1" placeholder="0">
+                </div>
+
+                <div class="order-info">
+                    <div class="row"><span>Total Cost:</span> <span id="order-total">0</span> <small>Carrots</small></div>
+                    <div id="wallet-balance" class="row"><span>Wallet:</span> <span id="player-carrots">0</span> <small>Carrots</small></div>
+                </div>
+
+                <button id="btn-execute" class="btn btn-buy">EXECUTE BUY</button>
+                <div id="order-feedback" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- Bottom Left: Portfolio -->
+        <section class="portfolio-panel card">
+            <div class="card-header"><h3>PORTFOLIO</h3></div>
+            <div class="portfolio-stats">
+                <div class="stat">
+                    <span class="label">Shares Owned</span>
+                    <span id="portfolio-shares" class="value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Avg Buy Price</span>
+                    <span id="portfolio-avg-price" class="value">0.00</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Current Value</span>
+                    <span id="portfolio-value" class="value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Profit/Loss</span>
+                    <span id="portfolio-pl" class="value">0.00%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Right: History -->
+        <section class="history-panel card">
+            <div class="card-header"><h3>TRADE HISTORY</h3></div>
+            <div class="list-container">
+                <table id="trade-list">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Price</th>
+                            <th>Amount</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trade-history-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/market.js"></script>
+</body>
+</html>
