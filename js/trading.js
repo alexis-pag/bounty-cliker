@@ -88,6 +88,19 @@ class TradingDashboard {
 
             this.updateUI();
 
+            // Check limit orders against the current price (always do this for our own orders)
+            await this.orders.checkLimitOrders(this.engine.currentPrice, async (order, price) => {
+                try {
+                    // Update the portfolio locally and in Firestore
+                    await this.portfolio.load(); // Latest balance
+                    await this.portfolio.processTrade(order.type, order.amount, order.price);
+                    this.showFeedback(`Limit Order Executed: ${order.type.toUpperCase()} ${order.amount} at ${order.price.toFixed(2)}`, 'success');
+                    this.updateUI();
+                } catch (e) {
+                    console.error("Failed to execute limit order portfolio update:", e);
+                }
+            });
+
             // Market Maker Logic (One user updates the price if old)
             const now = Date.now();
             if (now - this.engine.lastUpdateTime > 3000) { // Update every 3 seconds
@@ -97,13 +110,8 @@ class TradingDashboard {
                 await updateMarketData(nextPrice, nextHistory, {
                     trend: this.engine.trend,
                     momentum: this.engine.momentum,
-                    volatility: this.engine.volatility
-                });
-
-                // Check limit orders against new price
-                await this.orders.checkLimitOrders(nextPrice, async (order, price) => {
-                    await this.portfolio.load(); // Refresh
-                    this.showFeedback(`Limit Order Executed: ${order.type} ${order.amount} at ${price.toFixed(2)}`, 'success');
+                    volatility: this.engine.volatility,
+                    trendDuration: this.engine.trendDuration
                 });
             }
         });

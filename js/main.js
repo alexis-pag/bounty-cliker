@@ -91,6 +91,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
         let gain = it.auto * it.owned;
         if (boosts[1] && boosts[1].active) gain *= 2;
         if (boosts[4] && boosts[4].active) gain *= 1.05;
+        if (boosts[6] && boosts[6].active) gain *= 1.20;
         total += gain;
       }
     });
@@ -159,6 +160,17 @@ import { AutoclickProtection } from './autoclick-protection.js';
     const cpsGain = calculCPS();
     window.BountyGame.count += cpsGain;
     window.BountyGame.cps = cpsGain;
+    
+    // Floating CPS Gain (visual feedback)
+    if (cpsGain > 0 && Math.random() < 0.3) { // 30% chance to show to avoid clutter
+        const imgRect = imgEl?.getBoundingClientRect();
+        if (imgRect) {
+            const x = imgRect.left + Math.random() * imgRect.width;
+            const y = imgRect.top + Math.random() * imgRect.height;
+            spawnPlusOne(x, y, cpsGain);
+        }
+    }
+    
     updateCounterUI();
     if (typeof window.updateStore === 'function') window.updateStore();
   }, 1000);

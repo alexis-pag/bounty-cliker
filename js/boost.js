@@ -67,6 +67,7 @@
 
       // effets instantanés
       if (b.name.includes('Bonus mystère 3')) window.BountyGame.count += 50;
+      if (b.name.includes('Bonus mystère 5')) window.BountyGame.nextBuildingDiscount = true;
 
       if (window.updateCounterUI) window.updateCounterUI();
       if (window.sauvegarderJeu) window.sauvegarderJeu();

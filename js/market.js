@@ -12,6 +12,7 @@ import { PortfolioSystem } from './portfolio-system.js';
 
 class MarketDashboard {
     constructor() {
+        console.log("Market Dashboard initializing...");
         this.engine = new MarketEngine();
         this.chart = new ChartSystem('tradingChart');
         this.orders = null;
@@ -63,37 +64,73 @@ class MarketDashboard {
 
     listenToMarket() {
         listenToMarket(async (marketData) => {
+            console.log("Market Update Received:", marketData);
+            
+            if (!marketData) {
+                console.log("Market not found, initializing...");
+                // Initial state
+                const initialPrice = 100;
+                const initialHistory = Array(50).fill(100);
+                await updateMarketData(initialPrice, initialHistory);
+                return;
+            }
+
             this.engine.sync(marketData);
             
             // Render first time or update
-            if (this.engine.history.length > 0) {
-                if (!this.chart.chart) {
-                    this.chart.initialize(this.engine.history);
-                } else {
-                    this.chart.update(this.engine.history);
+            if (this.engine.history && this.engine.history.length > 0) {
+                if (!window.Chart) {
+                    console.error("Chart.js library not loaded!");
+                    return;
+                }
+                try {
+                    // Ensure we have at least 2 points for Chart.js
+                    const historyToRender = this.engine.history.length === 1 
+                        ? [this.engine.history[0], this.engine.history[0]] 
+                        : this.engine.history;
+
+                    if (!this.chart.chart) {
+                        this.chart.initialize(historyToRender);
+                    } else {
+                        this.chart.update(historyToRender);
+                    }
+                } catch (e) {
+                    console.error("Chart Error:", e);
                 }
             }
 
             this.updateUI();
 
             // Automatic Price Generation Loop (Master role)
-            // One client updates the market if it's been more than 3 seconds
             const now = Date.now();
-            if (now - this.engine.lastUpdateTime > 3000) {
+            const lastUpdate = this.engine.lastUpdateTime || 0;
+            if (now - lastUpdate > 6000) {
+                console.log("Master Role: Updating market price...");
                 const nextPrice = this.engine.calculateNextPrice();
-                const nextHistory = [...this.engine.history, nextPrice].slice(-200);
+                let nextHistory = [...(this.engine.history || []), nextPrice];
                 
-                await updateMarketData(nextPrice, nextHistory, {
-                    trend: this.engine.trend,
-                    momentum: this.engine.momentum,
-                    volatility: this.engine.volatility
-                });
+                // Limit history
+                if (nextHistory.length > 200) nextHistory.shift();
+                
+                try {
+                    await updateMarketData(nextPrice, nextHistory, {
+                        trend: this.engine.trend,
+                        momentum: this.engine.momentum,
+                        volatility: this.engine.volatility,
+                        currentNews: this.engine.currentNews
+                    });
+                } catch (e) {
+                    console.error("Master Role Error:", e);
+                }
 
                 // Check limit orders
-                await this.orders.checkLimitOrders(nextPrice, async (order, price) => {
-                    await this.portfolio.load(); // Refresh local balance/shares
-                    this.showFeedback(`Limit ${order.type.toUpperCase()} executed at ${price.toFixed(2)}`, 'success');
-                });
+                if (this.orders) {
+                    await this.orders.checkLimitOrders(nextPrice, async (order, price) => {
+                        console.log("Limit Order triggered:", order);
+                        await this.portfolio.load(); // Refresh local balance/shares
+                        this.showFeedback(`Limit ${order.type.toUpperCase()} executed at ${price.toFixed(2)}`, 'success');
+                    });
+                }
             }
         });
     }
@@ -107,11 +144,14 @@ class MarketDashboard {
 
     switchView(view) {
         this.currentView = view;
+        console.log("Switching view to:", view);
         document.getElementById('tab-buy').classList.toggle('active', view === 'buy');
         document.getElementById('tab-sell').classList.toggle('active', view === 'sell');
         
         const btn = document.getElementById('btn-execute');
-        const isLimit = document.querySelector('input[name="orderType"]:checked').value === 'limit';
+        const orderTypeInput = document.querySelector('input[name="orderType"]:checked');
+        const isLimit = orderTypeInput ? orderTypeInput.value === 'limit' : false;
+        
         btn.textContent = `EXECUTE ${view.toUpperCase()}${isLimit ? ' LIMIT' : ''}`;
         btn.className = `btn btn-${view}`;
         
@@ -131,9 +171,24 @@ class MarketDashboard {
         changeEl.className = `value ${change >= 0 ? 'up' : 'down'}`;
 
         const trendEl = document.getElementById('market-trend');
-        const trends = { '-1': 'CRASH', '-0.5': 'BEAR', '0': 'STABLE', '0.5': 'BULL', '1': 'MOON' };
-        trendEl.textContent = trends[this.engine.trend.toString()] || 'STABLE';
+        const trendsMap = { '-1': 'CRASH', '-0.5': 'BEAR', '0': 'STABLE', '0.5': 'BULL', '1': 'MOON' };
+        const trendValue = this.engine.trend !== undefined ? this.engine.trend.toString() : "0";
+        trendEl.textContent = trendsMap[trendValue] || 'STABLE';
         trendEl.className = `value ${this.engine.trend > 0 ? 'up' : (this.engine.trend < 0 ? 'down' : '')}`;
+
+        // Update News
+        const newsContent = document.getElementById('news-content');
+        if (newsContent && this.engine.currentNews) {
+            if (newsContent.textContent !== this.engine.currentNews.title) {
+                newsContent.textContent = this.engine.currentNews.title;
+                newsContent.className = 'news-text ' + (this.engine.currentNews.type || 'neutral');
+                
+                // Restart animation
+                newsContent.style.animation = 'none';
+                newsContent.offsetHeight; // trigger reflow
+                newsContent.style.animation = null;
+            }
+        }
 
         if (this.portfolio) {
             const stats = this.portfolio.calculatePnL(price);
@@ -149,21 +204,33 @@ class MarketDashboard {
     }
 
     updateOrderTotal() {
-        const amount = parseFloat(document.getElementById('order-amount').value) || 0;
-        const isLimit = document.querySelector('input[name="orderType"]:checked').value === 'limit';
-        const price = isLimit ? (parseFloat(document.getElementById('limit-price').value) || 0) : this.engine.currentPrice;
+        const amountInput = document.getElementById('order-amount');
+        const amount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+        
+        const orderTypeInput = document.querySelector('input[name="orderType"]:checked');
+        const isLimit = orderTypeInput ? orderTypeInput.value === 'limit' : false;
+        
+        const limitPriceInput = document.getElementById('limit-price');
+        const price = isLimit ? (parseFloat(limitPriceInput.value) || 0) : this.engine.currentPrice;
         
         const total = amount * price;
-        document.getElementById('order-total').textContent = Math.floor(total).toLocaleString();
+        const totalEl = document.getElementById('order-total');
+        if (totalEl) totalEl.textContent = Math.floor(total).toLocaleString();
     }
 
     async placeOrder() {
-        const amount = parseInt(document.getElementById('order-amount').value);
+        console.log("placeOrder called");
+        const amountInput = document.getElementById('order-amount');
+        const amount = parseInt(amountInput.value);
         if (isNaN(amount) || amount <= 0) return this.showFeedback("Invalid amount", "error");
 
-        const view = document.getElementById('tab-buy').classList.contains('active') ? 'buy' : 'sell';
-        const isLimit = document.querySelector('input[name="orderType"]:checked').value === 'limit';
-        const price = isLimit ? parseFloat(document.getElementById('limit-price').value) : this.engine.currentPrice;
+        const view = this.currentView;
+        const orderTypeInput = document.querySelector('input[name="orderType"]:checked');
+        const isLimit = orderTypeInput ? orderTypeInput.value === 'limit' : false;
+        const limitPriceInput = document.getElementById('limit-price');
+        const price = isLimit ? parseFloat(limitPriceInput.value) : this.engine.currentPrice;
+
+        console.log("Placing Order:", { view, amount, price, isLimit });
 
         try {
             if (!isLimit) {
@@ -180,6 +247,7 @@ class MarketDashboard {
             }
             this.updateUI();
         } catch (e) {
+            console.error("Order Execution Failed:", e);
             this.showFeedback(e.message, "error");
         }
     }

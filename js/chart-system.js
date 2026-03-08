@@ -73,30 +73,34 @@ export class ChartSystem {
     update(history) {
         if (!this.chart) return;
         
-        const lastPrice = history[history.length - 1];
-        const prevPrice = history[history.length - 2] || lastPrice;
-        
-        // Update color based on movement
-        const color = lastPrice >= prevPrice ? '#089981' : '#f23645';
-        this.chart.data.datasets[0].borderColor = color;
-        
-        // Update data
-        this.chart.data.labels = history.map((_, i) => i);
-        this.chart.data.datasets[0].data = history;
-        
-        // Update background gradient color
-        this.chart.data.datasets[0].backgroundColor = (context) => {
-            const chart = context.chart;
-            const { ctx, chartArea } = chart;
-            if (!chartArea) return null;
-            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            const rgb = lastPrice >= prevPrice ? '8, 153, 129' : '242, 54, 69';
-            gradient.addColorStop(0, `rgba(${rgb}, 0.2)`);
-            gradient.addColorStop(1, `rgba(${rgb}, 0)`);
-            return gradient;
-        };
+        try {
+            const lastPrice = history[history.length - 1];
+            const prevPrice = history[history.length - 2] || lastPrice;
+            
+            // Update color based on movement
+            const color = lastPrice >= prevPrice ? '#089981' : '#f23645';
+            this.chart.data.datasets[0].borderColor = color;
+            
+            // Update data
+            this.chart.data.labels = history.map((_, i) => i);
+            this.chart.data.datasets[0].data = history;
+            
+            // Update background gradient color
+            this.chart.data.datasets[0].backgroundColor = (context) => {
+                const chart = context.chart;
+                const { ctx, chartArea } = chart;
+                if (!chartArea) return 'rgba(8, 153, 129, 0.1)';
+                const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                const rgb = lastPrice >= prevPrice ? '8, 153, 129' : '242, 54, 69';
+                gradient.addColorStop(0, `rgba(${rgb}, 0.2)`);
+                gradient.addColorStop(1, `rgba(${rgb}, 0)`);
+                return gradient;
+            };
 
-        this.chart.update('none');
+            this.chart.update();
+        } catch (e) {
+            console.error("Chart Update Failed:", e);
+        }
     }
 
     setMode(mode) {

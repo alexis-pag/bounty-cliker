@@ -38,30 +38,67 @@
   // Définit basePrice si absent
   window.storeItemsData.forEach(it => { if (it.basePrice === undefined) it.basePrice = it.price; });
 
+  window.buyAmount = 1;
+
   // Encapsuler tout après DOMContentLoaded pour PC et Mobile
   document.addEventListener('DOMContentLoaded', () => {
     const storeDiv = document.getElementById('storeItems') || document.getElementById('shopList');
     if (!storeDiv) return;
+
+    // Ajouter les contrôles de quantité
+    const controls = document.createElement('div');
+    controls.className = 'buy-controls';
+    controls.style.cssText = 'display:flex; justify-content:center; gap:10px; margin-bottom:15px;';
+    [1, 10, 100].forEach(amt => {
+      const b = document.createElement('button');
+      b.className = 'btn-small' + (amt === 1 ? ' active' : '');
+      b.textContent = 'x' + amt;
+      b.onclick = () => {
+        window.buyAmount = amt;
+        Array.from(controls.children).forEach(c => c.classList.remove('active'));
+        b.classList.add('active');
+        updateStore();
+      };
+      controls.appendChild(b);
+    });
+    storeDiv.parentNode.insertBefore(controls, storeDiv);
+
+    function getBulkPrice(item, amount, idx) {
+      let total = 0;
+      let tempPrice = item.price;
+      const boosts = window.boostsData || [];
+      
+      for(let i=0; i<amount; i++) {
+        let p = tempPrice;
+        if (idx < 4 && boosts[3]?.active) p = Math.floor(p * 0.8);
+        if (window.BountyGame?.nextBuildingDiscount) p = Math.floor(p * 0.75);
+        total += p;
+        tempPrice = Math.ceil(tempPrice * 1.4 / 5) * 5;
+      }
+      return total;
+    }
 
     function renderItem(item, idx) {
       const root = document.createElement('div');
       root.className = 'item';
       root.setAttribute('data-idx', idx);
 
+      const displayPrice = getBulkPrice(item, window.buyAmount, idx);
+
       const left = document.createElement('div'); left.className = 'left';
       const img = document.createElement('img'); img.className = 'icon'; img.src = item.icon;
       const txt = document.createElement('div');
-      txt.innerHTML = `<strong>${item.name}</strong><div class="item-price" style="font-size:12px;color:rgba(255,255,255,0.7)">Prix: ${item.price}</div>`;
+      txt.innerHTML = `<strong>${item.name}</strong><div class="item-price" style="font-size:12px;color:rgba(255,255,255,0.7)">Prix: ${displayPrice}</div>`;
       left.appendChild(img); left.appendChild(txt);
 
       const right = document.createElement('div');
       const btn = document.createElement('button'); btn.className = 'btn buy'; btn.textContent = 'Acheter';
-      btn.disabled = !(window.BountyGame && window.BountyGame.count >= item.price);
+      btn.disabled = !(window.BountyGame && window.BountyGame.count >= displayPrice);
       btn.addEventListener('click', (e) => { e.stopPropagation(); acheterItem(idx); });
 
       const tooltip = document.createElement('span'); tooltip.className = 'tooltip';
-      if (item.bonusClick) tooltip.textContent = `+${item.bonusClick} par clic !`;
-      else if (item.auto) tooltip.textContent = `+${item.auto} auto-croquettes !`;
+      if (item.bonusClick) tooltip.textContent = `+${item.bonusClick * window.buyAmount} par clic !`;
+      else if (item.auto) tooltip.textContent = `+${item.auto * window.buyAmount} auto-croquettes !`;
       btn.appendChild(tooltip);
 
       right.appendChild(btn);
@@ -83,23 +120,39 @@
       items.forEach((item, idx) => {
         const node = storeDiv.children[idx];
         if (!node) return;
+        
+        const displayPrice = getBulkPrice(item, window.buyAmount, idx);
+
         const btn = node.querySelector('.buy');
-        if (btn) btn.disabled = !(window.BountyGame && window.BountyGame.count >= item.price);
+        if (btn) btn.disabled = !(window.BountyGame && window.BountyGame.count >= displayPrice);
         const priceDiv = node.querySelector('.item-price');
-        if (priceDiv) priceDiv.textContent = `Prix: ${item.price}`;
+        if (priceDiv) priceDiv.textContent = `Prix: ${displayPrice}`;
         const badge = node.querySelector('.count-badge');
         if (badge) badge.textContent = item.owned;
+        
+        const tooltip = node.querySelector('.tooltip');
+        if (tooltip) {
+          if (item.bonusClick) tooltip.textContent = `+${item.bonusClick * window.buyAmount} par clic !`;
+          else if (item.auto) tooltip.textContent = `+${item.auto * window.buyAmount} auto-croquettes !`;
+        }
       });
     }
 
     function acheterItem(idx) {
       const item = window.storeItemsData[idx];
       if (!item) return;
-      if ((window.BountyGame?.count ?? 0) >= item.price) {
-        window.BountyGame.count -= item.price;
-        if (item.bonusClick) window.BountyGame.multiplier += item.bonusClick;
-        item.owned += 1;
-        item.price = Math.ceil(item.price * 1.4 / 5) * 5;
+
+      const amount = window.buyAmount;
+      const effectivePrice = getBulkPrice(item, amount, idx);
+
+      if ((window.BountyGame?.count ?? 0) >= effectivePrice) {
+        window.BountyGame.count -= effectivePrice;
+        
+        for(let i=0; i<amount; i++) {
+          if (item.bonusClick) window.BountyGame.multiplier += item.bonusClick;
+          item.owned += 1;
+          item.price = Math.ceil(item.price * 1.4 / 5) * 5;
+        }
 
         // Animation flash
         const node = storeDiv.children[idx];

@@ -3,7 +3,7 @@
  * Manages market and limit orders.
  */
 
-import { db } from './firebase-config.js';
+import { db } from './database.js';
 import { 
     collection, addDoc, query, where, getDocs, deleteDoc, doc, serverTimestamp, 
     onSnapshot, orderBy, limit, setDoc, writeBatch
@@ -81,6 +81,7 @@ export class OrderSystem {
         
         const qBuy = query(
             collection(db, "orders"),
+            where("userId", "==", this.userId),
             where("status", "==", "open"),
             where("type", "==", "buy"),
             where("price", ">=", currentPrice)
@@ -88,6 +89,7 @@ export class OrderSystem {
 
         const qSell = query(
             collection(db, "orders"),
+            where("userId", "==", this.userId),
             where("status", "==", "open"),
             where("type", "==", "sell"),
             where("price", "<=", currentPrice)

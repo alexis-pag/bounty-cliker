@@ -17,10 +17,11 @@ export class PortfolioSystem {
     async load() {
         const data = await loadUserData(this.userId);
         if (data) {
-            this.shares = data.portfolio?.shares || 0;
-            this.avgPrice = data.portfolio?.averageBuyPrice || 0;
-            this.totalInvested = data.portfolio?.totalInvested || 0;
-            this.carrots = data.gameData?.count || 0;
+            this.shares = Number(data.portfolio?.shares) || 0;
+            this.avgPrice = Number(data.portfolio?.averageBuyPrice) || 0;
+            this.totalInvested = Number(data.portfolio?.totalInvested) || 0;
+            this.carrots = Number(data.gameData?.count) || 0;
+            console.log("Portfolio Loaded:", { shares: this.shares, carrots: this.carrots });
         }
     }
 
@@ -29,9 +30,13 @@ export class PortfolioSystem {
      */
     async processTrade(type, amount, price) {
         const cost = amount * price;
+        console.log(`Processing ${type}: amount=${amount}, price=${price}, totalCost=${cost}`);
         
         if (type === 'buy') {
-            if (this.carrots < cost) throw new Error("Not enough carrots");
+            if (this.carrots < cost) {
+                console.error("Not enough carrots:", { wallet: this.carrots, cost });
+                throw new Error("Not enough carrots");
+            }
             
             const newShares = this.shares + amount;
             const newAvg = ((this.avgPrice * this.shares) + cost) / newShares;

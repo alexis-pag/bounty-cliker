@@ -31,9 +31,35 @@ Allez dans l'onglet **Rules** de votre base de données Firestore et copiez-coll
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Profils utilisateurs : Seul le propriétaire peut lire/écrire
     match /users/{userId} {
-      // Seul l'utilisateur propriétaire peut lire ou modifier ses propres données
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Classement : Tout le monde peut lire, seul le propriétaire peut modifier son score
+    match /leaderboard/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Marché : Tout le monde peut lire, les utilisateurs connectés peuvent mettre à jour (système master-role)
+    match /market/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Ordres : Seul le propriétaire peut voir et gérer ses propres ordres
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && (
+        (resource == null && request.resource.data.userId == request.auth.uid) || 
+        (resource != null && resource.data.userId == request.auth.uid)
+      );
+    }
+    
+    // Historique des transactions : Tout le monde peut lire (historique public)
+    match /trades/{tradeId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
   }
 }

@@ -6,7 +6,7 @@
     <title>Carrot Market Terminal</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="market.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body class="trading-body">
     <div class="bg-animated"></div>
@@ -26,6 +26,10 @@
                 <span class="label">TREND</span>
                 <span id="market-trend" class="value">STABLE</span>
             </div>
+        </div>
+        <div id="market-news-ticker" class="news-ticker">
+            <span class="news-label">NEWS:</span>
+            <span id="news-content" class="news-text">Market is stable. No major news.</span>
         </div>
         <button class="btn btn-secondary" onclick="window.location.href='index.html'">EXIT TERMINAL</button>
     </header>
