@@ -10,12 +10,10 @@
 </head>
 <body>
 
-<a href="https://github.com/alexis-pag/paglierusco-alexis" id="githubButton" target="_blank">code source</a>
-
 <div class="bg-animated"></div>
 
 <div class="game-layout">
-  <section class="panel clicker">
+  <section class="panel clicker active" id="tab-clicker">
     <header class="panel-header">
       <h1>Bounty Clicker</h1>
       <div class="counters">
@@ -26,7 +24,7 @@
     </header>
     <main class="panel-main">
       <div class="image-wrap">
-        <img id="image" src="image/bounty.jpg" alt="Bounty">
+        <img id="image" src="assets/images/bounty.jpg" alt="Bounty">
       </div>
       
       <div class="progress-section" style="margin-top: 15px; padding: 0 20px;">
@@ -38,26 +36,31 @@
           <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), #6effff); box-shadow: 0 0 10px var(--neon-blue); transition: width 0.3s ease;"></div>
         </div>
       </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        <div id="rebirthInfo" style="margin-bottom: 10px; font-weight: bold; color: #ffd700;">Rebirths : 0</div>
+        <button id="rebirthButton" class="btn buy" style="padding: 12px 30px;">Rebirth (1.0M)</button>
+      </div>
     </main>
   </section>
 
-  <aside class="panel shop" id="shopPanel">
-    <header class="panel-header" id="shopHeader">
+  <aside class="panel shop" id="tab-shop">
+    <header class="panel-header">
       <h2>Boutique</h2>
     </header>
-    <div class="panel-main" id="shopContent">
+    <div class="panel-main">
       <div id="storeItems" class="list shop-scroll"></div>
     </div>
   </aside>
 
-  <aside class="panel boosts">
+  <aside class="panel boosts" id="tab-boosts">
     <header class="panel-header"><h2>Boosts & Bonus</h2></header>
     <div class="panel-main">
       <div id="boostsContainer" class="list boosts-scroll"></div>
     </div>
   </aside>
 
-  <aside class="panel prestige-tree">
+  <aside class="panel prestige-tree" id="tab-prestige">
     <header class="panel-header"><h2>Prestige</h2></header>
     <div class="panel-main">
       <div id="prestigeTree" class="list prestige-scroll"></div>
@@ -65,26 +68,34 @@
   </aside>
 </div>
 
-<div id="rebirthContainer">
-  <button id="rebirthButton">Rebirth</button>
-  <div id="rebirthInfo">Rebirths : 0</div>
-</div>
+<nav class="mobile-nav">
+  <div class="nav-item active" data-tab="tab-clicker">
+    <span style="font-size: 24px;">🐾</span>
+    <span>Clic</span>
+  </div>
+  <div class="nav-item" data-tab="tab-shop">
+    <span style="font-size: 24px;">🛒</span>
+    <span>Shop</span>
+  </div>
+  <div class="nav-item" data-tab="tab-boosts">
+    <span style="font-size: 24px;">⚡</span>
+    <span>Boosts</span>
+  </div>
+  <div class="nav-item" data-tab="tab-prestige">
+    <span style="font-size: 24px;">🏆</span>
+    <span>Prestige</span>
+  </div>
+</nav>
 
-<footer class="bottom-bar">
-  <button id="saveButton" class="btn buy" style="margin-right: 10px;">Save</button>
-  <button id="resetButton" class="btn reset">Reset</button>
-</footer>
-
-<!-- Boutons en haut à gauche -->
+<!-- Boutons de contrôle rapides en haut -->
 <div style="position:fixed; top:10px; left:10px; z-index:999; display: flex; gap: 5px;">
-  <button class="btn buy" style="padding: 6px 10px;" onclick="window.location.href='leaderboard.html'">Trophée</button>
-  <button class="btn activate" style="padding: 6px 10px;" onclick="window.location.href='market.html'">Bourse</button>
+  <button class="btn buy" style="padding: 6px 12px; font-size: 14px;" id="saveButton">Save</button>
+  <button class="btn reset" style="padding: 6px 12px; font-size: 14px;" id="resetButton">Reset</button>
 </div>
 
-<!-- Boutons en haut à droite -->
 <div style="position:fixed; top:10px; right:10px; z-index:999; display: flex; gap: 5px;">
-  <button class="btn btn-secondary" onclick="resetChoice()">Menu</button>
-  <button class="btn btn-logout" onclick="window.logout()">Log out</button>
+  <button class="btn btn-secondary" style="padding: 6px 10px;" onclick="resetChoice()">Menu</button>
+  <button class="btn btn-logout" style="padding: 6px 10px;" onclick="window.logout()">Log out</button>
 </div>
 
 <script src="js/boutique.js" defer></script>
@@ -100,11 +111,26 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const shopPanel = document.getElementById('shopPanel');
-    const shopHeader = document.getElementById('shopHeader');
-    shopPanel.classList.remove('open');
-    shopHeader.addEventListener('click', () => {
-      shopPanel.classList.toggle('open');
+    // Gestion des Onglets Mobile
+    const navItems = document.querySelectorAll('.nav-item');
+    const panels = document.querySelectorAll('.panel');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const targetTab = item.getAttribute('data-tab');
+        
+        // Update active nav item
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+
+        // Update visible panel
+        panels.forEach(panel => {
+          panel.classList.remove('active');
+          if (panel.id === targetTab) {
+            panel.classList.add('active');
+          }
+        });
+      });
     });
 
     // Redirection automatique si le choix mobile est déjà enregistré

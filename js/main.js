@@ -10,7 +10,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
   let currentUsername = null;
 
   // Initialisation du système de protection
-  const detector = new ClickDetection(25, 1000); // 25 CPS threshold
+  const detector = new ClickDetection(40, 1000); // 40 CPS threshold
   const protection = new AutoclickProtection();
 
   window.onAutoClickUnlock = () => {

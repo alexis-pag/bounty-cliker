@@ -37,8 +37,17 @@
   checkAuth((user) => {
     if (user) {
       statusEl.textContent = "Authentifié ! Redirection...";
+      
+      // Détection mobile automatique
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (!localStorage.getItem("bc-version")) {
+        localStorage.setItem("bc-version", isMobile ? "mobile" : "desktop");
+      }
+
       setTimeout(() => {
-        window.location.href = "dashboard.html";
+        const choice = localStorage.getItem("bc-version");
+        if (choice === "mobile") window.location.href = "site-mobile.html";
+        else window.location.href = "dashboard.html";
       }, 1000);
     } else {
       statusEl.textContent = "";

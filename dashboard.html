@@ -7,17 +7,21 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         .container {
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 500px;
+            width: 90%;
+            margin: 40px auto;
             text-align: center;
-            padding: 20px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255, 77, 110, 0.3);
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .user-info {
             margin-bottom: 30px;
-            font-size: 1.2em;
+            font-size: 1.1em;
+            color: rgba(255,255,255,0.8);
         }
         .actions {
             display: flex;
@@ -25,44 +29,57 @@
             gap: 15px;
         }
         .btn {
-            padding: 15px;
-            font-size: 1.1em;
+            padding: 16px;
+            font-size: 1rem;
             cursor: pointer;
             border: none;
-            border-radius: 8px;
-            transition: transform 0.2s;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
         .btn:hover {
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            filter: brightness(1.2);
         }
         .btn-primary {
-            background-color: #ff4d6e;
+            background: linear-gradient(90deg, #ff4d6e, #ff758c);
             color: white;
+            box-shadow: 0 10px 20px rgba(255, 77, 110, 0.2);
         }
         .btn-secondary {
-            background-color: #4a4a4a;
+            background: linear-gradient(90deg, var(--neon-blue), #2962ff);
             color: white;
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.1);
+        }
+        .btn-trading {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .btn-logout {
-            background-color: #333;
-            color: #ff4d6e;
-            border: 1px solid #ff4d6e;
+            background: transparent;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.9rem;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="layout">
+    <div class="bg-animated"></div>
+    <div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
         <div class="container">
-            <h1>Bienvenue sur Bounty Clicker</h1>
+            <h1 style="color: var(--neon-blue); margin-bottom: 10px;">Bounty Hub</h1>
             <div class="user-info" id="userInfo">
-                Chargement de votre profil...
+                Chargement...
             </div>
             
             <div class="actions">
-                <button class="btn btn-primary" id="playDesktop">Jouer (Version PC)</button>
-                <button class="btn btn-secondary" id="playMobile">Jouer (Version Mobile)</button>
-                <button class="btn btn-trading" id="openTrading" style="background-color: #2962ff; color: white;">Open Trading Market</button>
-                <button class="btn btn-logout" id="logoutBtn">Se déconnecter</button>
+                <button class="btn btn-secondary" id="playMobile">📱 JOUER (MOBILE)</button>
+                <button class="btn btn-primary" id="playDesktop">💻 JOUER (DESKTOP)</button>
+                <button class="btn btn-trading" id="openTrading">💹 MARCHÉ BOURSIER</button>
+                <button class="btn btn-logout" id="logoutBtn">DÉCONNEXION</button>
             </div>
         </div>
     </div>
@@ -73,18 +90,40 @@
 
         checkAuth(async (user) => {
             const userInfoEl = document.getElementById('userInfo');
-            userInfoEl.textContent = `Connecté en tant que : ${user.email}`;
-
-            // On peut charger un petit aperçu des données si on veut
+            
             try {
                 const data = await loadUserData(user.uid);
+                const username = data?.profile?.username || user.displayName || user.email.split('@')[0];
+                
+                userInfoEl.innerHTML = `
+                    <div style="font-size: 1.4rem; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;">
+                        Bienvenue, ${username} !
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 20px;">
+                        ${user.email}
+                    </div>
+                `;
+
                 if (data && data.gameData) {
-                    const stats = document.createElement('p');
-                    stats.innerHTML = `Progression : <strong>${Math.floor(data.gameData.count)}</strong> croquettes<br>Rebirths : <strong>${data.gameData.rebirths}</strong>`;
+                    const stats = document.createElement('div');
+                    stats.style.cssText = "background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);";
+                    stats.innerHTML = `
+                        <div style="display: flex; justify-content: space-around;">
+                            <div>
+                                <div style="font-size: 0.8rem; opacity: 0.5;">CROQUETTES</div>
+                                <div style="font-size: 1.2rem; color: #fff;">${Math.floor(data.gameData.count).toLocaleString()}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8rem; opacity: 0.5;">REBIRTHS</div>
+                                <div style="font-size: 1.2rem; color: #ffd700;">${data.gameData.rebirths || 0}</div>
+                            </div>
+                        </div>
+                    `;
                     userInfoEl.appendChild(stats);
                 }
             } catch (error) {
                 console.error("Erreur lors du chargement des stats:", error);
+                userInfoEl.textContent = `Connecté en tant que : ${user.email}`;
             }
         });
 

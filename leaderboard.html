@@ -71,12 +71,13 @@
                     <tr>
                         <th class="rank">Rang</th>
                         <th>Joueur</th>
-                        <th style="text-align: right;">Score (Croquettes)</th>
+                        <th style="text-align: center;">Rebirths</th>
+                        <th style="text-align: right;">Score</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboardBody">
                     <tr>
-                        <td colspan="3" style="text-align: center; padding: 40px;">Chargement du classement...</td>
+                        <td colspan="4" style="text-align: center; padding: 40px;">Chargement du classement...</td>
                     </tr>
                 </tbody>
             </table>
@@ -92,7 +93,7 @@
             tbody.innerHTML = '';
             
             if (players.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Aucun joueur pour le moment.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Aucun joueur pour le moment.</td></tr>';
                 return;
             }
 
@@ -107,8 +108,16 @@
 
                 tr.innerHTML = `
                     <td class="rank ${rankClass}">#${rank}</td>
-                    <td class="username">${player.username || 'Anonyme'}</td>
-                    <td class="score">${Math.floor(player.score).toLocaleString()}</td>
+                    <td class="username">
+                        <div style="font-weight: bold; color: var(--neon-blue);">${player.username || 'Anonyme'}</div>
+                    </td>
+                    <td style="text-align: center; color: #ffd700; font-weight: bold;">
+                        ${player.rebirths || 0}
+                    </td>
+                    <td class="score">
+                        ${Math.floor(player.score).toLocaleString()}
+                        <small style="font-size: 0.7rem; opacity: 0.5; color: white;"> croquettes</small>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });

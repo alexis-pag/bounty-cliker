@@ -411,6 +411,72 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
         top: 50%;
         transform: translateY(-50%);
     }
+
+    .mobile-nav { display: none; }
+
+    /* Tab navigation for mobile */
+    @media (max-width: 768px) {
+        .mobile-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background: rgba(7, 16, 37, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 2000;
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 10px;
+    }
+
+    .nav-item.active {
+        color: var(--neon-blue);
+        transform: translateY(-5px);
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .nav-item span:first-child {
+        transition: transform 0.3s ease;
+    }
+
+    .nav-item.active span:first-child {
+        transform: scale(1.2);
+    }
+
+    .game-layout {
+        height: calc(100vh - 150px) !important;
+        margin-top: 60px;
+        padding-bottom: 20px;
+    }
+
+    .panel {
+        display: none !important;
+        min-height: auto;
+    }
+
+    .panel.active {
+        display: flex !important;
+    }
+
+    .shop-scroll, .boosts-scroll, .prestige-scroll {
+        max-height: calc(100vh - 250px);
+    }
 }
 
 @keyframes progress-glow {

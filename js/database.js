@@ -69,12 +69,13 @@ export async function initializeUserData(uid, email, customUsername) {
 /**
  * Mettre à jour le classement
  */
-export async function updateLeaderboard(uid, username, score) {
+export async function updateLeaderboard(uid, username, score, rebirths = 0) {
   try {
     const leaderRef = doc(db, "leaderboard", uid);
     await setDoc(leaderRef, {
       username: username,
       score: Math.floor(score),
+      rebirths: rebirths || 0,
       lastUpdate: serverTimestamp()
     }, { merge: true });
   } catch (error) {
@@ -158,7 +159,7 @@ export async function saveUserData(uid, data, username = null) {
     
     // Si on a un username, on met à jour le classement en même temps
     if (username) {
-      await updateLeaderboard(uid, username, data.count);
+      await updateLeaderboard(uid, username, data.count, data.rebirths || 0);
     }
   } catch (error) {
     console.error("Erreur de sauvegarde:", error);
