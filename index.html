@@ -7,24 +7,44 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="bg-animated"></div>
 
-<div style="text-align:center; margin-top:100px; color: #e6f7ff; font-family: sans-serif;">
-  <h1>Bounty Clicker</h1>
-  <div id="status" style="margin-top: 20px;">Chargement du jeu...</div>
+<div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;">
+  <div class="panel" style="max-width: 500px; width: 90%; padding: 40px; border-top: 4px solid var(--neon-blue); animation: fadeIn 1s ease-out;">
+    <h1 style="font-size: 3rem; margin-bottom: 10px; color: var(--neon-blue); text-shadow: 0 0 20px rgba(0,212,255,0.4);">BOUNTY</h1>
+    <h2 style="font-size: 1.2rem; color: #fff; margin-bottom: 30px; letter-spacing: 5px; opacity: 0.8; text-transform: uppercase;">Clicker Evolution</h2>
+    
+    <div id="status" style="margin-bottom: 20px; font-weight: bold; min-height: 24px;">Initialisation...</div>
+    
+    <div id="actionArea" style="display: none;">
+        <button class="btn buy" onclick="window.location.href='login.html'" style="padding: 15px 40px; font-size: 1.1rem; border-radius: 12px;">SE CONNECTER POUR JOUER</button>
+        <p style="margin-top: 20px; opacity: 0.6;">Ou créez un compte en quelques secondes</p>
+    </div>
+  </div>
 </div>
+
+<style>
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
 
 <script type="module">
   import { checkAuth } from './js/auth.js';
   
   const statusEl = document.getElementById('status');
+  const actionArea = document.getElementById('actionArea');
   
   // checkAuth redirigera automatiquement vers login.html si pas de session
   checkAuth((user) => {
     if (user) {
       statusEl.textContent = "Authentifié ! Redirection...";
-      window.location.href = "dashboard.html";
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 1000);
+    } else {
+      statusEl.textContent = "";
+      actionArea.style.display = "block";
     }
-  }, true);
+  }, false);
 </script>
 
 </body>

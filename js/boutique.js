@@ -67,11 +67,13 @@
       let total = 0;
       let tempPrice = item.price;
       const boosts = window.boostsData || [];
+      const unlocked = window.BountyGame?.unlockedUpgrades || [];
       
       for(let i=0; i<amount; i++) {
         let p = tempPrice;
         if (idx < 4 && boosts[3]?.active) p = Math.floor(p * 0.8);
         if (window.BountyGame?.nextBuildingDiscount) p = Math.floor(p * 0.75);
+        if (unlocked.includes('upgrade7')) p = Math.floor(p * 0.9);
         total += p;
         tempPrice = Math.ceil(tempPrice * 1.4 / 5) * 5;
       }
@@ -142,6 +144,14 @@
       const item = window.storeItemsData[idx];
       if (!item) return;
 
+      const node = storeDiv.children[idx];
+      const btn = node?.querySelector('.buy');
+      if (btn) {
+        if (btn.classList.contains('processing')) return;
+        btn.classList.add('processing');
+        setTimeout(() => btn.classList.remove('processing'), 200);
+      }
+
       const amount = window.buyAmount;
       const effectivePrice = getBulkPrice(item, amount, idx);
 
@@ -149,7 +159,10 @@
         window.BountyGame.count -= effectivePrice;
         
         for(let i=0; i<amount; i++) {
-          if (item.bonusClick) window.BountyGame.multiplier += item.bonusClick;
+          if (item.bonusClick) {
+            window.BountyGame.shopMultiplierBonus = (window.BountyGame.shopMultiplierBonus || 0) + item.bonusClick;
+            window.BountyGame.multiplier = (window.BountyGame.multiplier || 1) + item.bonusClick;
+          }
           item.owned += 1;
           item.price = Math.ceil(item.price * 1.4 / 5) * 5;
         }

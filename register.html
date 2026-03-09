@@ -7,22 +7,40 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="layout">
-  <div class="panel">
-    <h1>Inscription</h1>
+<div class="bg-animated"></div>
+<div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+  <div class="panel" style="max-width: 450px; width: 95%; animation: fadeIn 0.8s ease-out; padding: 30px;">
+    <h1 style="color: var(--neon-pink); text-align: center; margin-bottom: 25px;">Inscription</h1>
+    <input type="text" id="regUser" placeholder="Pseudo (Nom affiché)">
     <input type="email" id="regEmail" placeholder="Email">
     <input type="password" id="regPass" placeholder="Mot de passe">
     <input type="password" id="regPassConfirm" placeholder="Confirmer le mot de passe">
-    <button id="regBtn">S'inscrire</button>
-    <p>Déjà inscrit ? <a href="login.html">Connexion</a></p>
-    <p id="regError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px;"></p>
+    <button id="regBtn" class="btn activate" style="width: 100%; margin-top: 10px;">S'inscrire</button>
+    
+    <div style="margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+      <span style="font-size: 12px; opacity: 0.6;">OU</span>
+      <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+    </div>
+    
+    <button id="googleBtn" class="btn" style="background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Continuer avec Google
+    </button>
+    
+    <p style="text-align: center; margin-top: 20px;">Déjà inscrit ? <a href="login.html" style="color: var(--neon-pink); text-decoration: none; font-weight: bold;">Connexion</a></p>
+    <p id="regError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px; text-align: center;"></p>
   </div>
 </div>
 
+<style>
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+</style>
+
 <script type="module">
-  import { register } from './js/auth.js';
+  import { register, loginWithGoogle } from './js/auth.js';
 
   document.getElementById('regBtn').addEventListener('click', async () => {
+    const username = document.getElementById('regUser').value;
     const email = document.getElementById('regEmail').value;
     const pass = document.getElementById('regPass').value;
     const passConfirm = document.getElementById('regPassConfirm').value;
@@ -30,13 +48,18 @@
 
     errorEl.textContent = "";
 
+    if (!username || username.trim().length < 3) {
+      errorEl.textContent = "Le pseudo doit faire au moins 3 caractères.";
+      return;
+    }
+
     if (pass !== passConfirm) {
       errorEl.textContent = "Les mots de passe ne correspondent pas.";
       return;
     }
 
     try {
-      await register(email, pass);
+      await register(email, pass, username);
       alert('Inscription réussie !');
       window.location.href = 'dashboard.html';
     } catch (error) {
@@ -52,6 +75,17 @@
       } else {
         errorEl.textContent = `Erreur : ${error.message || "Une erreur est survenue lors de l'inscription."}`;
       }
+    }
+  });
+
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    const errorEl = document.getElementById('regError');
+    errorEl.textContent = "";
+    try {
+      await loginWithGoogle();
+      window.location.href = 'dashboard.html';
+    } catch (error) {
+      errorEl.textContent = "Échec de la connexion avec Google.";
     }
   });
 </script>

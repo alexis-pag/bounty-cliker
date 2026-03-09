@@ -37,9 +37,32 @@
 }
 
 .autoclick-content h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     margin-bottom: 20px;
     text-transform: uppercase;
+}
+
+.warning-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: shake 0.5s infinite ease-in-out;
+}
+
+.violation-count {
+    background: rgba(255, 77, 110, 0.15);
+    border: 1px solid rgba(255, 77, 110, 0.3);
+    padding: 8px 20px;
+    border-radius: 50px;
+    display: inline-block;
+    margin-bottom: 25px;
+    font-weight: 700;
+    color: #ff4d6e;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
 }
 
 .autoclick-content p {

@@ -6,6 +6,7 @@
   <title>Bounty Clicker - Mobile</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/autoclick-warning.css">
+  <style> .game-layout { opacity: 0; } </style>
 </head>
 <body>
 
@@ -20,11 +21,22 @@
       <div class="counters">
         <div id="counter">Croquettes : 0</div>
         <div id="cps">CPS : 0</div>
+        <div id="prestigeInfo">Prestige : 0</div>
       </div>
     </header>
     <main class="panel-main">
       <div class="image-wrap">
         <img id="image" src="image/bounty.jpg" alt="Bounty">
+      </div>
+      
+      <div class="progress-section" style="margin-top: 15px; padding: 0 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; font-weight: bold; color: var(--neon-blue);">
+          <span>Rebirth</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-bg" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+          <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), #6effff); box-shadow: 0 0 10px var(--neon-blue); transition: width 0.3s ease;"></div>
+        </div>
       </div>
     </main>
   </section>
@@ -42,6 +54,13 @@
     <header class="panel-header"><h2>Boosts & Bonus</h2></header>
     <div class="panel-main">
       <div id="boostsContainer" class="list boosts-scroll"></div>
+    </div>
+  </aside>
+
+  <aside class="panel prestige-tree">
+    <header class="panel-header"><h2>Prestige</h2></header>
+    <div class="panel-main">
+      <div id="prestigeTree" class="list prestige-scroll"></div>
     </div>
   </aside>
 </div>
@@ -70,6 +89,7 @@
 
 <script src="js/boutique.js" defer></script>
 <script src="js/boost.js" defer></script>
+<script src="js/prestige.js" defer></script>
 <script type="module" src="js/main.js" defer></script>
 
 <script>

@@ -59,6 +59,15 @@
   function purchaseBoost(idx) {
     const b = window.boostsData[idx];
     if (!b) return;
+
+    const node = boostsDiv.children[idx];
+    const btn = node?.querySelector('.btn');
+    if (btn) {
+      if (btn.classList.contains('processing')) return;
+      btn.classList.add('processing');
+      setTimeout(() => btn.classList.remove('processing'), 200);
+    }
+
     if (window.BountyGame.count >= b.price) {
       window.BountyGame.count -= b.price;
       b.active = true;

@@ -21,11 +21,14 @@ import { AutoclickProtection } from './autoclick-protection.js';
   const defaultGameState = {
     count: 0,
     multiplier: 1,
+    shopMultiplierBonus: 0,
     clickValue: 1,
     addClickBonus: 0,
     addCageBonus: 0,
     cps: 0,
     rebirths: 0,
+    prestigePoints: 0,
+    unlockedUpgrades: [],
     rebirthBonusClick: 0,
     rebirthBonusCPS: 0,
     rebirthPrice: 1000000
@@ -67,17 +70,67 @@ import { AutoclickProtection } from './autoclick-protection.js';
     const el = document.createElement('div');
     el.className = 'plus-one';
     el.textContent = `+${Math.floor(value)}`;
+    
+    // Ajout de "juice" : rotation et taille aléatoire
+    const rotation = Math.random() * 40 - 20;
+    const size = Math.min(40, 20 + (value / 10)); 
+    
     const left = Math.min(window.innerWidth - 60, Math.max(8, x));
     const top = Math.min(window.innerHeight - 40, Math.max(8, y));
+    
     el.style.left = left + 'px';
     el.style.top = top + 'px';
+    el.style.fontSize = size + 'px';
+    el.style.transform = `rotate(${rotation}deg)`;
+    
     document.body.appendChild(el);
     setTimeout(()=>el.remove(), 950);
   }
 
+  function recalculerMultiplier() {
+    const shopBonus = window.BountyGame.shopMultiplierBonus || 0;
+    const rebirthCount = window.BountyGame.rebirths || 0;
+    const unlocked = window.BountyGame.unlockedUpgrades || [];
+    
+    let total = 1 + shopBonus;
+    
+    if (unlocked.includes('upgrade1')) total += 1;
+    if (unlocked.includes('upgrade2')) total += 2;
+    if (unlocked.includes('upgrade3') && rebirthCount === 0) total += 5;
+    if (unlocked.includes('upgrade6')) total += 10;
+    if (unlocked.includes('upgrade9')) total += 25;
+    if (unlocked.includes('upgrade11')) total += 50;
+    if (unlocked.includes('upgrade13')) total += 250;
+    
+    window.BountyGame.multiplier = total;
+  }
+  window.recalculerMultiplier = recalculerMultiplier;
+
   function updateCounterUI(){
+    recalculerMultiplier();
     if (counterEl) counterEl.textContent = `Croquettes : ${Math.floor(window.BountyGame.count)} (×${(window.BountyGame.multiplier ?? 1)})`;
     if (cpsEl) cpsEl.textContent = `CPS : ${Math.floor(window.BountyGame.cps)}`;
+    
+    // Mise à jour de la barre de progression
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+    if (progressBar && progressPercent) {
+      const rebirthPrice = window.BountyGame.rebirthPrice || 1000000;
+      const progress = Math.min(100, (window.BountyGame.count / rebirthPrice) * 100);
+      progressBar.style.width = `${progress}%`;
+      progressPercent.textContent = `${Math.floor(progress)}%`;
+      
+      // Effet visuel quand prêt pour rebirth
+      if (progress >= 100) {
+        progressBar.style.background = 'linear-gradient(90deg, #ffde00, #ffffff)';
+        progressBar.classList.add('progress-bar-ready');
+        progressBar.classList.remove('progress-bar-glow');
+      } else {
+        progressBar.style.background = 'linear-gradient(90deg, var(--neon-blue), #6effff)';
+        progressBar.classList.remove('progress-bar-ready');
+        progressBar.classList.add('progress-bar-glow');
+      }
+    }
   }
   window.updateCounterUI = updateCounterUI;
 
@@ -97,6 +150,16 @@ import { AutoclickProtection } from './autoclick-protection.js';
     });
 
     total += (window.BountyGame.rebirthBonusCPS || 0);
+    
+    // Bonus prestige CPS
+    const unlocked = window.BountyGame.unlockedUpgrades || [];
+    if (unlocked.includes('upgrade4')) total *= 1.10;
+    if (unlocked.includes('upgrade8')) total *= 1.25;
+    if (unlocked.includes('upgrade12')) total *= 2;
+    if (unlocked.includes('upgrade15')) total *= 5;
+    if (unlocked.includes('upgrade18')) total *= 10;
+    if (unlocked.includes('upgrade20')) total *= 2;
+    
     return total;
   }
 
@@ -112,10 +175,11 @@ import { AutoclickProtection } from './autoclick-protection.js';
       
       const count = Number(window.BountyGame.count) || 0;
       const multiplier = Math.max(1, Number(window.BountyGame.multiplier) || 1);
-      const clickValue = Number(window.BountyGame.clickValue) || 1;
+      const unlocked = window.BountyGame.unlockedUpgrades || [];
       const addClickBonus = Number(window.BountyGame.addClickBonus) || 0;
       const addCageBonus = Number(window.BountyGame.addCageBonus) || 0;
       const rebirthBonusClick = Number(window.BountyGame.rebirthBonusClick) || 0;
+      let clickValue = Number(window.BountyGame.clickValue) || 1;
 
       let bonus = multiplier;
       const boosts = window.boostsData || [];
@@ -129,11 +193,15 @@ import { AutoclickProtection } from './autoclick-protection.js';
       if (boosts[5]?.active) bonus *= 1.10;
       if (boosts[8]?.active) bonus *= 2;
 
+      if (unlocked.includes('upgrade5')) clickValue += 10;
+      if (unlocked.includes('upgrade10')) clickValue += 50;
+      if (unlocked.includes('upgrade14')) clickValue += 500;
+
       const baseClick = clickValue + addClickBonus + addCageBonus + rebirthBonusClick;
       const gain = Math.max(1, baseClick * bonus);
 
       // Enregistrer le clic avec son gain potentiel et vérifier si c'est anormal
-      detector.recordClick(gain);
+      detector.recordClick(gain, ev);
       if (detector.detectAutoClick()) {
         const invalid = detector.getInvalidRewards();
         protection.triggerWarning(invalid, (newCount, violations) => {
@@ -148,6 +216,13 @@ import { AutoclickProtection } from './autoclick-protection.js';
       window.BountyGame.multiplier = multiplier; // S'assurer qu'il reste valide
 
       console.log(`Gain: ${gain}, Nouveau Total: ${window.BountyGame.count}`);
+
+      // Effet de tilt aléatoire sur le clic
+      const tilt = Math.random() * 10 - 5;
+      imgEl.style.transform = `scale(0.95) rotate(${tilt}deg)`;
+      setTimeout(() => {
+        imgEl.style.transform = '';
+      }, 100);
 
       spawnPlusOne(ev.clientX, ev.clientY, gain);
       changerImage();
@@ -180,11 +255,14 @@ import { AutoclickProtection } from './autoclick-protection.js';
     const data = {
       count: window.BountyGame.count,
       multiplier: window.BountyGame.multiplier ?? 1,
+      shopMultiplierBonus: window.BountyGame.shopMultiplierBonus || 0,
       clickValue: window.BountyGame.clickValue,
       addClickBonus: window.BountyGame.addClickBonus,
       addCageBonus: window.BountyGame.addCageBonus,
       cps: window.BountyGame.cps,
       rebirths: window.BountyGame.rebirths,
+      prestigePoints: window.BountyGame.prestigePoints,
+      unlockedUpgrades: window.BountyGame.unlockedUpgrades || [],
       rebirthPrice: window.BountyGame.rebirthPrice,
       rebirthBonusClick: window.BountyGame.rebirthBonusClick,
       rebirthBonusCPS: window.BountyGame.rebirthBonusCPS,
@@ -218,9 +296,14 @@ import { AutoclickProtection } from './autoclick-protection.js';
       const data = fullData.gameData;
       if (fullData.profile) {
         currentUsername = fullData.profile.username || fullData.profile.email?.split('@')[0] || "Anonyme";
+      } else if (data.username) {
+        currentUsername = data.username;
       }
       
-      // Mise à jour de l'état global
+      const usernameDisplay = document.querySelector('.panel.clicker h1');
+      if (usernameDisplay) {
+        usernameDisplay.textContent = `Bounty - ${currentUsername}`;
+      }
       Object.assign(window.BountyGame, data);
       applyRebirthBonus();
       if (data.violations) protection.violations = data.violations;
@@ -262,7 +345,10 @@ import { AutoclickProtection } from './autoclick-protection.js';
 
   if (resetButton) {
     resetButton.addEventListener('click', async () => {
+      if (resetButton.disabled) return;
       if (!confirm("Réinitialiser le jeu et supprimer la sauvegarde ?")) return;
+      resetButton.disabled = true;
+      
       Object.assign(window.BountyGame, defaultGameState);
       (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
       (window.boostsData || []).forEach(b => { b.active = false; b.available = false; b.permanent = false; });
@@ -272,6 +358,8 @@ import { AutoclickProtection } from './autoclick-protection.js';
       if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
       updateCounterUI();
       if (typeof window.updateRebirthUI === 'function') window.updateRebirthUI();
+      if (typeof window.updatePrestigeTree === 'function') window.updatePrestigeTree();
+      resetButton.disabled = false;
     });
   }
 
@@ -293,16 +381,61 @@ import { AutoclickProtection } from './autoclick-protection.js';
   function applyRebirthBonus(){
     window.BountyGame.rebirthBonusClick = (window.BountyGame.rebirths || 0) * 1;
     window.BountyGame.rebirthBonusCPS = (window.BountyGame.rebirths || 0) * 0.2;
+    applyPrestigeUpgrades();
+  }
+
+  function applyPrestigeUpgrades() {
+    const unlocked = window.BountyGame.unlockedUpgrades || [];
+    const rebirthCount = window.BountyGame.rebirths || 0;
+    
+    // On réinitialise la base
+    window.BountyGame.multiplier = 1;
+    window.BountyGame.clickValue = 1;
+    
+    // Application des bonus permanents
+    if (unlocked.includes('upgrade1')) window.BountyGame.multiplier += 1;
+    if (unlocked.includes('upgrade2')) window.BountyGame.multiplier += 2;
+    if (unlocked.includes('upgrade3') && rebirthCount === 0) window.BountyGame.multiplier += 5;
+    if (unlocked.includes('upgrade5')) window.BountyGame.clickValue += 10;
+    if (unlocked.includes('upgrade6')) window.BountyGame.multiplier += 10;
+    if (unlocked.includes('upgrade9')) window.BountyGame.multiplier += 25;
+    if (unlocked.includes('upgrade10')) window.BountyGame.clickValue += 50;
+    if (unlocked.includes('upgrade11')) window.BountyGame.multiplier += 50;
+    if (unlocked.includes('upgrade13')) window.BountyGame.multiplier += 250;
+    if (unlocked.includes('upgrade14')) window.BountyGame.clickValue += 500;
+    if (unlocked.includes('upgrade16')) window.BountyGame.multiplier += 1000;
+    if (unlocked.includes('upgrade17')) window.BountyGame.clickValue += 2500;
+    if (unlocked.includes('upgrade19')) window.BountyGame.multiplier += 10000;
+    
+    // Multiplicateurs finaux
+    if (unlocked.includes('upgrade20')) {
+      window.BountyGame.multiplier *= 2;
+      window.BountyGame.clickValue *= 2;
+    }
   }
 
   function updateRebirthUI(){
     const rebirthBtn = document.getElementById('rebirthButton');
     const rebirthInfo = document.getElementById('rebirthInfo');
-    if (!rebirthBtn || !rebirthInfo) return;
-    rebirthInfo.textContent = `Rebirths : ${window.BountyGame.rebirths || 0}`;
-    rebirthBtn.textContent = `Rebirth (${(window.BountyGame.rebirthPrice || 0).toLocaleString()})`;
-    rebirthBtn.disabled = window.BountyGame.count < (window.BountyGame.rebirthPrice || 0);
+    const prestigeInfo = document.getElementById('prestigeInfo');
+    
+    const curR = window.BountyGame.rebirths || 0;
+    let gain = 1;
+    if (curR >= 500) gain = 25;
+    else if (curR >= 250) gain = 10;
+    else if (curR >= 100) gain = 5;
+    else if (curR >= 50) gain = 2;
+
+    if (rebirthInfo) rebirthInfo.textContent = `Rebirths : ${curR}`;
+    if (prestigeInfo) prestigeInfo.textContent = `Prestige : ${window.BountyGame.prestigePoints || 0}`;
+    if (rebirthBtn) {
+      const price = window.BountyGame.rebirthPrice || 0;
+      const gainText = gain > 1 ? ` (+${gain})` : '';
+      rebirthBtn.textContent = `Rebirth${gainText} (${price.toLocaleString()})`;
+      rebirthBtn.disabled = window.BountyGame.count < price;
+    }
   }
+  window.updatePrestigeUI = updateRebirthUI;
   window.updateRebirthUI = updateRebirthUI;
 
   // Initialisation Auth
@@ -319,7 +452,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
     setInterval(sauvegarderJeu, 10000);
 
     // Enlever le flash (FOUC)
-    document.querySelector('.layout')?.classList.add('loaded');
+    document.querySelector('.game-layout')?.classList.add('loaded');
   });
 
   // Export logout to window for buttons
@@ -328,23 +461,69 @@ import { AutoclickProtection } from './autoclick-protection.js';
   // Event listener for rebirth button if it exists
   document.addEventListener('click', (e) => {
     if (e.target && e.target.id === 'rebirthButton') {
-      const price = window.BountyGame.rebirthPrice || 1000000;
-      if (window.BountyGame.count < price) return alert(`Il faut ${price.toLocaleString()} croquettes pour rebirth.`);
-      if (!confirm(`Faire un Rebirth pour ${price.toLocaleString()} croquettes ?`)) return;
+      if (e.target.disabled) return;
+      e.target.disabled = true;
+      setTimeout(() => { if (e.target) e.target.disabled = (window.BountyGame.count < (window.BountyGame.rebirthPrice || 0)); }, 500);
 
-      window.BountyGame.rebirths += 1;
+      const price = window.BountyGame.rebirthPrice || 1000000;
+      if (window.BountyGame.count < price) {
+        alert(`Il faut ${price.toLocaleString()} croquettes pour rebirth.`);
+        return;
+      }
+      const currentRebirths = window.BountyGame.rebirths || 0;
+      let rebirthsToGain = 1;
+      
+      // Bonus de gain de rebirth à partir de 50
+      if (currentRebirths >= 500) rebirthsToGain = 25;
+      else if (currentRebirths >= 250) rebirthsToGain = 10;
+      else if (currentRebirths >= 100) rebirthsToGain = 5;
+      else if (currentRebirths >= 50) rebirthsToGain = 2;
+
+      const rText = rebirthsToGain > 1 ? ` (+${rebirthsToGain} Rebirths)` : '';
+      if (!confirm(`Faire un Rebirth${rText} pour ${price.toLocaleString()} croquettes ?`)) return;
+
+      let totalPrestigeGain = 0;
+      for (let i = 0; i < rebirthsToGain; i++) {
+        const rLevel = currentRebirths + i + 1;
+        totalPrestigeGain += Math.floor(1 + ((rLevel - 1) / 2));
+      }
+
+      window.BountyGame.rebirths += rebirthsToGain;
+      window.BountyGame.prestigePoints = (window.BountyGame.prestigePoints || 0) + totalPrestigeGain;
       window.BountyGame.count = 0;
+      window.BountyGame.multiplier = 1;
+      window.BountyGame.shopMultiplierBonus = 0;
       window.BountyGame.clickValue = 1;
       window.BountyGame.addClickBonus = 0;
       window.BountyGame.addCageBonus = 0;
       window.BountyGame.cps = 0;
-      (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
-      (window.boostsData || []).forEach(b => { b.active = false; b.available = false; b.permanent = false; });
+      
+      // Reset store
+      if (window.storeItemsData) {
+        window.storeItemsData.forEach(it => { 
+          it.owned = 0; 
+          it.price = it.basePrice ?? it.price; 
+        });
+      }
+      
+      // Reset boosts
+      if (window.boostsData) {
+        window.boostsData.forEach(b => { 
+          b.active = false; 
+          b.available = false; 
+          b.permanent = false; 
+        });
+      }
+
       applyRebirthBonus();
-      window.BountyGame.rebirthPrice += 2_000_000;
+      window.BountyGame.rebirthPrice = 1000000 + (window.BountyGame.rebirths * 2_000_000);
+      
       updateCounterUI();
       if (typeof window.updateStore === 'function') window.updateStore();
       if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
+      if (typeof window.updatePrestigeUI === 'function') window.updatePrestigeUI();
+      if (typeof window.updatePrestigeTree === 'function') window.updatePrestigeTree();
+      
       sauvegarderJeu();
       updateRebirthUI();
     }

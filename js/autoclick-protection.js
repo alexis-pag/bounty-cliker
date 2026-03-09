@@ -7,30 +7,54 @@ export class AutoclickProtection {
     constructor() {
         this.violations = 0;
         this.isLocked = false;
-        this.lockoutDurations = [15, 30, 60, 120]; // Lockout seconds per violation level
+        this.lockoutDurations = [10, 20, 30, 60]; // Shorter durations, more like a pause
         this.overlay = null;
         this.timerEl = null;
         this.btnEl = null;
         this.countdownInterval = null;
+        this.integrityCheckInterval = null;
         
         this.initUI();
+        this.startIntegrityCheck();
     }
 
     /**
-     * Dynamically creates the warning overlay.
+     * Periodically checks if the overlay is still there and visible if locked
      */
+    startIntegrityCheck() {
+        if (this.integrityCheckInterval) return;
+        this.integrityCheckInterval = setInterval(() => {
+            if (this.isLocked) {
+                const check = document.getElementById('autoclick-overlay');
+                if (!check || check.classList.contains('hidden') || check.style.display === 'none') {
+                    // Re-enable the lock if bypassed
+                    this.initUI();
+                    this.overlay.classList.remove('hidden');
+                    this.overlay.style.display = 'flex';
+                }
+            }
+        }, 3000);
+    }
+
     initUI() {
-        if (document.getElementById('autoclick-overlay')) return;
+        if (document.getElementById('autoclick-overlay')) {
+            this.overlay = document.getElementById('autoclick-overlay');
+            this.timerEl = document.getElementById('autoclick-timer');
+            this.btnEl = document.getElementById('autoclick-btn');
+            return;
+        }
 
         const overlay = document.createElement('div');
         overlay.id = 'autoclick-overlay';
         overlay.className = 'autoclick-overlay hidden';
         overlay.innerHTML = `
             <div class="autoclick-content">
-                <h1>⚠️ AUTO-CLICK DETECTED</h1>
-                <p>Abnormally high click rate detected. Please stop using an auto-clicker to maintain game balance.</p>
+                <div class="warning-icon">🧊</div>
+                <h1>MOLO SUR LE CLICK !</h1>
+                <p>Ça clique un peu trop vite pour un humain ! Prends une petite pause de quelques secondes pour reposer tes doigts.</p>
                 <div id="autoclick-timer" class="autoclick-timer">00:00</div>
-                <button id="autoclick-btn" class="autoclick-btn" disabled>Wait for countdown...</button>
+                <button id="autoclick-btn" class="autoclick-btn" disabled>REPOS EN COURS...</button>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 15px;">Le jeu reprendra automatiquement après le décompte.</div>
             </div>
         `;
         document.body.appendChild(overlay);
@@ -42,23 +66,19 @@ export class AutoclickProtection {
         this.btnEl.onclick = () => this.unlockClicking();
     }
 
-    /**
-     * Triggers the warning and locks the game.
-     * @param {number} invalidRewards Total carrots to remove
-     * @param {Function} onCorrection Callback to sync data (e.g., to Firebase)
-     */
     triggerWarning(invalidRewards = 0, onCorrection = null) {
         if (this.isLocked) return;
 
         this.violations++;
         this.isLocked = true;
         
-        // Remove illegal rewards if game state is accessible
-        if (invalidRewards > 0 && window.BountyGame) {
-            window.BountyGame.count = Math.max(0, window.BountyGame.count - invalidRewards);
+        // On réduit la confiscation pour être moins punitif, on ne retire que le surplus suspect
+        const penalty = invalidRewards; 
+        
+        if (window.BountyGame) {
+            window.BountyGame.count = Math.max(0, window.BountyGame.count - penalty);
             if (typeof window.updateCounterUI === 'function') window.updateCounterUI();
             
-            // Critical sync to Firebase
             if (onCorrection) {
                 onCorrection(window.BountyGame.count, this.violations);
             } else if (typeof window.sauvegarderJeu === 'function') {
@@ -66,23 +86,17 @@ export class AutoclickProtection {
             }
         }
 
-        // Show overlay and blur background
         this.overlay.classList.remove('hidden');
+        this.overlay.style.display = 'flex';
         document.querySelector('.game-layout')?.classList.add('blurred');
         
-        // Update message to inform about removal
-        const msgPara = this.overlay.querySelector('p');
-        msgPara.innerHTML = `Abnormally high click rate detected. <br><strong>${Math.floor(invalidRewards)} carrots</strong> obtained illegitimateley have been removed.`;
-
-        // Calculate lockout duration based on violation level
         const durationIdx = Math.min(this.violations - 1, this.lockoutDurations.length - 1);
         let secondsLeft = this.lockoutDurations[durationIdx];
 
         this.btnEl.disabled = true;
-        this.btnEl.textContent = "Wait for countdown...";
+        this.btnEl.textContent = "REPOS...";
         this.updateTimerDisplay(secondsLeft);
 
-        // Countdown logic
         this.countdownInterval = setInterval(() => {
             secondsLeft--;
             this.updateTimerDisplay(secondsLeft);
@@ -90,7 +104,7 @@ export class AutoclickProtection {
             if (secondsLeft <= 0) {
                 clearInterval(this.countdownInterval);
                 this.btnEl.disabled = false;
-                this.btnEl.textContent = "I understand, return to game";
+                this.btnEl.textContent = "C'est bon, je reprends !";
             }
         }, 1000);
     }

@@ -6,6 +6,7 @@
 <title>Bounty Game – PC</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/autoclick-warning.css">
+<style> .game-layout { opacity: 0; } </style>
 </head>
 <body>
 
@@ -17,10 +18,25 @@
       <div class="counters">
         <span id="counter">0</span>
         <span id="cps">CPS: 0</span>
+        <span id="rebirthInfo">Rebirths: 0</span>
+        <span id="prestigeInfo">Prestige: 0</span>
       </div>
+    </div>
+    <div class="rebirth-container" style="text-align: center; margin-bottom: 20px;">
+      <button id="rebirthButton" class="btn activate">Rebirth (1,000,000)</button>
     </div>
     <div class="image-wrap">
       <img id="image" src="image/bounty.jpg" alt="Bounty">
+    </div>
+    
+    <div class="progress-section" style="margin-top: 30px; padding: 0 40px;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; font-weight: bold; color: var(--neon-blue);">
+        <span>Objectif Rebirth</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar-bg" style="height: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+        <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), #6effff); box-shadow: 0 0 15px var(--neon-blue); transition: width 0.3s ease;"></div>
+      </div>
     </div>
   </div>
 
@@ -36,6 +52,13 @@
       <h2>Boosts</h2>
     </div>
     <div class="boosts-scroll list" id="boostList"></div>
+  </div>
+
+  <div class="panel prestige-tree">
+    <div class="panel-header">
+      <h2>Arbre de Prestige</h2>
+    </div>
+    <div class="prestige-scroll list" id="prestigeTree"></div>
   </div>
 </div>
 
@@ -59,6 +82,7 @@
 <script type="module" src="js/main.js"></script>
 <script src="js/boutique.js"></script>
 <script src="js/boost.js"></script>
+<script src="js/prestige.js"></script>
 <script>
   // Fonction pour revenir au menu de choix
   function resetChoice() {

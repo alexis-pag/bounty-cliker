@@ -19,9 +19,9 @@ export const db = getFirestore(app);
 /**
  * Initialiser les données d'un nouvel utilisateur
  */
-export async function initializeUserData(uid, email) {
+export async function initializeUserData(uid, email, customUsername) {
   const userRef = doc(db, "users", uid);
-  const username = email.split('@')[0]; // Par défaut, on utilise le début de l'email
+  const username = customUsername || email.split('@')[0]; // On utilise le pseudo choisi ou le début de l'email
   
   const initialData = {
     profile: {
@@ -32,9 +32,12 @@ export async function initializeUserData(uid, email) {
     gameData: {
       count: 0,
       multiplier: 1,
+      shopMultiplierBonus: 0,
       clickValue: 1,
       cps: 0,
       rebirths: 0,
+      prestigePoints: 0,
+      unlockedUpgrades: [],
       rebirthPrice: 1000000,
       storeItems: [],
       boosts: []

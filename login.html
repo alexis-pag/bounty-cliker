@@ -7,19 +7,35 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="layout">
-  <div class="panel">
-    <h1>Connexion</h1>
+<div class="bg-animated"></div>
+<div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+  <div class="panel" style="max-width: 400px; width: 90%; animation: fadeIn 0.8s ease-out;">
+    <h1 style="color: var(--neon-blue); text-align: center; margin-bottom: 25px;">Connexion</h1>
     <input type="email" id="loginEmail" placeholder="Email">
     <input type="password" id="loginPass" placeholder="Mot de passe">
-    <button id="loginBtn">Se connecter</button>
-    <p>Pas encore inscrit ? <a href="register.html">Inscription</a></p>
-    <p id="loginError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px;"></p>
+    <button id="loginBtn" class="btn buy" style="width: 100%; margin-top: 10px;">Se connecter</button>
+
+    <div style="margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+      <span style="font-size: 12px; opacity: 0.6;">OU</span>
+      <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+    </div>
+    
+    <button id="googleBtn" class="btn" style="background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Se connecter avec Google
+    </button>
+
+    <p style="text-align: center; margin-top: 20px;">Pas encore inscrit ? <a href="register.html" style="color: var(--neon-blue); text-decoration: none; font-weight: bold;">Inscription</a></p>
+    <p id="loginError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px; text-align: center;"></p>
   </div>
 </div>
 
+<style>
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+</style>
+
 <script type="module">
-  import { login } from './js/auth.js';
+  import { login, loginWithGoogle } from './js/auth.js';
 
   document.getElementById('loginBtn').addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value;
@@ -40,6 +56,17 @@
       } else {
         errorEl.textContent = "Une erreur est survenue lors de la connexion.";
       }
+    }
+  });
+
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    const errorEl = document.getElementById('loginError');
+    errorEl.textContent = "";
+    try {
+      await loginWithGoogle();
+      window.location.href = 'dashboard.html';
+    } catch (error) {
+      errorEl.textContent = "Échec de la connexion avec Google.";
     }
   });
 </script>
