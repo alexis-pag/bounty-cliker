@@ -89,6 +89,7 @@
 
       const left = document.createElement('div'); left.className = 'left';
       const img = document.createElement('img'); img.className = 'icon'; img.src = item.icon;
+      img.loading = "lazy"; // Optimisation chargement
       const txt = document.createElement('div');
       txt.innerHTML = `<strong>${item.name}</strong><div class="item-price" style="font-size:12px;color:rgba(255,255,255,0.7)">Prix: ${displayPrice}</div>`;
       left.appendChild(img); left.appendChild(txt);

@@ -56,6 +56,15 @@ import { AutoclickProtection } from './autoclick-protection.js';
     'assets/images/bounty4.jpg','assets/images/bounty5.jpg','assets/images/bounty6.jpg',
     'assets/images/bounty7.jpg','assets/images/bounty8.jpg','assets/images/bountygraille.jpg'
   ];
+  
+  // Préchargement des images pour fluidité
+  const preloadedImages = [];
+  images.forEach(src => {
+    const img = new Image();
+    img.src = src;
+    preloadedImages.push(img);
+  });
+
   let lastImageIdx = -1;
 
   function changerImage(){
@@ -78,10 +87,10 @@ import { AutoclickProtection } from './autoclick-protection.js';
     const left = Math.min(window.innerWidth - 60, Math.max(8, x));
     const top = Math.min(window.innerHeight - 40, Math.max(8, y));
     
-    el.style.left = left + 'px';
-    el.style.top = top + 'px';
+    el.style.setProperty('--x', `${left}px`);
+    el.style.setProperty('--y', `${top}px`);
+    el.style.setProperty('--r', `${rotation}deg`);
     el.style.fontSize = size + 'px';
-    el.style.transform = `rotate(${rotation}deg)`;
     
     document.body.appendChild(el);
     setTimeout(()=>el.remove(), 950);
@@ -106,14 +115,15 @@ import { AutoclickProtection } from './autoclick-protection.js';
   }
   window.recalculerMultiplier = recalculerMultiplier;
 
+  const progressBar = document.getElementById('progressBar');
+  const progressPercent = document.getElementById('progressPercent');
+
   function updateCounterUI(){
     recalculerMultiplier();
     if (counterEl) counterEl.textContent = `Croquettes : ${Math.floor(window.BountyGame.count)} (×${(window.BountyGame.multiplier ?? 1)})`;
     if (cpsEl) cpsEl.textContent = `CPS : ${Math.floor(window.BountyGame.cps)}`;
     
     // Mise à jour de la barre de progression
-    const progressBar = document.getElementById('progressBar');
-    const progressPercent = document.getElementById('progressPercent');
     if (progressBar && progressPercent) {
       const rebirthPrice = window.BountyGame.rebirthPrice || 1000000;
       const progress = Math.min(100, (window.BountyGame.count / rebirthPrice) * 100);
@@ -121,11 +131,12 @@ import { AutoclickProtection } from './autoclick-protection.js';
       progressPercent.textContent = `${Math.floor(progress)}%`;
       
       // Effet visuel quand prêt pour rebirth
-      if (progress >= 100) {
+      const isReady = progress >= 100;
+      if (isReady && !progressBar.classList.contains('progress-bar-ready')) {
         progressBar.style.background = 'linear-gradient(90deg, #ffde00, #ffffff)';
         progressBar.classList.add('progress-bar-ready');
         progressBar.classList.remove('progress-bar-glow');
-      } else {
+      } else if (!isReady && progressBar.classList.contains('progress-bar-ready')) {
         progressBar.style.background = 'linear-gradient(90deg, var(--neon-blue), #6effff)';
         progressBar.classList.remove('progress-bar-ready');
         progressBar.classList.add('progress-bar-glow');
@@ -231,13 +242,15 @@ import { AutoclickProtection } from './autoclick-protection.js';
     });
   }
 
+  let lastStoreUpdate = 0;
   setInterval(() => {
+    const now = Date.now();
     const cpsGain = calculCPS();
     window.BountyGame.count += cpsGain;
     window.BountyGame.cps = cpsGain;
     
-    // Floating CPS Gain (visual feedback)
-    if (cpsGain > 0 && Math.random() < 0.3) { // 30% chance to show to avoid clutter
+    // Floating CPS Gain (visual feedback) - limited to avoid overload
+    if (cpsGain > 0 && Math.random() < 0.15) { 
         const imgRect = imgEl?.getBoundingClientRect();
         if (imgRect) {
             const x = imgRect.left + Math.random() * imgRect.width;
@@ -247,7 +260,12 @@ import { AutoclickProtection } from './autoclick-protection.js';
     }
     
     updateCounterUI();
-    if (typeof window.updateStore === 'function') window.updateStore();
+    
+    // On n'update le store que toutes les 5 secondes ou si nécessaire pour perf
+    if (now - lastStoreUpdate > 5000) {
+      if (typeof window.updateStore === 'function') window.updateStore();
+      lastStoreUpdate = now;
+    }
   }, 1000);
 
   async function sauvegarderJeu(){

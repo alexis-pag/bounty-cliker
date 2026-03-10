@@ -11,9 +11,14 @@
 <div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
   <div class="panel" style="max-width: 400px; width: 90%; animation: fadeIn 0.8s ease-out;">
     <h1 style="color: var(--neon-blue); text-align: center; margin-bottom: 25px;">Connexion</h1>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPass" placeholder="Mot de passe">
-    <button id="loginBtn" class="btn buy" style="width: 100%; margin-top: 10px;">Se connecter</button>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPass" placeholder="Mot de passe" required>
+      <p style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+        <a href="#" id="forgotPassLink" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85em;">Mot de passe oublié ?</a>
+      </p>
+      <button type="submit" id="loginBtn" class="btn buy" style="width: 100%; margin-top: 10px;">Se connecter</button>
+    </form>
 
     <div style="margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
       <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
@@ -30,14 +35,55 @@
   </div>
 </div>
 
+<!-- Modal Mot de Passe Oublié -->
+<div id="forgotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center;">
+  <div class="panel" style="max-width:350px; width:90%; animation: fadeIn 0.4s ease-out; padding: 25px;">
+    <h2 style="color:var(--neon-blue); text-align: center; margin-bottom: 20px;">Réinitialisation</h2>
+    <p style="font-size: 0.9em; margin-bottom: 15px; text-align: center; opacity: 0.8;">Entrez votre adresse email pour recevoir un lien :</p>
+    <input type="email" id="forgotEmailInput" placeholder="votre@email.com" style="margin-bottom: 15px;">
+    <button id="sendResetBtn" class="btn buy" style="width: 100%; margin-bottom: 10px;">Envoyer l'email</button>
+    <button id="closeModalBtn" class="btn" style="width: 100%; background: rgba(255,255,255,0.1); font-size: 0.8em;">Annuler</button>
+  </div>
+</div>
+
 <style>
   @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 </style>
 
 <script type="module">
-  import { login, loginWithGoogle } from './js/auth.js';
+  import { login, loginWithGoogle, resetPassword, resendVerification } from './js/auth.js';
 
-  document.getElementById('loginBtn').addEventListener('click', async () => {
+  const modal = document.getElementById('forgotModal');
+  const modalInput = document.getElementById('forgotEmailInput');
+
+  document.getElementById('forgotPassLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    modal.style.display = 'flex';
+    modalInput.value = document.getElementById('loginEmail').value; // pré-remplir si possible
+  });
+
+  document.getElementById('closeModalBtn').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  document.getElementById('sendResetBtn').addEventListener('click', async () => {
+    const email = modalInput.value;
+    const errorEl = document.getElementById('loginError');
+    if (!email) {
+      alert("Veuillez saisir un e-mail.");
+      return;
+    }
+    try {
+      await resetPassword(email);
+      alert("Email de réinitialisation envoyé à " + email + " !");
+      modal.style.display = 'none';
+    } catch (error) {
+      alert("Erreur : " + error.message);
+    }
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
     const email = document.getElementById('loginEmail').value;
     const pass = document.getElementById('loginPass').value;
     const errorEl = document.getElementById('loginError');
@@ -45,12 +91,31 @@
     errorEl.textContent = "";
 
     try {
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = "Connexion...";
       await login(email, pass);
       window.location.href = 'dashboard.html';
     } catch (error) {
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = false;
+      btn.textContent = "Se connecter";
       console.error(error);
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         errorEl.textContent = "Email ou mot de passe incorrect.";
+      } else if (error.code === 'auth/email-not-verified') {
+        errorEl.innerHTML = `Votre adresse email n'est pas encore confirmée. <a href="#" id="resendEmail" style="color: var(--neon-blue);">Renvoyer l'email</a>`;
+        document.getElementById('resendEmail').addEventListener('click', async (e) => {
+          e.preventDefault();
+          try {
+            await resendVerification(email, pass);
+            alert("Email de confirmation renvoyé !");
+          } catch (err) {
+            alert("Erreur lors du renvoi : " + err.message);
+          }
+        });
+      } else if (error.code === 'auth/too-many-requests') {
+        errorEl.textContent = "Trop de tentatives de connexion échouées. Veuillez patienter quelques instants.";
       } else if (error.code === 'auth/invalid-email') {
         errorEl.textContent = "L'adresse email n'est pas valide.";
       } else {
@@ -66,7 +131,11 @@
       await loginWithGoogle();
       window.location.href = 'dashboard.html';
     } catch (error) {
-      errorEl.textContent = "Échec de la connexion avec Google.";
+      if (error.code === 'auth/email-not-verified') {
+        errorEl.textContent = "Votre email Google n'est pas vérifié.";
+      } else {
+        errorEl.textContent = "Échec de la connexion avec Google.";
+      }
     }
   });
 </script>
