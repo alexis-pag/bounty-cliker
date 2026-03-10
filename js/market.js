@@ -4,7 +4,8 @@
  */
 
 import { checkAuth } from './auth.js';
-import { listenToMarket, updateMarketData } from './database.js';
+import { listenToMarket, updateMarketData, db } from './database.js';
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { MarketEngine } from './market-engine.js';
 import { ChartSystem } from './chart-system.js';
 import { OrderSystem } from './order-system.js';
@@ -101,36 +102,54 @@ class MarketDashboard {
 
             this.updateUI();
 
+            // Check limit orders whenever market updates
+            if (this.orders && this.portfolio) {
+                await this.orders.checkLimitOrders(this.engine.currentPrice, this.portfolio, (order, price) => {
+                    console.log("Limit Order triggered:", order);
+                    this.showFeedback(`Limit ${order.type.toUpperCase()} executed at ${price.toFixed(2)}`, 'success');
+                });
+            }
+
             // Automatic Price Generation Loop (Master role)
             const now = Date.now();
             const lastUpdate = this.engine.lastUpdateTime || 0;
-            if (now - lastUpdate > 6000) {
-                console.log("Master Role: Updating market price...");
-                const nextPrice = this.engine.calculateNextPrice();
-                let nextHistory = [...(this.engine.history || []), nextPrice];
+            const TICK_MS = 8000;
+            
+            if (now - lastUpdate > TICK_MS) { 
+                if (this._masterAttempt) clearTimeout(this._masterAttempt);
                 
-                // Limit history
-                if (nextHistory.length > 200) nextHistory.shift();
-                
-                try {
-                    await updateMarketData(nextPrice, nextHistory, {
-                        trend: this.engine.trend,
-                        momentum: this.engine.momentum,
-                        volatility: this.engine.volatility,
-                        currentNews: this.engine.currentNews
-                    });
-                } catch (e) {
-                    console.error("Master Role Error:", e);
-                }
+                this._masterAttempt = setTimeout(async () => {
+                    const freshDataSnap = await getDoc(doc(db, "market", "carrotMarket"));
+                    const freshData = freshDataSnap.data();
+                    const freshUpdate = freshData?.lastUpdate?.toMillis() || 0;
+                    
+                    // Someone else updated during the delay
+                    if (Date.now() - freshUpdate < (TICK_MS / 2)) return;
 
-                // Check limit orders
-                if (this.orders) {
-                    await this.orders.checkLimitOrders(nextPrice, async (order, price) => {
-                        console.log("Limit Order triggered:", order);
-                        await this.portfolio.load(); // Refresh local balance/shares
-                        this.showFeedback(`Limit ${order.type.toUpperCase()} executed at ${price.toFixed(2)}`, 'success');
-                    });
-                }
+                    console.log("Master Role: Updating market price...");
+                    
+                    // Catch-up logic: calculate how many ticks passed
+                    const ticksToSimulate = Math.floor((Date.now() - freshUpdate) / TICK_MS);
+                    if (ticksToSimulate <= 0) return;
+
+                    const newPrices = this.engine.calculateMultipleTicks(ticksToSimulate);
+                    const nextPrice = newPrices[newPrices.length - 1];
+                    let nextHistory = [...(this.engine.history || []), ...newPrices];
+                    
+                    if (nextHistory.length > 200) nextHistory = nextHistory.slice(-200);
+                    
+                    try {
+                        await updateMarketData(nextPrice, nextHistory, {
+                            trend: this.engine.trend,
+                            momentum: this.engine.momentum,
+                            volatility: this.engine.volatility,
+                            currentNews: this.engine.currentNews,
+                            trendDuration: this.engine.trendDuration
+                        });
+                    } catch (e) {
+                        console.error("Master Role Error:", e);
+                    }
+                }, Math.random() * 2000);
             }
         });
     }
@@ -230,6 +249,8 @@ class MarketDashboard {
         const limitPriceInput = document.getElementById('limit-price');
         const price = isLimit ? parseFloat(limitPriceInput.value) : this.engine.currentPrice;
 
+        if (isLimit && (isNaN(price) || price <= 0)) return this.showFeedback("Invalid limit price", "error");
+
         console.log("Placing Order:", { view, amount, price, isLimit });
 
         try {
@@ -242,6 +263,13 @@ class MarketDashboard {
                 });
                 this.showFeedback(`${view === 'buy' ? 'Bought' : 'Sold'} ${amount} shares!`, "success");
             } else {
+                // Reserve assets for limit order
+                if (view === 'buy') {
+                    await this.portfolio.reserveCarrots(amount * price);
+                } else {
+                    await this.portfolio.reserveShares(amount);
+                }
+                
                 await this.orders.placeOrder(view, amount, price, true);
                 this.showFeedback(`Limit ${view} order placed!`, "success");
             }

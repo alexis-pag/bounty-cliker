@@ -12,6 +12,8 @@ export class PortfolioSystem {
         this.avgPrice = 0;
         this.totalInvested = 0;
         this.carrots = 0;
+        this.reservedCarrots = 0;
+        this.reservedShares = 0;
     }
 
     async load() {
@@ -20,22 +22,108 @@ export class PortfolioSystem {
             this.shares = Number(data.portfolio?.shares) || 0;
             this.avgPrice = Number(data.portfolio?.averageBuyPrice) || 0;
             this.totalInvested = Number(data.portfolio?.totalInvested) || 0;
+            this.reservedCarrots = Number(data.portfolio?.reservedCarrots) || 0;
+            this.reservedShares = Number(data.portfolio?.reservedShares) || 0;
             this.carrots = Number(data.gameData?.count) || 0;
-            console.log("Portfolio Loaded:", { shares: this.shares, carrots: this.carrots });
+            console.log("Portfolio Loaded:", { shares: this.shares, carrots: this.carrots, reserved: { carrots: this.reservedCarrots, shares: this.reservedShares } });
         }
+    }
+
+    /**
+     * Reserve funds for a limit buy order
+     */
+    async reserveCarrots(amountInCarrots) {
+        const cost = Math.floor(amountInCarrots);
+        if (this.carrots < cost) throw new Error("Not enough carrots to reserve");
+        
+        this.carrots -= cost;
+        this.reservedCarrots += cost;
+        
+        await updatePlayerPortfolio(this.userId, {
+            reservedCarrots: this.reservedCarrots,
+            reservedShares: this.reservedShares,
+            shares: this.shares,
+            averageBuyPrice: this.avgPrice,
+            totalInvested: this.totalInvested
+        }, -cost);
+    }
+
+    /**
+     * Unreserve funds (if order canceled)
+     */
+    async unreserveCarrots(amountInCarrots) {
+        const cost = Math.floor(amountInCarrots);
+        this.carrots += cost;
+        this.reservedCarrots = Math.max(0, this.reservedCarrots - cost);
+        
+        await updatePlayerPortfolio(this.userId, {
+            reservedCarrots: this.reservedCarrots,
+            reservedShares: this.reservedShares,
+            shares: this.shares,
+            averageBuyPrice: this.avgPrice,
+            totalInvested: this.totalInvested
+        }, cost);
+    }
+
+    /**
+     * Reserve shares for a limit sell order
+     */
+    async reserveShares(amountInShares) {
+        if (this.shares < amountInShares) throw new Error("Not enough shares to reserve");
+        
+        this.shares -= amountInShares;
+        this.reservedShares += amountInShares;
+        
+        await updatePlayerPortfolio(this.userId, {
+            reservedCarrots: this.reservedCarrots,
+            reservedShares: this.reservedShares,
+            shares: this.shares,
+            averageBuyPrice: this.avgPrice,
+            totalInvested: this.totalInvested
+        }, 0);
+    }
+
+    /**
+     * Unreserve shares (if order canceled)
+     */
+    async unreserveShares(amountInShares) {
+        this.shares += amountInShares;
+        this.reservedShares = Math.max(0, this.reservedShares - amountInShares);
+        
+        await updatePlayerPortfolio(this.userId, {
+            reservedCarrots: this.reservedCarrots,
+            reservedShares: this.reservedShares,
+            shares: this.shares,
+            averageBuyPrice: this.avgPrice,
+            totalInvested: this.totalInvested
+        }, 0);
     }
 
     /**
      * Update portfolio after a trade
      */
-    async processTrade(type, amount, price) {
-        const cost = amount * price;
-        console.log(`Processing ${type}: amount=${amount}, price=${price}, totalCost=${cost}`);
+    async processTrade(type, amount, price, fromReserved = false) {
+        const cost = Math.floor(amount * price);
+        console.log(`Processing ${type}: amount=${amount}, price=${price}, totalCost=${cost}, fromReserved=${fromReserved}`);
         
+        let countChange = 0;
+
         if (type === 'buy') {
-            if (this.carrots < cost) {
-                console.error("Not enough carrots:", { wallet: this.carrots, cost });
-                throw new Error("Not enough carrots");
+            if (fromReserved) {
+                // Find how much was reserved for this specific amount
+                // In this system, we reserve exactly amount * orderPrice
+                // If executed at currentPrice (which is <= orderPrice), we refund the difference
+                const reservedForThis = cost; // For now, we assume cost passed is what was reserved
+                this.reservedCarrots = Math.max(0, this.reservedCarrots - reservedForThis);
+                
+                // If we want to support better-than-limit execution:
+                // const actualCost = Math.floor(amount * actualPrice);
+                // const refund = reservedForThis - actualCost;
+                // this.carrots += refund;
+            } else {
+                if (this.carrots < cost) throw new Error("Not enough carrots");
+                this.carrots -= cost;
+                countChange = -cost;
             }
             
             const newShares = this.shares + amount;
@@ -44,20 +132,22 @@ export class PortfolioSystem {
             this.shares = newShares;
             this.avgPrice = newAvg;
             this.totalInvested += cost;
-            this.carrots -= cost;
         } else {
-            if (this.shares < amount) throw new Error("Not enough shares");
+            if (fromReserved) {
+                // Shares were already deducted and put in reservedShares
+                this.reservedShares = Math.max(0, this.reservedShares - amount);
+            } else {
+                if (this.shares < amount) throw new Error("Not enough shares");
+                this.shares -= amount;
+            }
             
-            const gain = cost;
-            this.shares -= amount;
-            // Realized profit could be tracked here
-            this.carrots += gain;
+            this.carrots += cost;
+            countChange = cost;
             
-            if (this.shares === 0) {
+            if (this.shares === 0 && this.reservedShares === 0) {
                 this.avgPrice = 0;
                 this.totalInvested = 0;
-            } else {
-                // Keep the same average purchase price for remaining shares
+            } else if (this.shares > 0) {
                 this.totalInvested -= (this.avgPrice * amount);
             }
         }
@@ -65,19 +155,19 @@ export class PortfolioSystem {
         const updates = {
             shares: this.shares,
             averageBuyPrice: this.avgPrice,
-            totalInvested: this.totalInvested
+            totalInvested: this.totalInvested,
+            reservedCarrots: this.reservedCarrots,
+            reservedShares: this.reservedShares
         };
 
-        // Sync to Firebase
-        // updatePlayerPortfolio(uid, portfolioUpdates, countChange)
-        // Note: cost is already deducted/added locally above, so we pass difference to update count
-        const change = type === 'buy' ? -cost : cost;
-        await updatePlayerPortfolio(this.userId, updates, change);
+        await updatePlayerPortfolio(this.userId, updates, countChange);
         
         return {
             shares: this.shares,
             avgPrice: this.avgPrice,
-            carrots: this.carrots
+            carrots: this.carrots,
+            reservedCarrots: this.reservedCarrots,
+            reservedShares: this.reservedShares
         };
     }
 

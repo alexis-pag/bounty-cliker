@@ -126,7 +126,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
     // Mise à jour de la barre de progression
     if (progressBar && progressPercent) {
       const rebirthPrice = window.BountyGame.rebirthPrice || 1000000;
-      const progress = Math.min(100, (window.BountyGame.count / rebirthPrice) * 100);
+      const progress = Math.min(125, (window.BountyGame.count / rebirthPrice) * 100);
       progressBar.style.width = `${progress}%`;
       progressPercent.textContent = `${Math.floor(progress)}%`;
       

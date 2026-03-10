@@ -5,21 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Bounty Clicker - Mobile</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/css-mobile.css">
+  <link rel="stylesheet" href="css/market.css">
+  <link rel="stylesheet" href="css/trading.css">
   <link rel="stylesheet" href="css/autoclick-warning.css">
-  <style> .game-layout { opacity: 0; } </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    .game-layout { opacity: 0; transition: opacity 0.5s ease; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .hidden { display: none !important; }
+    
+    /* Mobile Trading Adjustments */
+    .trading-grid-mobile {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding-bottom: 80px;
+    }
+    .chart-wrapper-mobile {
+      height: 200px;
+      width: 100%;
+    }
+    .order-form-mobile {
+      background: rgba(255,255,255,0.03);
+      padding: 15px;
+      border-radius: 12px;
+    }
+    .stats-grid-mobile {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.02);
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-card .label { font-size: 0.7rem; opacity: 0.6; display: block; }
+    .stat-card .value { font-size: 0.9rem; font-weight: bold; }
+  </style>
 </head>
 <body>
 
 <div class="bg-animated"></div>
 
-<div class="game-layout">
+<div class="game-layout" style="opacity: 1;">
+  <!-- Section Clic -->
   <section class="panel clicker active" id="tab-clicker">
     <header class="panel-header">
       <h1>Bounty Clicker</h1>
       <div class="counters">
-        <div id="counter">Croquettes : 0</div>
+        <div id="counter">Bounties : 0</div>
         <div id="cps">CPS : 0</div>
-        <div id="prestigeInfo">Prestige : 0</div>
       </div>
     </header>
     <main class="panel-main">
@@ -29,7 +69,7 @@
       
       <div class="progress-section" style="margin-top: 15px; padding: 0 20px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; font-weight: bold; color: var(--neon-blue);">
-          <span>Rebirth</span>
+          <span>Prochain Rebirth</span>
           <span id="progressPercent">0%</span>
         </div>
         <div class="progress-bar-bg" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
@@ -44,24 +84,112 @@
     </main>
   </section>
 
+  <!-- Section Shop -->
   <aside class="panel shop" id="tab-shop">
     <header class="panel-header">
-      <h2>Boutique</h2>
+      <h2>Boutique d'Upgrades</h2>
     </header>
     <div class="panel-main">
       <div id="storeItems" class="list shop-scroll"></div>
     </div>
   </aside>
 
+  <!-- Section Boosts -->
   <aside class="panel boosts" id="tab-boosts">
-    <header class="panel-header"><h2>Boosts & Bonus</h2></header>
+    <header class="panel-header"><h2>Boosts Actifs</h2></header>
     <div class="panel-main">
       <div id="boostsContainer" class="list boosts-scroll"></div>
     </div>
   </aside>
 
+  <!-- Section Trading (Nouveau) -->
+  <aside class="panel trading" id="tab-trading">
+    <header class="panel-header">
+        <div class="logo">BOUNTY<span>EX</span></div>
+        <div class="market-summary-mobile" style="display: flex; gap: 15px; font-size: 0.8rem;">
+            <div><span class="label">PRIX:</span> <span id="market-price" class="value">--.--</span></div>
+            <div><span id="market-change" class="value">--.--%</span></div>
+        </div>
+    </header>
+    <div class="panel-main trading-grid-mobile">
+        <!-- Chart -->
+        <div class="card" style="padding: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="font-size: 0.9rem; margin: 0;">GRAPHIQUE LIVE</h3>
+                <div class="chart-controls">
+                    <button id="btn-line" class="btn-small active" style="font-size: 0.7rem; padding: 2px 6px;">Line</button>
+                    <button id="btn-candle" class="btn-small" style="font-size: 0.7rem; padding: 2px 6px;">Candles</button>
+                </div>
+            </div>
+            <div class="chart-wrapper-mobile">
+                <canvas id="tradingChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Order Panel -->
+        <div class="card order-panel-mobile" style="padding: 10px;">
+            <div class="tabs" style="display: flex; margin-bottom: 10px;">
+                <button id="tab-buy" class="tab active" style="flex: 1; padding: 8px; font-size: 0.8rem;">ACHAT</button>
+                <button id="tab-sell" class="tab" style="flex: 1; padding: 8px; font-size: 0.8rem;">VENTE</button>
+            </div>
+            
+            <div class="order-form-mobile">
+                <div class="order-types" style="margin-bottom: 10px; font-size: 0.8rem; display: flex; gap: 15px;">
+                    <label><input type="radio" name="orderType" value="market" checked> Market</label>
+                    <label><input type="radio" name="orderType" value="limit"> Limit</label>
+                </div>
+
+                <div id="limit-price-group" class="input-group hidden" style="margin-bottom: 10px;">
+                    <label style="font-size: 0.7rem; display: block;">Prix Limite</label>
+                    <input type="number" id="limit-price" step="0.01" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 10px;">
+                    <label style="font-size: 0.7rem; display: block;">Quantité (Actions)</label>
+                    <input type="number" id="order-amount" step="1" min="1" placeholder="0" style="width: 100%; padding: 8px; border-radius: 6px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                </div>
+
+                <div class="order-info" style="font-size: 0.8rem; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Total:</span> <span id="order-total">0</span></div>
+                    <div style="display: flex; justify-content: space-between; opacity: 0.6;"><span>Solde:</span> <span id="player-carrots">0</span></div>
+                </div>
+
+                <button id="btn-execute" class="btn buy" style="width: 100%; padding: 10px;">EXECUTER ACHAT</button>
+                <div id="order-feedback" style="font-size: 0.7rem; text-align: center; margin-top: 5px; min-height: 14px;"></div>
+            </div>
+        </div>
+
+        <!-- Portfolio -->
+        <div class="card" style="padding: 10px;">
+            <h3 style="font-size: 0.9rem; margin-bottom: 10px;">VOTRE PORTEFEUILLE</h3>
+            <div class="stats-grid-mobile">
+                <div class="stat-card"><span class="label">Actions</span><span id="portfolio-shares" class="value">0</span></div>
+                <div class="stat-card"><span class="label">Prix Moyen</span><span id="portfolio-avg-price" class="value">0.00</span></div>
+                <div class="stat-card"><span class="label">Valeur</span><span id="portfolio-value" class="value">0</span></div>
+                <div class="stat-card"><span class="label">Profit/Perte</span><span id="portfolio-pl" class="value">0.00%</span></div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="card" style="padding: 10px;">
+            <div class="tabs-small" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button id="tab-history" class="active" style="background: none; border: none; color: white; border-bottom: 2px solid var(--neon-blue); font-size: 0.8rem; padding: 4px;">Historique</button>
+                <button id="tab-open-orders" style="background: none; border: none; color: white; opacity: 0.5; font-size: 0.8rem; padding: 4px;">Ordres Ouverts</button>
+            </div>
+            <div style="max-height: 150px; overflow-y: auto; font-size: 0.7rem;">
+                <table id="trade-list" style="width: 100%; border-collapse: collapse;">
+                    <tbody id="trade-history-body"></tbody>
+                </table>
+                <table id="open-orders-list" class="hidden" style="width: 100%; border-collapse: collapse;">
+                    <tbody id="open-orders-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </aside>
+
   <aside class="panel prestige-tree" id="tab-prestige">
-    <header class="panel-header"><h2>Prestige</h2></header>
+    <header class="panel-header"><h2>Arbre de Prestige</h2></header>
     <div class="panel-main">
       <div id="prestigeTree" class="list prestige-scroll"></div>
     </div>
@@ -70,37 +198,41 @@
 
 <nav class="mobile-nav">
   <div class="nav-item active" data-tab="tab-clicker">
-    <span style="font-size: 24px;">🐾</span>
-    <span>Clic</span>
+    <span style="font-size: 20px;">🐾</span>
+    <span style="font-size: 10px;">Clic</span>
   </div>
   <div class="nav-item" data-tab="tab-shop">
-    <span style="font-size: 24px;">🛒</span>
-    <span>Shop</span>
+    <span style="font-size: 20px;">🛒</span>
+    <span style="font-size: 10px;">Shop</span>
+  </div>
+  <div class="nav-item" data-tab="tab-trading">
+    <span style="font-size: 20px;">💹</span>
+    <span style="font-size: 10px;">Bourse</span>
   </div>
   <div class="nav-item" data-tab="tab-boosts">
-    <span style="font-size: 24px;">⚡</span>
-    <span>Boosts</span>
+    <span style="font-size: 20px;">⚡</span>
+    <span style="font-size: 10px;">Boosts</span>
   </div>
   <div class="nav-item" data-tab="tab-prestige">
-    <span style="font-size: 24px;">🏆</span>
-    <span>Prestige</span>
+    <span style="font-size: 20px;">🏆</span>
+    <span style="font-size: 10px;">Prestige</span>
   </div>
 </nav>
 
 <!-- Boutons de contrôle rapides en haut -->
 <div style="position:fixed; top:10px; left:10px; z-index:999; display: flex; gap: 5px;">
-  <button class="btn buy" style="padding: 6px 12px; font-size: 14px;" id="saveButton">Save</button>
-  <button class="btn reset" style="padding: 6px 12px; font-size: 14px;" id="resetButton">Reset</button>
+  <button class="btn buy" style="padding: 6px 10px; font-size: 12px; border-radius: 8px;" id="saveButton">Save</button>
 </div>
 
 <div style="position:fixed; top:10px; right:10px; z-index:999; display: flex; gap: 5px;">
-  <button class="btn btn-secondary" style="padding: 6px 10px;" onclick="resetChoice()">Menu</button>
-  <button class="btn btn-logout" style="padding: 6px 10px;" onclick="window.logout()">Log out</button>
+  <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px; border-radius: 8px;" onclick="resetChoice()">Menu</button>
+  <button class="btn btn-logout" style="padding: 6px 10px; font-size: 12px; border-radius: 8px;" id="logoutMobile">Log out</button>
 </div>
 
 <script src="js/boutique.js" defer></script>
 <script src="js/boost.js" defer></script>
 <script src="js/prestige.js" defer></script>
+<script type="module" src="js/trading.js" defer></script>
 <script type="module" src="js/main.js" defer></script>
 
 <script>
@@ -133,13 +265,13 @@
       });
     });
 
-    // Redirection automatique si le choix mobile est déjà enregistré
-    const savedChoice = localStorage.getItem("bc-version");
-    if (savedChoice === "desktop") {
-      window.location.href = "site.html";
-    } else if (savedChoice === "mobile") {
-      // reste sur cette page, choix déjà enregistré
-      localStorage.setItem("bc-version", "mobile");
+    // Logout handling for mobile
+    const logoutBtn = document.getElementById('logoutMobile');
+    if (logoutBtn) {
+        logoutBtn.onclick = async () => {
+            if (window.logout) await window.logout();
+            else window.location.href = 'login.html';
+        };
     }
   });
 </script>

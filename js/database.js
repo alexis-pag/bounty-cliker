@@ -45,7 +45,9 @@ export async function initializeUserData(uid, email, customUsername) {
     portfolio: {
       shares: 0,
       averageBuyPrice: 0,
-      totalInvested: 0
+      totalInvested: 0,
+      reservedCarrots: 0,
+      reservedShares: 0
     },
     settings: {
       theme: "dark",
@@ -70,6 +72,13 @@ export async function initializeUserData(uid, email, customUsername) {
  * Mettre à jour le classement
  */
 export async function updateLeaderboard(uid, username, score, rebirths = 0) {
+  // Vérification de l'URL de production pour éviter le classement local
+  const PROD_URL = "https://alexis-pag.github.io/bounty-cliker/";
+  if (!window.location.href.startsWith(PROD_URL)) {
+    console.warn("Leaderboard update ignored: application is not running on the production URL.");
+    return;
+  }
+
   try {
     const leaderRef = doc(db, "leaderboard", uid);
     await setDoc(leaderRef, {

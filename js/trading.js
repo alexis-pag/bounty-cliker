@@ -4,7 +4,8 @@
  */
 
 import { checkAuth } from './auth.js';
-import { listenToMarket, updateMarketData } from './database.js';
+import { listenToMarket, updateMarketData, db } from './database.js';
+import { getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { MarketEngine } from './market-engine.js';
 import { ChartSystem } from './chart-system.js';
 import { OrderSystem } from './order-system.js';
@@ -75,6 +76,7 @@ class TradingDashboard {
 
     listenToMarket() {
         listenToMarket(async (marketData) => {
+            if (!marketData) return;
             this.engine.sync(marketData);
             
             // Render first time or update
@@ -88,31 +90,54 @@ class TradingDashboard {
 
             this.updateUI();
 
-            // Check limit orders against the current price (always do this for our own orders)
-            await this.orders.checkLimitOrders(this.engine.currentPrice, async (order, price) => {
-                try {
-                    // Update the portfolio locally and in Firestore
-                    await this.portfolio.load(); // Latest balance
-                    await this.portfolio.processTrade(order.type, order.amount, order.price);
-                    this.showFeedback(`Limit Order Executed: ${order.type.toUpperCase()} ${order.amount} at ${order.price.toFixed(2)}`, 'success');
-                    this.updateUI();
-                } catch (e) {
-                    console.error("Failed to execute limit order portfolio update:", e);
-                }
-            });
-
-            // Market Maker Logic (One user updates the price if old)
-            const now = Date.now();
-            if (now - this.engine.lastUpdateTime > 3000) { // Update every 3 seconds
-                const nextPrice = this.engine.calculateNextPrice();
-                const nextHistory = [...this.engine.history, nextPrice].slice(-200);
-                
-                await updateMarketData(nextPrice, nextHistory, {
-                    trend: this.engine.trend,
-                    momentum: this.engine.momentum,
-                    volatility: this.engine.volatility,
-                    trendDuration: this.engine.trendDuration
+            // Check limit orders whenever market updates
+            if (this.orders && this.portfolio) {
+                await this.orders.checkLimitOrders(this.engine.currentPrice, this.portfolio, (order, price) => {
+                    console.log("Limit Order triggered:", order);
+                    this.showFeedback(`Limit ${order.type.toUpperCase()} executed at ${price.toFixed(2)}`, 'success');
                 });
+            }
+
+            // Automatic Price Generation Loop (Master role)
+            const now = Date.now();
+            const lastUpdate = this.engine.lastUpdateTime || 0;
+            const TICK_MS = 8000;
+            
+            if (now - lastUpdate > TICK_MS) { 
+                if (this._masterAttempt) clearTimeout(this._masterAttempt);
+                
+                this._masterAttempt = setTimeout(async () => {
+                    const freshDataSnap = await getDoc(doc(db, "market", "carrotMarket"));
+                    const freshData = freshDataSnap.data();
+                    const freshUpdate = freshData?.lastUpdate?.toMillis() || 0;
+                    
+                    // Someone else updated during the delay
+                    if (Date.now() - freshUpdate < (TICK_MS / 2)) return;
+
+                    console.log("Master Role: Updating market price...");
+                    
+                    // Catch-up logic
+                    const ticksToSimulate = Math.floor((Date.now() - freshUpdate) / TICK_MS);
+                    if (ticksToSimulate <= 0) return;
+
+                    const newPrices = this.engine.calculateMultipleTicks(ticksToSimulate);
+                    const nextPrice = newPrices[newPrices.length - 1];
+                    let nextHistory = [...(this.engine.history || []), ...newPrices];
+                    
+                    if (nextHistory.length > 200) nextHistory = nextHistory.slice(-200);
+                    
+                    try {
+                        await updateMarketData(nextPrice, nextHistory, {
+                            trend: this.engine.trend,
+                            momentum: this.engine.momentum,
+                            volatility: this.engine.volatility,
+                            trendDuration: this.engine.trendDuration,
+                            currentNews: this.engine.currentNews
+                        });
+                    } catch (e) {
+                        console.error("Master Role Error:", e);
+                    }
+                }, Math.random() * 2000);
             }
         });
     }
@@ -210,7 +235,13 @@ class TradingDashboard {
 
                 this.showFeedback(`${this.currentView === 'buy' ? 'Bought' : 'Sold'} ${amount} shares!`, "success");
             } else {
-                // Limit Order: just save to orders
+                // Limit Order: reserve assets
+                if (this.currentView === 'buy') {
+                    await this.portfolio.reserveCarrots(amount * price);
+                } else {
+                    await this.portfolio.reserveShares(amount);
+                }
+                
                 await this.orders.placeOrder(this.currentView, amount, price, true);
                 this.showFeedback(`Limit ${this.currentView} order placed!`, "success");
             }
@@ -255,4 +286,4 @@ class TradingDashboard {
 
 // Global accessor for cancel button
 const dashboard = new TradingDashboard();
-window.cancelOrder = (id) => dashboard.orders.cancelOrder(id);
+window.cancelOrder = (id) => dashboard.orders.cancelOrder(id, dashboard.portfolio);
