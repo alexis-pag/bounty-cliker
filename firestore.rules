@@ -1,35 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User Profiles: Only owner can read/write
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Leaderboard: Everyone can read, only owner can update their score
-    match /leaderboard/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Market: Everyone can read, authenticated users can update (master-role system)
-    match /market/{document=**} {
+    // Permissive rules for demo/development
+    match /{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
     }
     
-    // Orders: Only owner can see and manage their own orders
-    match /orders/{orderId} {
-      allow read, write: if request.auth != null && (
-        (resource == null && request.resource.data.userId == request.auth.uid) || 
-        (resource != null && resource.data.userId == request.auth.uid)
-      );
-    }
-    
-    // Trade History: Everyone can read (public history)
-    match /trades/{tradeId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    // Admin Commands: keep slightly more restrictive or just allow if demo
+    match /admin_commands/{cmdId} {
+      allow read, write: if true;
     }
   }
 }

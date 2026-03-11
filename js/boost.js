@@ -9,7 +9,10 @@
     { name: "Bonus mystère 2", desc: "+20% CPS", price: 2000, active: false, available: false, permanent: false },
     { name: "Bonus mystère 3", desc: "+50 croquettes aléatoires", price: 500, active: false, available: false, permanent: false },
     { name: "Bonus mystère 4", desc: "Double le multiplicateur temporairement", price: 3500, active: false, available: false, permanent: false },
-    { name: "Bonus mystère 5", desc: "Réduit le prix du prochain bâtiment", price: 2500, active: false, available: false, permanent: false }
+    { name: "Bonus mystère 5", desc: "Réduit le prix du prochain bâtiment", price: 2500, active: false, available: false, permanent: false },
+    { name: "Adrénaline de lapin", desc: "x2 sur les clics", price: 5000, active: false, available: false, permanent: false },
+    { name: "Surdosage de carottes", desc: "x5 CPS temporairement", price: 15000, active: false, available: false, permanent: false },
+    { name: "Super Boost Temporel", desc: "x10 clics et CPS pendant 30s", price: 50000, active: false, available: false, permanent: false }
   ];
 
   const boostsDiv = document.getElementById('boostsContainer') || document.getElementById('boostList');
@@ -69,7 +72,7 @@
     }
 
     if (window.BountyGame.count >= b.price) {
-      window.BountyGame.count -= b.price;
+      window.BountyGame.count = Math.max(0, window.BountyGame.count - b.price);
       b.active = true;
       b.permanent = true;
       b.available = false;

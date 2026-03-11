@@ -74,7 +74,7 @@ export class OrderSystem {
     /**
      * Check and execute limit orders against current market price
      */
-    async checkLimitOrders(currentPrice, portfolio, onExecute) {
+    async checkLimitOrders(currentPrice, onExecute) {
         // Find orders that meet price criteria
         // Buys: target price >= current price
         // Sells: target price <= current price
@@ -103,49 +103,28 @@ export class OrderSystem {
 
         for (const orderDoc of ordersToExecute) {
             const order = orderDoc.data();
-            const orderId = orderDoc.id;
+            // Process execution (usually this should be a backend function or transaction)
+            // For this game, we'll mark it as executed
+            const batch = writeBatch(db);
+            
+            // Mark as executed
+            batch.update(orderDoc.ref, { status: "executed" });
+            
+            // Add to trade history
+            const tradeRef = doc(collection(db, "trades"));
+            batch.set(tradeRef, {
+                ...order,
+                executedPrice: currentPrice,
+                status: "executed",
+                timestamp: serverTimestamp()
+            });
 
-            try {
-                // Execute on portfolio
-                await portfolio.processTrade(order.type, order.amount, order.price, true);
-
-                const batch = writeBatch(db);
-                
-                // Mark as executed
-                batch.update(orderDoc.ref, { status: "executed" });
-                
-                // Add to trade history
-                const tradeRef = doc(collection(db, "trades"));
-                batch.set(tradeRef, {
-                    ...order,
-                    executedPrice: currentPrice,
-                    status: "executed",
-                    timestamp: serverTimestamp()
-                });
-
-                await batch.commit();
-                if (onExecute) onExecute(order, currentPrice);
-            } catch (e) {
-                console.error("Failed to execute limit order:", orderId, e);
-            }
+            await batch.commit();
+            onExecute(order, currentPrice);
         }
     }
 
-    async cancelOrder(orderId, portfolio) {
-        // We need to get the order first to know what to unreserve
-        const orderRef = doc(db, "orders", orderId);
-        const snap = await getDocs(query(collection(db, "orders"), where("__name__", "==", orderId)));
-        
-        if (!snap.empty) {
-            const order = snap.docs[0].data();
-            if (order.status === 'open') {
-                if (order.type === 'buy') {
-                    await portfolio.unreserveCarrots(order.amount * order.price);
-                } else {
-                    await portfolio.unreserveShares(order.amount);
-                }
-            }
-        }
-        await deleteDoc(orderRef);
+    async cancelOrder(orderId) {
+        await deleteDoc(doc(db, "orders", orderId));
     }
 }

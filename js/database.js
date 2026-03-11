@@ -45,9 +45,7 @@ export async function initializeUserData(uid, email, customUsername) {
     portfolio: {
       shares: 0,
       averageBuyPrice: 0,
-      totalInvested: 0,
-      reservedCarrots: 0,
-      reservedShares: 0
+      totalInvested: 0
     },
     settings: {
       theme: "dark",
@@ -72,13 +70,6 @@ export async function initializeUserData(uid, email, customUsername) {
  * Mettre à jour le classement
  */
 export async function updateLeaderboard(uid, username, score, rebirths = 0) {
-  // Vérification de l'URL de production pour éviter le classement local
-  const PROD_URL = "https://alexis-pag.github.io/bounty-cliker/";
-  if (!window.location.href.startsWith(PROD_URL)) {
-    console.warn("Leaderboard update ignored: application is not running on the production URL.");
-    return;
-  }
-
   try {
     const leaderRef = doc(db, "leaderboard", uid);
     await setDoc(leaderRef, {
@@ -211,6 +202,37 @@ export async function syncCorrectionToFirebase(uid, newCount, violations) {
     console.error("Erreur syncCorrectionToFirebase:", error);
   }
 }
+
+/**
+ * Écouter les commandes admin pour un utilisateur spécifique
+ */
+export function listenToAdminCommands(uid, callback, where, query, collection, onSnapshot) {
+  // On passe les utilitaires Firestore en params si pas imports ici
+  const q = query(
+    collection(db, "admin_commands"),
+    where("targetUid", "in", [uid, "ALL"])
+  );
+  
+  return onSnapshot(q, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        const cmd = { id: change.doc.id, ...change.doc.data() };
+        if (cmd.status === "pending") {
+          callback(cmd);
+        }
+      }
+    });
+  });
+}
+
+/**
+ * Marquer une commande admin comme traitée
+ */
+export async function markAdminCommandProcessed(cmdId) {
+  const cmdRef = doc(db, "admin_commands", cmdId);
+  await updateDoc(cmdRef, { status: "processed" });
+}
+
 /**
  * Mettre à jour des données spécifiques
  */

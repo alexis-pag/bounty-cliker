@@ -41,72 +41,55 @@ export class MarketEngine {
      * Generate the next price point based on trends and random walk
      */
     calculateNextPrice() {
-        return this.calculateMultipleTicks(1)[0];
-    }
+        // Update trend if duration expired
+        if (this.trendDuration <= 0) {
+            this.generateNewTrend();
+        }
+        this.trendDuration--;
 
-    /**
-     * Calculate multiple ticks at once (for catch-up logic)
-     * @param {number} ticks Number of ticks to simulate
-     * @returns {number[]} Array of new prices
-     */
-    calculateMultipleTicks(ticks = 1) {
-        const newPrices = [];
-        
-        // Limit ticks to prevent excessive processing (max 1 hour = 450 ticks at 8s intervals)
-        const safeTicks = Math.min(ticks, 500);
-
-        for (let i = 0; i < safeTicks; i++) {
-            // Update trend if duration expired
-            if (this.trendDuration <= 0) {
-                this.generateNewTrend();
-            }
-            this.trendDuration--;
-
-            // News influence
-            let newsMultiplier = 1.0;
-            if (this.currentNews) {
-                newsMultiplier = this.currentNews.impact;
-            }
-
-            // Random walk component
-            const randomShock = (Math.random() - 0.5) * 2 * this.volatility;
-            
-            // Trend influence
-            const trendInfluence = this.trend * (this.volatility * 0.5);
-            
-            // Momentum influence (price movement persistence)
-            const momentumInfluence = this.momentum * 0.1;
-
-            // Calculate change percentage
-            let changePercent = (randomShock + trendInfluence + momentumInfluence) * newsMultiplier;
-            
-            // Apply change
-            let newPrice = this.currentPrice * (1 + changePercent);
-
-            // Rare events (0.5% crash, 0.5% moon)
-            const eventRoll = Math.random();
-            if (eventRoll < 0.005) { // Crash
-                newPrice *= (0.8 + Math.random() * 0.1);
-                this.trend = -0.8;
-                this.momentum = -0.5;
-                this.currentNews = { title: "MARKET CRASH!", impact: 1.5, type: 'negative' };
-            } else if (eventRoll > 0.995) { // Mooning
-                newPrice *= (1.1 + Math.random() * 0.1);
-                this.trend = 0.8;
-                this.momentum = 0.5;
-                this.currentNews = { title: "CARROT SHORTAGE!", impact: 1.5, type: 'positive' };
-            }
-
-            // Constraints
-            newPrice = Math.max(1, newPrice);
-            
-            // Update momentum for next calculation
-            this.momentum = (newPrice - this.currentPrice) / this.currentPrice;
-            this.currentPrice = newPrice;
-            newPrices.push(newPrice);
+        // News influence
+        let newsMultiplier = 1.0;
+        if (this.currentNews) {
+            newsMultiplier = this.currentNews.impact;
         }
 
-        return newPrices;
+        // Random walk component
+        const randomShock = (Math.random() - 0.5) * 2 * this.volatility;
+        
+        // Trend influence
+        const trendInfluence = this.trend * (this.volatility * 0.5);
+        
+        // Momentum influence (price movement persistence)
+        const momentumInfluence = this.momentum * 0.1;
+
+        // Calculate change percentage
+        let changePercent = (randomShock + trendInfluence + momentumInfluence) * newsMultiplier;
+        
+        // Apply change
+        let newPrice = this.currentPrice * (1 + changePercent);
+
+        // Rare events (5-15%)
+        const eventRoll = Math.random();
+        if (eventRoll < 0.005) { // 0.5% chance of crash
+            newPrice *= (0.85 + Math.random() * 0.1);
+            this.trend = -0.8;
+            this.momentum = -0.5;
+            this.currentNews = { title: "MARKET CRASH!", impact: 1.5, type: 'negative' };
+        } else if (eventRoll > 0.995) { // 0.5% chance of mooning
+            newPrice *= (1.05 + Math.random() * 0.1);
+            this.trend = 0.8;
+            this.momentum = 0.5;
+            this.currentNews = { title: "CARROT SHORTAGE!", impact: 1.5, type: 'positive' };
+        }
+
+        // Constraints
+        newPrice = Math.max(1, Math.min(200, newPrice));
+        
+        // Update momentum for next calculation
+        this.momentum = (newPrice - this.currentPrice) / this.currentPrice;
+        this.currentPrice = newPrice;
+
+        return this.currentPrice;
     }
 
     generateNewTrend() {
@@ -152,9 +135,14 @@ export class MarketEngine {
      * @param {number} totalLiquidity Arbitrary constant representing market depth
      */
     applyTradeImpact(amount, totalLiquidity = 100000) {
-        const impact = (amount / totalLiquidity);
+        // We use a more stable price movement formula to avoid negative prices
+        // Impact is relative to liquidity, clamped to avoid more than 50% drop or huge spikes per trade
+        let impact = (amount / totalLiquidity);
+        impact = Math.max(-0.5, Math.min(0.8, impact)); // Max 50% drop, 80% spike per trade
+        
         this.currentPrice *= (1 + impact);
-        this.momentum += impact;
+        this.currentPrice = Math.max(1, this.currentPrice); // Still ensure absolute floor
+        this.momentum += impact * 0.5;
         return this.currentPrice;
     }
 

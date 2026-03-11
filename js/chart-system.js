@@ -65,23 +65,14 @@ export class ChartSystem {
                         ticks: { color: '#787b86', font: { size: 10 } }
                     }
                 },
-                animation: { 
-                    duration: 800,
-                    easing: 'easeOutQuart'
-                }
+                animation: { duration: 0 }
             }
         });
     }
 
     update(history) {
-        if (!this.chart || !history || history.length === 0) return;
+        if (!this.chart) return;
         
-        // Prevent update if data is same to save perf and avoid flicker
-        const currentData = this.chart.data.datasets[0].data;
-        if (currentData.length === history.length && currentData[currentData.length-1] === history[history.length-1]) {
-            return;
-        }
-
         try {
             const lastPrice = history[history.length - 1];
             const prevPrice = history[history.length - 2] || lastPrice;

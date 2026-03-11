@@ -12,6 +12,14 @@
       requirements: []
     },
     {
+      id: 'rebirth_boost_1',
+      name: 'Expert en Rebirth',
+      desc: '+25% de Prestige par rebirth',
+      cost: 50,
+      icon: '🔄',
+      requirements: ['upgrade3']
+    },
+    {
       id: 'upgrade2',
       name: 'Bounty d\'Argent',
       desc: '+2 multiplicateur de clic',
@@ -224,7 +232,7 @@
 
   function unlockUpgrade(upgrade) {
     if (window.BountyGame.prestigePoints >= upgrade.cost) {
-      window.BountyGame.prestigePoints -= upgrade.cost;
+      window.BountyGame.prestigePoints = Math.max(0, window.BountyGame.prestigePoints - upgrade.cost);
       if (!window.BountyGame.unlockedUpgrades) window.BountyGame.unlockedUpgrades = [];
       window.BountyGame.unlockedUpgrades.push(upgrade.id);
       

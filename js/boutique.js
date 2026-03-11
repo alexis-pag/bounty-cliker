@@ -32,7 +32,14 @@
     { name: "Réseau agricole mondial", price: 52000000, bonusClick: 0, auto: 900000, owned: 0, icon: fallbackIcon },
     { name: "Station orbitale agricole", price: 90000000, bonusClick: 0, auto: 1500000, owned: 0, icon: fallbackIcon },
     { name: "Portail dimensionnel végétal", price: 150000000, bonusClick: 0, auto: 2500000, owned: 0, icon: fallbackIcon },
-    { name: "Entité ancestrale des carottes", price: 300000000, bonusClick: 0, auto: 5000000, owned: 0, icon: fallbackIcon }
+    { name: "Entité ancestrale des carottes", price: 300000000, bonusClick: 0, auto: 5000000, owned: 0, icon: fallbackIcon },
+    { name: "Galaxie de carottes", price: 750000000, bonusClick: 0, auto: 12000000, owned: 0, icon: fallbackIcon },
+    { name: "Amas stellaire de carottes", price: 1500000000, bonusClick: 0, auto: 25000000, owned: 0, icon: fallbackIcon },
+    { name: "Superamas de carottes", price: 4000000000, bonusClick: 0, auto: 60000000, owned: 0, icon: fallbackIcon },
+    { name: "Univers de carottes", price: 10000000000, bonusClick: 0, auto: 150000000, owned: 0, icon: fallbackIcon },
+    { name: "Multivers de carottes", price: 25000000000, bonusClick: 0, auto: 400000000, owned: 0, icon: fallbackIcon },
+    { name: "Omnivers de carottes", price: 75000000000, bonusClick: 0, auto: 1000000000, owned: 0, icon: fallbackIcon },
+    { name: "Bounty Suprême", price: 150000000000, bonusClick: 5000, auto: 0, owned: 0, icon: fallbackIcon }
   ];
 
   // Définit basePrice si absent
@@ -48,8 +55,8 @@
     // Ajouter les contrôles de quantité
     const controls = document.createElement('div');
     controls.className = 'buy-controls';
-    controls.style.cssText = 'display:flex; justify-content:center; gap:10px; margin-bottom:15px;';
-    [1, 10, 100].forEach(amt => {
+    controls.style.cssText = 'display:flex; justify-content:center; gap:10px; margin-bottom:15px; flex-wrap: wrap;';
+    [1, 10, 100, 1000].forEach(amt => {
       const b = document.createElement('button');
       b.className = 'btn-small' + (amt === 1 ? ' active' : '');
       b.textContent = 'x' + amt;
@@ -157,7 +164,7 @@
       const effectivePrice = getBulkPrice(item, amount, idx);
 
       if ((window.BountyGame?.count ?? 0) >= effectivePrice) {
-        window.BountyGame.count -= effectivePrice;
+        window.BountyGame.count = Math.max(0, window.BountyGame.count - effectivePrice);
         
         for(let i=0; i<amount; i++) {
           if (item.bonusClick) {

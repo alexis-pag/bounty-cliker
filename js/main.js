@@ -1,6 +1,18 @@
 // script/main.js
 import { checkAuth, logout } from './auth.js';
-import { loadUserData, saveUserData, syncCorrectionToFirebase } from './database.js';
+import { 
+  loadUserData, 
+  saveUserData, 
+  syncCorrectionToFirebase,
+  listenToAdminCommands,
+  markAdminCommandProcessed
+} from './database.js';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot 
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { ClickDetection } from './click-detection.js';
 import { AutoclickProtection } from './autoclick-protection.js';
 
@@ -8,6 +20,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
   window.BountyGame = window.BountyGame || {};
   let currentUser = null;
   let currentUsername = null;
+  let gameLoaded = false;
 
   // Initialisation du système de protection
   const detector = new ClickDetection(40, 1000); // 40 CPS threshold
@@ -28,6 +41,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
     cps: 0,
     rebirths: 0,
     prestigePoints: 0,
+    rabbitGems: 0,
     unlockedUpgrades: [],
     rebirthBonusClick: 0,
     rebirthBonusCPS: 0,
@@ -111,7 +125,10 @@ import { AutoclickProtection } from './autoclick-protection.js';
     if (unlocked.includes('upgrade11')) total += 50;
     if (unlocked.includes('upgrade13')) total += 250;
     
-    window.BountyGame.multiplier = total;
+    // Bonus permanent Rabbit Gems (1% par gemme sur le total)
+    const gemBonus = 1 + ((window.BountyGame.rabbitGems || 0) * 0.01);
+    
+    window.BountyGame.multiplier = total * gemBonus;
   }
   window.recalculerMultiplier = recalculerMultiplier;
 
@@ -120,13 +137,14 @@ import { AutoclickProtection } from './autoclick-protection.js';
 
   function updateCounterUI(){
     recalculerMultiplier();
-    if (counterEl) counterEl.textContent = `Croquettes : ${Math.floor(window.BountyGame.count)} (×${(window.BountyGame.multiplier ?? 1)})`;
+    const displayCount = Math.max(0, Math.floor(window.BountyGame.count));
+    if (counterEl) counterEl.textContent = `Croquettes : ${displayCount} (×${(window.BountyGame.multiplier ?? 1)})`;
     if (cpsEl) cpsEl.textContent = `CPS : ${Math.floor(window.BountyGame.cps)}`;
     
     // Mise à jour de la barre de progression
     if (progressBar && progressPercent) {
       const rebirthPrice = window.BountyGame.rebirthPrice || 1000000;
-      const progress = Math.min(125, (window.BountyGame.count / rebirthPrice) * 100);
+      const progress = Math.min(100, (displayCount / rebirthPrice) * 100);
       progressBar.style.width = `${progress}%`;
       progressPercent.textContent = `${Math.floor(progress)}%`;
       
@@ -156,6 +174,11 @@ import { AutoclickProtection } from './autoclick-protection.js';
         if (boosts[1] && boosts[1].active) gain *= 2;
         if (boosts[4] && boosts[4].active) gain *= 1.05;
         if (boosts[6] && boosts[6].active) gain *= 1.20;
+        
+        // Nouveaux boosts
+        if (boosts[11] && boosts[11].active) gain *= 5; // Surdosage de carottes
+        if (boosts[12] && boosts[12].active) gain *= 10; // Super Boost Temporel
+        
         total += gain;
       }
     });
@@ -203,6 +226,10 @@ import { AutoclickProtection } from './autoclick-protection.js';
       }
       if (boosts[5]?.active) bonus *= 1.10;
       if (boosts[8]?.active) bonus *= 2;
+      
+      // Nouveaux boosts
+      if (boosts[10]?.active) bonus *= 2; // Adrénaline de lapin
+      if (boosts[12]?.active) bonus *= 10; // Super Boost Temporel
 
       if (unlocked.includes('upgrade5')) clickValue += 10;
       if (unlocked.includes('upgrade10')) clickValue += 50;
@@ -246,7 +273,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
   setInterval(() => {
     const now = Date.now();
     const cpsGain = calculCPS();
-    window.BountyGame.count += cpsGain;
+    window.BountyGame.count = Math.max(0, window.BountyGame.count + cpsGain);
     window.BountyGame.cps = cpsGain;
     
     // Floating CPS Gain (visual feedback) - limited to avoid overload
@@ -269,7 +296,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
   }, 1000);
 
   async function sauvegarderJeu(){
-    if (!currentUser) return;
+    if (!currentUser || !gameLoaded) return;
     const data = {
       count: window.BountyGame.count,
       multiplier: window.BountyGame.multiplier ?? 1,
@@ -280,6 +307,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
       cps: window.BountyGame.cps,
       rebirths: window.BountyGame.rebirths,
       prestigePoints: window.BountyGame.prestigePoints,
+      rabbitGems: window.BountyGame.rabbitGems || 0,
       unlockedUpgrades: window.BountyGame.unlockedUpgrades || [],
       rebirthPrice: window.BountyGame.rebirthPrice,
       rebirthBonusClick: window.BountyGame.rebirthBonusClick,
@@ -306,6 +334,8 @@ import { AutoclickProtection } from './autoclick-protection.js';
   async function chargerJeu(uid){
     try {
       const fullData = await loadUserData(uid);
+      gameLoaded = true; // On autorise la sauvegarde après avoir tenté le chargement
+      
       if (!fullData || !fullData.gameData) {
         console.log("Nouvel utilisateur, initialisation par défaut.");
         return;
@@ -402,6 +432,75 @@ import { AutoclickProtection } from './autoclick-protection.js';
     applyPrestigeUpgrades();
   }
 
+  /**
+   * Gestion des commandes Admin distantes
+   */
+  async function handleAdminCommand(cmd) {
+    console.log("Admin Command Received:", cmd);
+    const { type, data } = cmd;
+    let effectTriggered = false;
+
+    switch(type) {
+      case 'ADD_CURRENCY':
+        window.BountyGame.count += Number(data.amount) || 0;
+        effectTriggered = true;
+        break;
+      case 'SUB_CURRENCY':
+        window.BountyGame.count = Math.max(0, window.BountyGame.count - (Number(data.amount) || 0));
+        effectTriggered = true;
+        break;
+      case 'ADD_PRESTIGE':
+        window.BountyGame.prestigePoints += Number(data.amount) || 0;
+        effectTriggered = true;
+        break;
+      case 'GIVE_UPGRADE':
+        if (data.upgradeId && !window.BountyGame.unlockedUpgrades.includes(data.upgradeId)) {
+          window.BountyGame.unlockedUpgrades.push(data.upgradeId);
+          effectTriggered = true;
+        }
+        break;
+      case 'TRIGGER_BOOST':
+        if (window.boostsData && window.boostsData[data.boostIdx]) {
+          const b = window.boostsData[data.boostIdx];
+          b.active = true;
+          b.permanent = true; // On le rend permanent pour l'admin
+          effectTriggered = true;
+        }
+        break;
+      case 'RECALCULATE_STATS':
+        recalculerMultiplier();
+        effectTriggered = true;
+        break;
+      case 'RESET_PLAYER':
+        Object.assign(window.BountyGame, defaultGameState);
+        (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
+        (window.boostsData || []).forEach(b => { b.active = false; b.available = false; b.permanent = false; });
+        effectTriggered = true;
+        break;
+      case 'SPAWN_EVENT':
+        if (data.type === 'GOLDEN_CARROT') {
+          // Simulation d'un clic très rentable
+          const bonus = (window.BountyGame.multiplier || 1) * 1000;
+          window.BountyGame.count += bonus;
+          alert("ADMIN EVENT: Une Carotte Dorée est apparue ! +" + bonus + " croquettes !");
+          effectTriggered = true;
+        }
+        break;
+    }
+
+    if (effectTriggered) {
+      updateCounterUI();
+      updateRebirthUI();
+      if (typeof window.updateStore === 'function') window.updateStore();
+      if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
+      if (typeof window.updatePrestigeTree === 'function') window.updatePrestigeTree();
+      
+      // On marque la commande comme traitée
+      await markAdminCommandProcessed(cmd.id);
+      sauvegarderJeu();
+    }
+  }
+
   function applyPrestigeUpgrades() {
     const unlocked = window.BountyGame.unlockedUpgrades || [];
     const rebirthCount = window.BountyGame.rebirths || 0;
@@ -465,6 +564,9 @@ import { AutoclickProtection } from './autoclick-protection.js';
     updateCounterUI();
     updateRebirthUI();
     changerImage();
+
+    // Listen to admin commands
+    listenToAdminCommands(user.uid, handleAdminCommand, where, query, collection, onSnapshot);
     
     // Auto-save toutes les 10 secondes
     setInterval(sauvegarderJeu, 10000);
@@ -503,11 +605,28 @@ import { AutoclickProtection } from './autoclick-protection.js';
       let totalPrestigeGain = 0;
       for (let i = 0; i < rebirthsToGain; i++) {
         const rLevel = currentRebirths + i + 1;
-        totalPrestigeGain += Math.floor(1 + ((rLevel - 1) / 2));
+        // Nouvelle formule : gain de base augmenté + bonus exponentiel léger
+        // On gagne 2 pts de base + 1 par palier de 2 rebirths
+        let gain = Math.floor(2 + (rLevel / 2));
+        
+        // Bonus upgrade prestige
+        if (window.BountyGame.unlockedUpgrades?.includes('rebirth_boost_1')) {
+          gain = Math.floor(gain * 1.25);
+        }
+        
+        totalPrestigeGain += gain;
       }
 
       window.BountyGame.rebirths += rebirthsToGain;
       window.BountyGame.prestigePoints = (window.BountyGame.prestigePoints || 0) + totalPrestigeGain;
+      
+      // Gain de Rabbit Gems (1 par 10 rebirths cumulés lors du rebirth actuel)
+      const newGems = Math.floor(rebirthsToGain / 10);
+      if (newGems > 0) {
+        window.BountyGame.rabbitGems = (window.BountyGame.rabbitGems || 0) + newGems;
+        alert(`Félicitations ! Vous avez gagné ${newGems} Gemme(s) de Lapin !`);
+      }
+      
       window.BountyGame.count = 0;
       window.BountyGame.multiplier = 1;
       window.BountyGame.shopMultiplierBonus = 0;

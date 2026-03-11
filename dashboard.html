@@ -111,7 +111,7 @@
                         <div style="display: flex; justify-content: space-around;">
                             <div>
                                 <div style="font-size: 0.8rem; opacity: 0.5;">CROQUETTES</div>
-                                <div style="font-size: 1.2rem; color: #fff;">${Math.floor(data.gameData.count).toLocaleString()}</div>
+                                <div style="font-size: 1.2rem; color: #fff;">${Math.max(0, Math.floor(data.gameData.count)).toLocaleString()}</div>
                             </div>
                             <div>
                                 <div style="font-size: 0.8rem; opacity: 0.5;">REBIRTHS</div>

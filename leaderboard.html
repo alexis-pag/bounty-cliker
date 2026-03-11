@@ -115,7 +115,7 @@
                         ${player.rebirths || 0}
                     </td>
                     <td class="score">
-                        ${Math.floor(player.score).toLocaleString()}
+                        ${Math.max(0, Math.floor(player.score)).toLocaleString()}
                         <small style="font-size: 0.7rem; opacity: 0.5; color: white;"> croquettes</small>
                     </td>
                 `;
