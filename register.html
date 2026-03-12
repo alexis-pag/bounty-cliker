@@ -3,33 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inscription - Bounty Game</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Inscription - Bounty Clicker</title>
+<link rel="stylesheet" href="css/css-desktop.css" media="screen and (min-width: 769px)">
+<link rel="stylesheet" href="css/css-mobile.css" media="screen and (max-width: 768px)">
 </head>
 <body>
 <div class="bg-animated"></div>
 <div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
-  <div class="panel" style="max-width: 450px; width: 95%; animation: fadeIn 0.8s ease-out; padding: 30px;">
-    <h1 style="color: var(--neon-pink); text-align: center; margin-bottom: 25px;">Inscription</h1>
+  <div class="panel active" style="max-width: 500px; width: 95%; display: flex !important; animation: fadeIn 0.8s ease-out; padding: 45px;">
+    <h1 style="color: var(--neon-pink); text-align: center; margin-bottom: 35px;">Inscription</h1>
     <form id="regForm">
-      <input type="text" id="regUser" placeholder="Pseudo (Nom affiché)" required minlength="3">
-      <input type="email" id="regEmail" placeholder="Email" required>
-      <input type="password" id="regPass" placeholder="Mot de passe" required minlength="6">
-      <input type="password" id="regPassConfirm" placeholder="Confirmer le mot de passe" required minlength="6">
-      <button type="submit" id="regBtn" class="btn activate" style="width: 100%; margin-top: 10px;">S'inscrire</button>
+      <input type="text" id="regUser" placeholder="Pseudo (Nom affiché)" required minlength="3" style="margin-bottom: 18px;">
+      <input type="email" id="regEmail" placeholder="Email" required style="margin-bottom: 18px;">
+      <input type="password" id="regPass" placeholder="Mot de passe" required minlength="6" style="margin-bottom: 18px;">
+      <input type="password" id="regPassConfirm" placeholder="Confirmer le mot de passe" required minlength="6" style="margin-bottom: 25px;">
+      <button type="submit" id="regBtn" class="btn activate" style="width: 100%; margin-top: 15px; padding: 14px;">S'inscrire</button>
     </form>
     
-    <div style="margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <div style="margin: 30px 0; display: flex; align-items: center; justify-content: center; gap: 15px;">
       <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
       <span style="font-size: 12px; opacity: 0.6;">OU</span>
       <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
     </div>
     
-    <button id="googleBtn" class="btn" style="background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+    <button id="googleBtn" class="btn" style="background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 14px;">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Continuer avec Google
     </button>
     
-    <p style="text-align: center; margin-top: 20px;">Déjà inscrit ? <a href="login.html" style="color: var(--neon-pink); text-decoration: none; font-weight: bold;">Connexion</a></p>
+    <p style="text-align: center; margin-top: 30px;">Déjà inscrit ? <a href="login.html" style="color: var(--neon-pink); text-decoration: none; font-weight: bold;">Connexion</a></p>
     <p id="regError" style="color:#ff4d6e; font-weight: bold; margin-top: 10px; text-align: center;"></p>
   </div>
 </div>

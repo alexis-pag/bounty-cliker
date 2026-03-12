@@ -104,7 +104,7 @@ class MarketDashboard {
             // Automatic Price Generation Loop (Master role)
             const now = Date.now();
             const lastUpdate = this.engine.lastUpdateTime || 0;
-            if (now - lastUpdate > 6000) {
+            if (now - lastUpdate > 120000) { // 120 secondes pour économiser le quota
                 console.log("Master Role: Updating market price...");
                 const nextPrice = this.engine.calculateNextPrice();
                 let nextHistory = [...(this.engine.history || []), nextPrice];

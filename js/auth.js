@@ -1,4 +1,9 @@
-// script/auth.js
+/**
+ * auth.js
+ * Comprehensive authentication handling for Bounty Clicker.
+ * Manages email/password registration, Google login, and session monitoring.
+ */
+
 import { 
   getAuth, 
   createUserWithEmailAndPassword, 
@@ -13,41 +18,59 @@ import {
 import { app } from "./firebase-config.js";
 import { initializeUserData, loadUserData } from "./database.js";
 
-// Initialisation Firebase
+// Initialize Firebase Auth
 export const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Prevent multiple simultaneous auth requests
+let isAuthPending = false;
+
 /**
- * Inscription utilisateur
+ * Register a new user with email and password.
+ * @param {string} email - User email address.
+ * @param {string} password - User password.
+ * @param {string} username - Chosen display name.
  */
 export async function register(email, password, username) {
+  if (isAuthPending) return;
+  isAuthPending = true;
+
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Envoyer l'email de confirmation
+    // Trigger email verification immediately
     await sendEmailVerification(user);
     
-    // Initialisation Firestore via database.js
+    // Initialize user profile in Firestore
     await initializeUserData(user.uid, email, username);
     
-    // Déconnexion car l'utilisateur doit d'abord confirmer son email
+    // Force logout until email is verified for security
     await signOut(auth);
     
     return { user };
   } catch (error) {
+    console.error("Registration Error:", error.code, error.message);
     throw error;
+  } finally {
+    isAuthPending = false;
   }
 }
 
 /**
- * Connexion utilisateur
+ * Standard email/password login.
+ * @param {string} email - User email address.
+ * @param {string} password - User password.
  */
 export async function login(email, password) {
+  if (isAuthPending) return;
+  isAuthPending = true;
+
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
+    // Security check: Ensure email is verified
     if (!user.emailVerified) {
       await signOut(auth);
       const error = new Error("Email non vérifié. Veuillez vérifier votre boîte de réception.");
@@ -57,57 +80,63 @@ export async function login(email, password) {
     
     return userCredential;
   } catch (error) {
+    console.error("Login Error:", error.code, error.message);
     throw error;
+  } finally {
+    isAuthPending = false;
   }
 }
 
 /**
- * Connexion avec Google
+ * Login using Google OAuth provider.
  */
 export async function loginWithGoogle() {
+  if (isAuthPending) return;
+  isAuthPending = true;
+
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
-    // Pour Google, on assume l'email vérifié, mais on peut forcer la vérification si besoin
+    // Google accounts usually have verified emails, but we verify anyway
     if (!user.emailVerified) {
        await signOut(auth);
-       const error = new Error("Email non vérifié. Veuillez vérifier votre boîte de réception.");
+       const error = new Error("Email Google non vérifié.");
        error.code = 'auth/email-not-verified';
        throw error;
     }
     
-    // Vérifier si l'utilisateur existe déjà dans Firestore
+    // Sync with Firestore: Create profile if it doesn't exist
     const userData = await loadUserData(user.uid);
     if (!userData) {
-      // Si c'est un nouvel utilisateur Google, on l'initialise
       await initializeUserData(user.uid, user.email, user.displayName || user.email.split('@')[0]);
     }
     
     return user;
   } catch (error) {
-    console.error("Erreur Google Login:", error);
+    console.error("Google Login Error:", error.code, error.message);
     throw error;
+  } finally {
+    isAuthPending = false;
   }
 }
 
 /**
- * Réinitialiser le mot de passe
+ * Sends a password reset email.
  */
 export async function resetPassword(email) {
+  if (!email) throw new Error("Email requis pour la réinitialisation.");
   try {
-    console.log("Tentative d'envoi d'email de réinitialisation à :", email);
     await sendPasswordResetEmail(auth, email);
-    console.log("Appel Firebase sendPasswordResetEmail réussi");
     return true;
   } catch (error) {
-    console.error("Erreur Firebase lors de la réinitialisation :", error);
+    console.error("Password Reset Error:", error.code, error.message);
     throw error;
   }
 }
 
 /**
- * Renvoyer l'email de vérification
+ * Resends verification email for unverified accounts.
  */
 export async function resendVerification(email, password) {
   try {
@@ -119,24 +148,28 @@ export async function resendVerification(email, password) {
     await signOut(auth);
     return true;
   } catch (error) {
+    console.error("Verification Resend Error:", error.code, error.message);
     throw error;
   }
 }
 
 /**
- * Déconnexion
+ * Global logout function.
  */
 export async function logout() {
   try {
     await signOut(auth);
-    window.location.href = "login.html";
+    // Use replace to prevent back-button loops
+    window.location.replace("login.html");
   } catch (error) {
-    console.error("Erreur lors de la déconnexion:", error);
+    console.error("Logout Error:", error);
   }
 }
 
 /**
- * Vérifier l'état de connexion et rediriger si nécessaire
+ * Monitors authentication state and handles redirections.
+ * @param {function} onUserReady - Callback when user is available and verified.
+ * @param {boolean} redirectIfNull - Automatically redirect to login if no session found.
  */
 export function checkAuth(onUserReady, redirectIfNull = true) {
   onAuthStateChanged(auth, (user) => {
@@ -144,16 +177,14 @@ export function checkAuth(onUserReady, redirectIfNull = true) {
       if (user.emailVerified) {
         if (onUserReady) onUserReady(user);
       } else {
-        // Si l'email n'est pas vérifié, on ne redirige que si redirectIfNull est vrai
         if (redirectIfNull) {
-          window.location.href = "login.html";
+          window.location.replace("login.html");
         } else if (onUserReady) {
-          // On passe quand même l'user à la callback mais on sait qu'il n'est pas vérifié
           onUserReady(user);
         }
       }
     } else if (redirectIfNull) {
-      window.location.href = "login.html";
+      window.location.replace("login.html");
     } else if (onUserReady) {
       onUserReady(null);
     }

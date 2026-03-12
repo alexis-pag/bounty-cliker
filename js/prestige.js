@@ -5,7 +5,7 @@
       name: 'Bounty de Bronze',
       desc: '+1 multiplicateur de clic',
       cost: 1,
-      icon: '🥉',
+      icon: '',
       effect: () => {
         window.BountyGame.multiplier = (window.BountyGame.multiplier || 1) + 1;
       },
@@ -16,7 +16,7 @@
       name: 'Expert en Rebirth',
       desc: '+25% de Prestige par rebirth',
       cost: 50,
-      icon: '🔄',
+      icon: '',
       requirements: ['upgrade3']
     },
     {
@@ -24,7 +24,7 @@
       name: 'Bounty d\'Argent',
       desc: '+2 multiplicateur de clic',
       cost: 2,
-      icon: '🥈',
+      icon: '',
       effect: () => {
         window.BountyGame.multiplier = (window.BountyGame.multiplier || 1) + 2;
       },
@@ -35,7 +35,7 @@
       name: 'Bounty d\'Or',
       desc: '+5 multiplicateur de clic (Désactivé après un Rebirth)',
       cost: 3,
-      icon: '🥇',
+      icon: '',
       effect: () => {
         if ((window.BountyGame.rebirths || 0) === 0) {
           window.BountyGame.multiplier = (window.BountyGame.multiplier || 1) + 5;
@@ -48,7 +48,7 @@
       name: 'Super Croquettes',
       desc: '+10% CPS permanent',
       cost: 5,
-      icon: '⚡',
+      icon: '',
       effect: () => {
         // L'effet est appliqué dans calculCPS via les unlockedUpgrades
       },
@@ -59,7 +59,7 @@
       name: 'Maître du Click',
       desc: '+10 valeur de clic de base',
       cost: 10,
-      icon: '👑',
+      icon: '',
       effect: () => {
         window.BountyGame.clickValue = (window.BountyGame.clickValue || 1) + 10;
       },
@@ -70,7 +70,7 @@
       name: 'Bounty de Diamant',
       desc: '+10 multiplicateur de clic',
       cost: 20,
-      icon: '💎',
+      icon: '',
       requirements: ['upgrade5']
     },
     {
@@ -78,7 +78,7 @@
       name: 'Économie Circulaire',
       desc: 'Réduit le prix des bâtiments de 10%',
       cost: 30,
-      icon: '📈',
+      icon: '',
       requirements: ['upgrade5']
     },
     {
@@ -86,7 +86,7 @@
       name: 'Usine Automatisée',
       desc: '+25% CPS global permanent',
       cost: 50,
-      icon: '🏭',
+      icon: '',
       requirements: ['upgrade6', 'upgrade7']
     },
     {
@@ -94,7 +94,7 @@
       name: 'Bounty de Platine',
       desc: '+25 multiplicateur de clic',
       cost: 75,
-      icon: '⚪',
+      icon: '',
       requirements: ['upgrade8']
     },
     {
@@ -102,7 +102,7 @@
       name: 'Méga Clicker',
       desc: '+50 valeur de clic de base',
       cost: 100,
-      icon: '🖱️',
+      icon: '',
       requirements: ['upgrade9']
     },
     {
@@ -110,7 +110,7 @@
       name: 'Bounty d\'Émeraude',
       desc: '+50 multiplicateur de clic',
       cost: 150,
-      icon: '💚',
+      icon: '',
       requirements: ['upgrade10']
     },
     {
@@ -118,7 +118,7 @@
       name: 'Empire Solaire',
       desc: 'Double le CPS global permanent',
       cost: 250,
-      icon: '☀️',
+      icon: '',
       requirements: ['upgrade11']
     },
     {
@@ -126,7 +126,7 @@
       name: 'Bounty d\'Antimatière',
       desc: '+250 multiplicateur de clic',
       cost: 500,
-      icon: '🌌',
+      icon: '',
       requirements: ['upgrade12']
     },
     {
@@ -134,7 +134,7 @@
       name: 'Dieu des Croquettes',
       desc: '+500 valeur de clic de base',
       cost: 1000,
-      icon: '🐱',
+      icon: '',
       requirements: ['upgrade13']
     },
     {
@@ -142,7 +142,7 @@
       name: 'Singularité Bounty',
       desc: 'Multiplie le CPS global par 5',
       cost: 2500,
-      icon: '🌀',
+      icon: '',
       requirements: ['upgrade14']
     },
     {
@@ -150,7 +150,7 @@
       name: 'Nébuleuse de Croquettes',
       desc: '+1,000 multiplicateur de clic',
       cost: 5000,
-      icon: '🌌',
+      icon: '',
       requirements: ['upgrade15']
     },
     {
@@ -158,7 +158,7 @@
       name: 'Supernova Bounty',
       desc: '+2,500 valeur de clic de base',
       cost: 10000,
-      icon: '💥',
+      icon: '',
       requirements: ['upgrade16']
     },
     {
@@ -166,7 +166,7 @@
       name: 'Dimension Croquette',
       desc: 'Multiplie le CPS global par 10',
       cost: 25000,
-      icon: '🔮',
+      icon: '',
       requirements: ['upgrade17']
     },
     {
@@ -174,7 +174,7 @@
       name: 'Infini Bounty',
       desc: '+10,000 multiplicateur de clic',
       cost: 50000,
-      icon: '♾️',
+      icon: '',
       requirements: ['upgrade18']
     },
     {
@@ -182,7 +182,7 @@
       name: 'Dieu Suprême',
       desc: 'Toutes les stats sont multipliées par 2',
       cost: 100000,
-      icon: '⛩️',
+      icon: '',
       requirements: ['upgrade19']
     }
   ];
@@ -200,13 +200,13 @@
     root.className = `item prestige-item ${isUnlocked ? 'owned' : ''} ${!isUnlocked && !hasRequirements ? 'locked' : ''}`;
     
     const left = document.createElement('div');
-    left.className = 'left';
+    left.className = 'item-info';
     left.innerHTML = `
-      <div class="prestige-icon" style="font-size:24px; margin-right:15px;">${upgrade.icon}</div>
+      ${upgrade.icon ? `<div class="prestige-icon" style="font-size:24px; margin-right:15px;">${upgrade.icon}</div>` : ''}
       <div style="flex:1">
-        <strong style="font-size:1.1rem; color:var(--neon-blue);">${upgrade.name}</strong>
-        <div class="item-desc" style="font-size:0.9rem; color:rgba(255,255,255,0.8); margin: 4px 0;">${upgrade.desc}</div>
-        <div class="item-price" style="font-size:0.85rem; color:#ffd700; font-weight:bold;">
+        <h3>${upgrade.name}</h3>
+        <p>${upgrade.desc}</p>
+        <div class="item-price" style="font-size:0.85rem; color:#ffd700; font-weight:bold; margin-top:5px;">
           ${isUnlocked ? 'Débloqué' : `Prix: ${upgrade.cost.toLocaleString()} Prestige`}
         </div>
       </div>
@@ -260,6 +260,9 @@
   window.prestigeUpgrades = prestigeUpgrades;
 
   document.addEventListener('DOMContentLoaded', () => {
+    // S'assurer que BountyGame est initialisé
+    window.BountyGame = window.BountyGame || {};
+    
     setTimeout(updatePrestigeTree, 100);
   });
 })();

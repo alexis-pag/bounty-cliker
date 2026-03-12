@@ -47,40 +47,43 @@
 
   window.buyAmount = 1;
 
+  window.setBuyAmount = (amt) => {
+    window.buyAmount = amt;
+    const btns = document.querySelectorAll('.btn-qty');
+    btns.forEach(b => {
+      b.classList.toggle('active', parseInt(b.textContent.replace('x', '')) === amt);
+    });
+    if (window.updateStore) window.updateStore();
+  };
+
   // Encapsuler tout après DOMContentLoaded pour PC et Mobile
   document.addEventListener('DOMContentLoaded', () => {
-    const storeDiv = document.getElementById('storeItems') || document.getElementById('shopList');
-    if (!storeDiv) return;
+    // S'assurer que BountyGame est initialisé
+    window.BountyGame = window.BountyGame || {};
+    
+    const storeDivs = [
+      document.getElementById('storeItems'),
+      document.getElementById('shopList'),
+      document.getElementById('shopListMain')
+    ].filter(el => el !== null);
 
-    // Ajouter les contrôles de quantité
-    const controls = document.createElement('div');
-    controls.className = 'buy-controls';
-    controls.style.cssText = 'display:flex; justify-content:center; gap:10px; margin-bottom:15px; flex-wrap: wrap;';
-    [1, 10, 100, 1000].forEach(amt => {
-      const b = document.createElement('button');
-      b.className = 'btn-small' + (amt === 1 ? ' active' : '');
-      b.textContent = 'x' + amt;
-      b.onclick = () => {
-        window.buyAmount = amt;
-        Array.from(controls.children).forEach(c => c.classList.remove('active'));
-        b.classList.add('active');
-        updateStore();
-      };
-      controls.appendChild(b);
-    });
-    storeDiv.parentNode.insertBefore(controls, storeDiv);
+    if (storeDivs.length === 0) return;
 
     function getBulkPrice(item, amount, idx) {
       let total = 0;
       let tempPrice = item.price;
       const boosts = window.boostsData || [];
       const unlocked = window.BountyGame?.unlockedUpgrades || [];
+      const currencyUpgrades = window.BountyGame?.unlockedCurrencyUpgrades || [];
       
       for(let i=0; i<amount; i++) {
         let p = tempPrice;
         if (idx < 4 && boosts[3]?.active) p = Math.floor(p * 0.8);
         if (window.BountyGame?.nextBuildingDiscount) p = Math.floor(p * 0.75);
         if (unlocked.includes('upgrade7')) p = Math.floor(p * 0.9);
+        // Token Upgrade 3: -15% price
+        if (currencyUpgrades.includes('token_3')) p = Math.floor(p * 0.85);
+        
         total += p;
         tempPrice = Math.ceil(tempPrice * 1.4 / 5) * 5;
       }
@@ -93,58 +96,68 @@
       root.setAttribute('data-idx', idx);
 
       const displayPrice = getBulkPrice(item, window.buyAmount, idx);
+      const perUnit = item.bonusClick ? item.bonusClick : item.auto;
+      const type = item.bonusClick ? '/clic' : '/sec';
+      const bonusText = item.bonusClick ? `+${(item.bonusClick * window.buyAmount).toLocaleString()} ${type}` : `+${(item.auto * window.buyAmount).toLocaleString()} ${type}`;
 
-      const left = document.createElement('div'); left.className = 'left';
-      const img = document.createElement('img'); img.className = 'icon'; img.src = item.icon;
-      img.loading = "lazy"; // Optimisation chargement
-      const txt = document.createElement('div');
-      txt.innerHTML = `<strong>${item.name}</strong><div class="item-price" style="font-size:12px;color:rgba(255,255,255,0.7)">Prix: ${displayPrice}</div>`;
-      left.appendChild(img); left.appendChild(txt);
+      root.innerHTML = `
+        <div class="count-badge">${item.owned}</div>
+        <div class="item-info">
+          <div class="icon-wrapper">
+            <img src="${item.icon}" class="icon" loading="lazy">
+          </div>
+          <h3>${item.name}</h3>
+          <div class="item-stats">
+            <span class="item-bonus">✨ Total: ${bonusText}</span>
+            <span class="item-unit" style="font-size: 0.7rem; color: rgba(255,255,255,0.4);">Base: +${perUnit.toLocaleString()} ${type}</span>
+            <span class="item-price">💰 ${displayPrice.toLocaleString()}</span>
+          </div>
+        </div>
+        <button class="btn buy">ACHETER</button>
+      `;
 
-      const right = document.createElement('div');
-      const btn = document.createElement('button'); btn.className = 'btn buy'; btn.textContent = 'Acheter';
+      const btn = root.querySelector('.buy');
       btn.disabled = !(window.BountyGame && window.BountyGame.count >= displayPrice);
       btn.addEventListener('click', (e) => { e.stopPropagation(); acheterItem(idx); });
 
-      const tooltip = document.createElement('span'); tooltip.className = 'tooltip';
-      if (item.bonusClick) tooltip.textContent = `+${item.bonusClick * window.buyAmount} par clic !`;
-      else if (item.auto) tooltip.textContent = `+${item.auto * window.buyAmount} auto-croquettes !`;
-      btn.appendChild(tooltip);
-
-      right.appendChild(btn);
-      const badge = document.createElement('div'); badge.className = 'count-badge'; badge.textContent = item.owned;
-
-      root.appendChild(left); root.appendChild(right); root.appendChild(badge);
       return root;
     }
 
     function updateStore() {
       const items = window.storeItemsData;
-      if (storeDiv.children.length === 0) {
-        items.forEach((item, idx) => {
-          storeDiv.appendChild(renderItem(item, idx));
-        });
-        return;
-      }
-
-      items.forEach((item, idx) => {
-        const node = storeDiv.children[idx];
-        if (!node) return;
-        
-        const displayPrice = getBulkPrice(item, window.buyAmount, idx);
-
-        const btn = node.querySelector('.buy');
-        if (btn) btn.disabled = !(window.BountyGame && window.BountyGame.count >= displayPrice);
-        const priceDiv = node.querySelector('.item-price');
-        if (priceDiv) priceDiv.textContent = `Prix: ${displayPrice}`;
-        const badge = node.querySelector('.count-badge');
-        if (badge) badge.textContent = item.owned;
-        
-        const tooltip = node.querySelector('.tooltip');
-        if (tooltip) {
-          if (item.bonusClick) tooltip.textContent = `+${item.bonusClick * window.buyAmount} par clic !`;
-          else if (item.auto) tooltip.textContent = `+${item.auto * window.buyAmount} auto-croquettes !`;
+      
+      storeDivs.forEach(storeDiv => {
+        if (storeDiv.children.length === 0) {
+          items.forEach((item, idx) => {
+            storeDiv.appendChild(renderItem(item, idx));
+          });
+          return;
         }
+
+        items.forEach((item, idx) => {
+          const node = storeDiv.children[idx];
+          if (!node) return;
+          
+          const displayPrice = getBulkPrice(item, window.buyAmount, idx);
+          const perUnit = item.bonusClick ? item.bonusClick : item.auto;
+          const type = item.bonusClick ? '/clic' : '/sec';
+          const bonusText = item.bonusClick ? `+${(item.bonusClick * window.buyAmount).toLocaleString()} ${type}` : `+${(item.auto * window.buyAmount).toLocaleString()} ${type}`;
+
+          const btn = node.querySelector('.buy');
+          if (btn) btn.disabled = !(window.BountyGame && window.BountyGame.count >= displayPrice);
+          
+          const priceSpan = node.querySelector('.item-price');
+          if (priceSpan) priceSpan.textContent = `💰 ${displayPrice.toLocaleString()}`;
+          
+          const bonusSpan = node.querySelector('.item-bonus');
+          if (bonusSpan) bonusSpan.textContent = `✨ Total: ${bonusText}`;
+
+          const unitSpan = node.querySelector('.item-unit');
+          if (unitSpan) unitSpan.textContent = `Base: +${perUnit.toLocaleString()} ${type}`;
+
+          const badge = node.querySelector('.count-badge');
+          if (badge) badge.textContent = item.owned;
+        });
       });
     }
 
@@ -152,13 +165,13 @@
       const item = window.storeItemsData[idx];
       if (!item) return;
 
-      const node = storeDiv.children[idx];
-      const btn = node?.querySelector('.buy');
-      if (btn) {
-        if (btn.classList.contains('processing')) return;
-        btn.classList.add('processing');
-        setTimeout(() => btn.classList.remove('processing'), 200);
-      }
+      // Check processing state on ANY of the buttons
+      let isProcessing = false;
+      storeDivs.forEach(storeDiv => {
+        const btn = storeDiv.children[idx]?.querySelector('.buy');
+        if (btn?.classList.contains('processing')) isProcessing = true;
+      });
+      if (isProcessing) return;
 
       const amount = window.buyAmount;
       const effectivePrice = getBulkPrice(item, amount, idx);
@@ -168,18 +181,39 @@
         
         for(let i=0; i<amount; i++) {
           if (item.bonusClick) {
-            window.BountyGame.shopMultiplierBonus = (window.BountyGame.shopMultiplierBonus || 0) + item.bonusClick;
-            window.BountyGame.multiplier = (window.BountyGame.multiplier || 1) + item.bonusClick;
+            window.BountyGame.shopMultiplierBonus = (Number(window.BountyGame.shopMultiplierBonus) || 0) + item.bonusClick;
           }
           item.owned += 1;
           item.price = Math.ceil(item.price * 1.4 / 5) * 5;
         }
 
-        // Animation flash
-        const node = storeDiv.children[idx];
-        const flash = document.createElement('div'); flash.className = 'boost-appear';
-        flash.style.position = 'absolute'; flash.style.inset = '0';
-        node.appendChild(flash); setTimeout(() => flash.remove(), 420);
+        // Animation flash & feedback on all containers
+        storeDivs.forEach(storeDiv => {
+          const node = storeDiv.children[idx];
+          if (!node) return;
+
+          const btn = node.querySelector('.buy');
+          if (btn) {
+            btn.classList.add('processing');
+            setTimeout(() => btn.classList.remove('processing'), 200);
+          }
+
+          const flash = document.createElement('div'); flash.className = 'boost-appear';
+          flash.style.position = 'absolute'; flash.style.inset = '0';
+          node.appendChild(flash); setTimeout(() => flash.remove(), 420);
+
+          const impactText = item.bonusClick ? `+${(item.bonusClick * amount).toLocaleString()} /clic !` : `+${(item.auto * amount).toLocaleString()} /sec !`;
+          const impact = document.createElement('div');
+          impact.className = 'purchase-impact';
+          impact.textContent = impactText;
+          impact.style.cssText = `
+              position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+              color: #00ff88; font-weight: 900; font-size: 1.2rem; pointer-events: none;
+              text-shadow: 0 0 10px rgba(0,255,136,0.6); animation: floatUp 1s ease-out forwards;
+          `;
+          node.appendChild(impact);
+          setTimeout(() => impact.remove(), 1000);
+        });
 
         if (window.updateCounterUI) window.updateCounterUI();
         if (window.sauvegarderJeu) window.sauvegarderJeu();

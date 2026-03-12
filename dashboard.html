@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tableau de bord Bounty Clicker - Choisissez votre mode de jeu et consultez vos statistiques.">
     <title>Tableau de bord - Bounty Clicker</title>
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Responsive CSS Loading -->
+    <link rel="stylesheet" href="css/css-desktop.css" media="screen and (min-width: 769px)">
+    <link rel="stylesheet" href="css/css-mobile.css" media="screen and (max-width: 768px)">
     <style>
         .container {
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
-            margin: 40px auto;
+            margin: 60px auto;
             text-align: center;
-            padding: 30px;
+            padding: 50px;
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
             border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .user-info {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             font-size: 1.1em;
             color: rgba(255,255,255,0.8);
         }
         .actions {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
         .btn {
             padding: 16px;
@@ -46,12 +48,10 @@
         .btn-primary {
             background: linear-gradient(90deg, #ff4d6e, #ff758c);
             color: white;
-            box-shadow: 0 10px 20px rgba(255, 77, 110, 0.2);
         }
         .btn-secondary {
             background: linear-gradient(90deg, var(--neon-blue), #2962ff);
             color: white;
-            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.1);
         }
         .btn-trading {
             background: rgba(255,255,255,0.05);
@@ -64,37 +64,57 @@
             font-size: 0.9rem;
             margin-top: 10px;
         }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+                margin: 20px auto;
+                width: 95%;
+            }
+            .btn {
+                padding: 14px;
+                font-size: 0.9rem;
+            }
+            h1 { font-size: 1.8rem !important; }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-animated"></div>
-    <div class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
-        <div class="container">
-            <h1 style="color: var(--neon-blue); margin-bottom: 10px;">Bounty Hub</h1>
-            <div class="user-info" id="userInfo">
-                Chargement...
-            </div>
+    <div class="bg-animated" aria-hidden="true"></div>
+    
+    <main class="layout" style="height: 100vh; display: flex; align-items: center; justify-content: center;">
+        <article class="container" role="region" aria-labelledby="hub-title">
+            <header>
+                <h1 id="hub-title" style="color: var(--neon-blue); margin-bottom: 10px;">Bounty Hub</h1>
+            </header>
             
-            <div class="actions">
-                <button class="btn btn-secondary" id="playMobile">📱 JOUER (MOBILE)</button>
-                <button class="btn btn-primary" id="playDesktop">💻 JOUER (DESKTOP)</button>
-                <button class="btn btn-trading" id="openTrading">💹 MARCHÉ BOURSIER</button>
-                <button class="btn btn-logout" id="logoutBtn">DÉCONNEXION</button>
-            </div>
-        </div>
-    </div>
+            <section class="user-info" id="userInfo" aria-live="polite">
+                Chargement de votre profil...
+            </section>
+            
+            <nav class="actions" aria-label="Menu principal">
+                <button class="btn btn-secondary" id="playMobile" aria-label="Jouer en mode mobile">JOUER (MOBILE)</button>
+                <button class="btn btn-primary" id="playDesktop" aria-label="Jouer en mode bureau">JOUER (DESKTOP)</button>
+                <button class="btn btn-trading" id="openTrading" aria-label="Ouvrir le marché boursier">MARCHÉ BOURSIER</button>
+                <button class="btn btn-logout" id="logoutBtn" aria-label="Se déconnecter">DÉCONNEXION</button>
+            </nav>
+        </article>
+    </main>
 
     <script type="module">
         import { checkAuth, logout } from './js/auth.js';
         import { loadUserData } from './js/database.js';
 
+        // Secure authentication monitor
         checkAuth(async (user) => {
             const userInfoEl = document.getElementById('userInfo');
             
             try {
+                // Fetch extended user profile
                 const data = await loadUserData(user.uid);
                 const username = data?.profile?.username || user.displayName || user.email.split('@')[0];
                 
+                // Update UI with secure templates
                 userInfoEl.innerHTML = `
                     <div style="font-size: 1.4rem; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;">
                         Bienvenue, ${username} !
@@ -106,12 +126,13 @@
 
                 if (data && data.gameData) {
                     const stats = document.createElement('div');
+                    stats.className = "user-stats-summary";
                     stats.style.cssText = "background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);";
                     stats.innerHTML = `
                         <div style="display: flex; justify-content: space-around;">
                             <div>
                                 <div style="font-size: 0.8rem; opacity: 0.5;">CROQUETTES</div>
-                                <div style="font-size: 1.2rem; color: #fff;">${Math.max(0, Math.floor(data.gameData.count)).toLocaleString()}</div>
+                                <div style="font-size: 1.2rem; color: #e6f7ff;">${Math.max(0, Math.floor(data.gameData.count)).toLocaleString()}</div>
                             </div>
                             <div>
                                 <div style="font-size: 0.8rem; opacity: 0.5;">REBIRTHS</div>
@@ -122,11 +143,12 @@
                     userInfoEl.appendChild(stats);
                 }
             } catch (error) {
-                console.error("Erreur lors du chargement des stats:", error);
+                console.error("Critical: Dashboard data load failed:", error);
                 userInfoEl.textContent = `Connecté en tant que : ${user.email}`;
             }
         });
 
+        // Optimized event handling with version storage
         document.getElementById('playDesktop').addEventListener('click', () => {
             localStorage.setItem("bc-version", "desktop");
             window.location.href = 'site.html';

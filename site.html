@@ -4,85 +4,190 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bounty Game – PC</title>
-<link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/css-desktop.css" media="screen and (min-width: 769px)">
+    <link rel="stylesheet" href="css/css-mobile.css" media="screen and (max-width: 768px)">
 <link rel="stylesheet" href="css/autoclick-warning.css">
 <style> .game-layout { opacity: 0; } </style>
 </head>
 <body>
 
 <div class="bg-animated"></div>
-<div class="game-layout">
-  <div class="panel clicker">
-    <div class="panel-header">
-      <h1>Bounty</h1>
-      <div class="counters">
+
+<!-- Global Stats Header -->
+<header class="global-header">
+  <div class="header-content">
+    <div class="brand">BOUNTY<span>CLICKER</span> <small style="font-size: 0.6rem; vertical-align: middle; opacity: 0.5;">Apo2009+</small></div>
+    <div class="stats-container">
+      <div class="primary-stat">
         <span id="counter">0</span>
-        <span id="cps">CPS: 0</span>
-        <span id="rebirthInfo">Rebirths: 0</span>
-        <span id="prestigeInfo">Prestige: 0</span>
+        <span id="cps">BOUNTY / SEC : 0</span>
       </div>
-    </div>
-    <div class="rebirth-container" style="text-align: center; margin-bottom: 20px;">
-      <button id="rebirthButton" class="btn activate">Rebirth (1,000,000)</button>
-    </div>
-    <div class="image-wrap">
-      <img id="image" src="assets/images/bounty.jpg" alt="Bounty">
-    </div>
-    
-    <div class="progress-section" style="margin-top: 30px; padding: 0 40px;">
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; font-weight: bold; color: var(--neon-blue);">
-        <span>Objectif Rebirth</span>
-        <span id="progressPercent">0%</span>
-      </div>
-      <div class="progress-bar-bg" style="height: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-        <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), #6effff); box-shadow: 0 0 15px var(--neon-blue); transition: width 0.3s ease;"></div>
+      <div class="secondary-stats">
+        <div class="stat-box" title="Rebirths">♻️ <span id="rebirthInfo">0</span></div>
+        <div class="stat-box" title="Prestige">⭐ <span id="prestigeInfo">0</span></div>
+        <div class="stat-box" title="Gemmes">💎 <span id="gemInfo">0</span></div>
+        <div class="stat-box" title="Jetons">🎟️ <span id="tokenInfo">0</span></div>
       </div>
     </div>
   </div>
+</header>
 
-  <div class="panel shop">
+<!-- Navigation Desktop Style Mobile (DOCK at bottom) -->
+<nav class="desktop-nav">
+  <div class="nav-items">
+    <div class="nav-btn active" data-tab="tab-clicker"><span>👆</span><span>CLICKER</span></div>
+    <div class="nav-btn" data-tab="tab-shop"><span>🛒</span><span>BOUTIQUE</span></div>
+    <div class="nav-btn" data-tab="tab-boosts"><span>⚡</span><span>BOOSTS</span></div>
+    <div class="nav-btn" data-tab="tab-prestige"><span>🏆</span><span>PRESTIGE</span></div>
+    <div class="nav-btn" data-tab="tab-currencies"><span>💎</span><span>MULTI-MONNAIES</span></div>
+  </div>
+  <div class="nav-actions">
+    <button class="btn-icon" id="saveButtonMain" title="Sauvegarder">💾 SAUVEGARDER</button>
+    <button class="btn-icon" onclick="window.location.href='leaderboard.html'" title="Classement">📊 CLASSEMENT</button>
+    <button class="btn-icon" onclick="window.location.href='market.html'" title="Bourse">📈 BOURSE</button>
+    <button class="btn-icon" onclick="resetChoice()" title="Menu">🏠 MENU</button>
+    <button class="btn-logout-icon" onclick="window.logout()" title="Déconnexion">🚪 QUITTER</button>
+  </div>
+</nav>
+
+<div class="game-layout">
+  <!-- Panel Clicker (Main Dashboard) -->
+  <div class="panel clicker active" id="tab-clicker">
+      <!-- Content: Clicker & Rebirth -->
+      <main class="clicker-main" style="width: 100%;">
+        <div class="panel-header" style="justify-content: center;">
+          <h1>Dashboard de Minage</h1>
+        </div>
+        
+        <div class="rebirth-container">
+          <button id="rebirthButton" class="btn-rebirth">Rebirth (1,000,000)</button>
+        </div>
+        
+        <div class="image-wrap">
+          <img id="image" src="assets/images/bounty.jpg" alt="Bounty">
+          <div class="stats-overlay">
+            <div class="overlay-stat">CLICK : <span id="clickValueInfo">1</span></div>
+            <div class="overlay-stat">MULTIPLIER : <span id="multiplierInfo">x1.0</span></div>
+          </div>
+        </div>
+        
+        <div class="progress-section">
+          <div class="progress-labels">
+            <span>Objectif Rebirth</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="progressBar"></div>
+          </div>
+        </div>
+
+        <div class="main-actions">
+          <button id="saveButton" class="btn-cyber-blue">SAUVEGARDER</button>
+          <button id="resetButton" class="btn-cyber-red">RÉINITIALISER LE JEU</button>
+        </div>
+      </main>
+  </div>
+
+  <!-- Panel Shop -->
+  <div class="panel shop" id="tab-shop">
     <div class="panel-header">
-      <h2>Shop</h2>
+      <h2>BOUTIQUE</h2>
+      <div id="buy-controls-container" class="buy-controls">
+        <button class="btn-qty active" onclick="setBuyAmount(1)">x1</button>
+        <button class="btn-qty" onclick="setBuyAmount(10)">x10</button>
+        <button class="btn-qty" onclick="setBuyAmount(100)">x100</button>
+        <button class="btn-qty" onclick="setBuyAmount(1000)">x1000</button>
+      </div>
     </div>
-    <div class="shop-scroll list" id="shopList"></div>
+    <div class="shop-grid list" id="shopList"></div>
   </div>
 
-  <div class="panel boosts">
+  <!-- Panel Boosts -->
+  <div class="panel boosts" id="tab-boosts">
     <div class="panel-header">
       <h2>Boosts</h2>
     </div>
     <div class="boosts-scroll list" id="boostList"></div>
   </div>
 
-  <div class="panel prestige-tree">
+  <!-- Panel Prestige -->
+  <div class="panel prestige-tree" id="tab-prestige">
     <div class="panel-header">
       <h2>Arbre de Prestige</h2>
     </div>
     <div class="prestige-scroll list" id="prestigeTree"></div>
   </div>
+
+  <!-- Panel Currencies -->
+  <div class="panel currency-trees" id="tab-currencies">
+    <div class="panel-header">
+      <h2>Gemmes & Jetons</h2>
+    </div>
+    <div class="currency-main">
+      <div id="exchangeContainer" class="exchange-section"></div>
+      <div class="trees-container">
+        <div id="gemTreeContainer"></div>
+        <div id="tokenTreeContainer"></div>
+      </div>
+    </div>
+  </div>
+</div> <!-- Fin game-layout -->
+
+<script>
+  // Gestion des Onglets Desktop
+  document.addEventListener('DOMContentLoaded', () => {
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const panels = document.querySelectorAll('.panel');
+
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+        
+        // Update active nav button
+        navBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update visible panel
+        panels.forEach(panel => {
+          panel.classList.remove('active');
+          if (panel.id === targetTab) {
+            panel.classList.add('active');
+          }
+        });
+      });
+    });
+
+    // Liaison du bouton sauvegarde du menu
+    document.getElementById('saveButtonMain').addEventListener('click', () => {
+        document.getElementById('saveButton').click();
+    });
+  });
+</script>
+
+<!-- Notification de Récompense Admin -->
+<div id="reward-notification" class="reward-notif hidden" onclick="openRewardModal()">
+  <div class="reward-icon"></div>
+  <div class="reward-content">
+    <div class="reward-title">Cadeau Admin Disponible !</div>
+    <div class="reward-sub">Cliquez pour récupérer vos récompenses</div>
+  </div>
 </div>
 
-<footer class="bottom-bar">
-  <button id="saveButton" class="btn buy" style="margin-right: 10px;">Sauvegarder</button>
-  <button id="resetButton" class="btn reset">Réinitialiser le jeu</button>
-</footer>
-
-<!-- Boutons en haut à gauche -->
-<div style="position:fixed; top:10px; left:10px; z-index: 1000; display: flex; gap: 10px;">
-  <button class="btn buy" onclick="window.location.href='leaderboard.html'">Classement</button>
-  <button class="btn activate" onclick="window.location.href='market.html'">Bourse</button>
-</div>
-
-<!-- Boutons en haut à droite -->
-<div style="position:fixed; top:10px; right:10px; display: flex; gap: 10px; z-index: 1000;">
-  <button class="btn btn-secondary" onclick="resetChoice()">Menu</button>
-  <button class="btn btn-logout" onclick="window.logout()">Déconnexion</button>
+<!-- Modal de Récompense -->
+<div id="reward-modal" class="modal hidden">
+  <div class="modal-content cyberpunk-card">
+    <h2>Félicitations !</h2>
+    <p>L'administrateur vous a envoyé un pack de récompenses.</p>
+    <div id="reward-list" class="reward-list"></div>
+    <button class="btn buy" onclick="claimRewards()">TOUT RÉCUPÉRER</button>
+  </div>
 </div>
 
 <script type="module" src="js/main.js"></script>
 <script src="js/boutique.js"></script>
 <script src="js/boost.js"></script>
 <script src="js/prestige.js"></script>
+<script src="js/currency-system.js"></script>
 <script>
   // Fonction pour revenir au menu de choix
   function resetChoice() {

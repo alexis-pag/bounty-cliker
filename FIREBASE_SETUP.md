@@ -31,6 +31,12 @@ Allez dans l'onglet **Rules** de votre base de données Firestore et copiez-coll
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // --- RÈGLES ADMIN (DÉVELOPPEMENT) ---
+    match /admin_commands/{cmdId} { allow read, write: if true; }
+    match /admin_logs/{logId} { allow read, write: if true; }
+    match /pending_rewards/{rewardId} { allow read, write: if true; }
+
+    // --- RÈGLES UTILISATEURS ---
     // Profils utilisateurs : Seul le propriétaire peut lire/écrire
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -42,7 +48,7 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Marché : Tout le monde peut lire, les utilisateurs connectés peuvent mettre à jour (système master-role)
+    // Marché : Tout le monde peut lire, les utilisateurs connectés peuvent mettre à jour
     match /market/{document=**} {
       allow read: if true;
       allow write: if request.auth != null;
@@ -56,7 +62,7 @@ service cloud.firestore {
       );
     }
     
-    // Historique des transactions : Tout le monde peut lire (historique public)
+    // Historique des transactions : Tout le monde peut lire
     match /trades/{tradeId} {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;

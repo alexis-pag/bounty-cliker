@@ -25,7 +25,14 @@
     if (b.available && !b.active) root.classList.add('boost-appear');
 
     const left = document.createElement('div');
-    left.innerHTML = `<strong>${b.name}</strong><div style="font-size:12px;color:rgba(255,255,255,0.75)">Prix: ${b.price}</div>`;
+    left.className = 'boost-info';
+    left.innerHTML = `
+      <h3>${b.name}</h3>
+      <div class="boost-details">
+        <span class="boost-price">💰 ${b.price.toLocaleString()}</span>
+        <p class="boost-desc">${b.desc}</p>
+      </div>
+    `;
 
     const right = document.createElement('div');
     const btn = document.createElement('button');
@@ -127,6 +134,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    // S'assurer que BountyGame est initialisé
+    window.BountyGame = window.BountyGame || {};
+
     setTimeout(() => {
       afficherBoosts();
       setTimeout(scheduleSpawn, 1200 + Math.random() * 2600);

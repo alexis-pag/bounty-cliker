@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classement - Bounty Clicker</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/css-desktop.css" media="screen and (min-width: 769px)">
+    <link rel="stylesheet" href="css/css-mobile.css" media="screen and (max-width: 768px)">
     <style>
         .leaderboard-container {
             max-width: 800px;
@@ -12,7 +13,6 @@
             background: rgba(0, 0, 0, 0.85);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
             border: 1px solid rgba(0, 212, 255, 0.1);
         }
         table {
@@ -53,6 +53,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        @media (max-width: 600px) {
+            .leaderboard-container {
+                margin: 10px;
+                padding: 10px;
+                width: calc(100% - 20px);
+            }
+            th, td {
+                padding: 10px 5px;
+                font-size: 0.8rem;
+            }
+            h1 { font-size: 1.4rem; }
+            .btn-secondary { padding: 6px 10px; font-size: 0.8rem; }
+            .rank { width: 40px; }
+            small { display: none; }
         }
     </style>
 </head>
@@ -116,7 +132,7 @@
                     </td>
                     <td class="score">
                         ${Math.max(0, Math.floor(player.score)).toLocaleString()}
-                        <small style="font-size: 0.7rem; opacity: 0.5; color: white;"> croquettes</small>
+                        <small style="font-size: 0.7rem; opacity: 0.5; color: #e6f7ff;"> croquettes</small>
                     </td>
                 `;
                 tbody.appendChild(tr);

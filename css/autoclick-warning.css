@@ -32,8 +32,6 @@
     padding: 40px;
     border-radius: 20px;
     border: 2px solid #ff4d6e;
-    box-shadow: 0 0 30px rgba(255, 77, 110, 0.5);
-    animation: pulse-border 2s infinite;
 }
 
 .autoclick-content h1 {
@@ -101,11 +99,7 @@
     transform: none;
 }
 
-@keyframes pulse-border {
-    0% { box-shadow: 0 0 20px rgba(255, 77, 110, 0.3); }
-    50% { box-shadow: 0 0 40px rgba(255, 77, 110, 0.7); }
-    100% { box-shadow: 0 0 20px rgba(255, 77, 110, 0.3); }
-}
+/* Removed pulsing glow animation */
 
 /* Blur effect for the background game */
 .game-layout.blurred {

@@ -103,15 +103,24 @@ class TradingDashboard {
 
             // Market Maker Logic (One user updates the price if old)
             const now = Date.now();
-            if (now - this.engine.lastUpdateTime > 3000) { // Update every 3 seconds
+            const serverLastUpdate = this.engine.lastUpdateTime;
+            const drift = now - serverLastUpdate;
+            
+            // Update every 5 seconds, with a random offset to prevent collisions
+            const updateInterval = 5000;
+            const myOffset = Math.random() * 2000; // 0-2s random wait
+
+            if (drift > updateInterval + myOffset) {
                 const nextPrice = this.engine.calculateNextPrice();
                 const nextHistory = [...this.engine.history, nextPrice].slice(-200);
                 
+                // Atomically update market data
                 await updateMarketData(nextPrice, nextHistory, {
                     trend: this.engine.trend,
                     momentum: this.engine.momentum,
                     volatility: this.engine.volatility,
-                    trendDuration: this.engine.trendDuration
+                    trendDuration: this.engine.trendDuration,
+                    currentNews: this.engine.currentNews
                 });
             }
         });

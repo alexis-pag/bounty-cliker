@@ -2,7 +2,7 @@
     --bg-dark: #0a0b0d;
     --card-bg: #131722;
     --border: #2a2e39;
-    --text-primary: #d1d4dc;
+    --text-primary: #e6f7ff;
     --text-secondary: #787b86;
     --neon-green: #089981;
     --neon-pink: #f23645;
@@ -64,7 +64,6 @@ body.trading-body {
     color: var(--accent);
     font-weight: bold;
     margin-right: 1rem;
-    text-shadow: 0 0 5px var(--accent);
     flex-shrink: 0;
 }
 
@@ -75,8 +74,8 @@ body.trading-body {
     animation: ticker 25s linear infinite;
 }
 
-.news-text.positive { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
-.news-text.negative { color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink); }
+.news-text.positive { color: var(--neon-green); }
+.news-text.negative { color: var(--neon-pink); }
 
 @keyframes ticker {
     0% { transform: translateX(0); }

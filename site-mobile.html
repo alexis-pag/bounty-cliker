@@ -4,13 +4,33 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Bounty Clicker - Mobile</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/css-desktop.css" media="screen and (min-width: 769px)">
+  <link rel="stylesheet" href="css/css-mobile.css" media="screen and (max-width: 768px)">
   <link rel="stylesheet" href="css/autoclick-warning.css">
   <style> .game-layout { opacity: 0; } </style>
 </head>
 <body>
 
 <div class="bg-animated"></div>
+
+<!-- Global Stats Header -->
+<header class="global-header">
+  <div class="header-content">
+    <div class="brand">BOUNTY<span>CLICKER</span> <small style="font-size: 0.5rem; opacity: 0.5;">Apo2009+</small></div>
+    <div class="stats-container">
+      <div class="primary-stat">
+        <span id="counter">0</span>
+        <span id="cps">CPS: 0</span>
+      </div>
+      <div class="secondary-stats">
+        <div class="stat-box">RB: <span id="rebirthInfo">0</span></div>
+        <div class="stat-box">PR: <span id="prestigeInfo">0</span></div>
+        <div class="stat-box">GM: <span id="gemInfo">0</span></div>
+        <div class="stat-box">TK: <span id="tokenInfo">0</span></div>
+      </div>
+    </div>
+  </div>
+</header>
 
 <div class="game-layout">
   <section class="panel clicker active" id="tab-clicker">
@@ -20,6 +40,8 @@
         <div id="counter">Croquettes : 0</div>
         <div id="cps">CPS : 0</div>
         <div id="prestigeInfo">Prestige : 0</div>
+        <div id="gemInfo">Gems : 0</div>
+        <div id="tokenInfo">Tokens : 0</div>
       </div>
     </header>
     <main class="panel-main">
@@ -33,7 +55,7 @@
           <span id="progressPercent">0%</span>
         </div>
         <div class="progress-bar-bg" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-          <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), #6effff); box-shadow: 0 0 10px var(--neon-blue); transition: width 0.3s ease;"></div>
+  <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-blue), #6effff); transition: width 0.3s ease;"></div>
         </div>
       </div>
 
@@ -46,10 +68,15 @@
 
   <aside class="panel shop" id="tab-shop">
     <header class="panel-header">
-      <h2>Boutique</h2>
+      <h2>BOUTIQUE</h2>
+      <div id="buy-controls-container" class="buy-controls" style="margin-top: 10px; width: 100%; justify-content: space-around;">
+        <button class="btn-qty active" onclick="setBuyAmount(1)">x1</button>
+        <button class="btn-qty" onclick="setBuyAmount(10)">x10</button>
+        <button class="btn-qty" onclick="setBuyAmount(100)">x100</button>
+      </div>
     </header>
     <div class="panel-main">
-      <div id="storeItems" class="list shop-scroll"></div>
+      <div id="storeItems" class="shop-grid list shop-scroll"></div>
     </div>
   </aside>
 
@@ -66,41 +93,73 @@
       <div id="prestigeTree" class="list prestige-scroll"></div>
     </div>
   </aside>
+
+  <aside class="panel currency-trees" id="tab-currencies">
+    <header class="panel-header"><h2>Gemmes & Jetons</h2></header>
+    <div class="panel-main" style="padding: 10px; overflow-y: auto; max-height: calc(100vh - 200px);">
+        <div id="exchangeContainer" style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"></div>
+        <div id="gemTreeContainer" style="margin-bottom: 20px;"></div>
+        <div id="tokenTreeContainer"></div>
+    </div>
+  </aside>
 </div>
 
 <nav class="mobile-nav">
   <div class="nav-item active" data-tab="tab-clicker">
-    <span style="font-size: 24px;">🐾</span>
-    <span>Clic</span>
+    <span style="font-size: 24px;">👆</span>
+    <span>CLIC</span>
   </div>
   <div class="nav-item" data-tab="tab-shop">
     <span style="font-size: 24px;">🛒</span>
-    <span>Shop</span>
+    <span>BOUTIQUE</span>
   </div>
   <div class="nav-item" data-tab="tab-boosts">
     <span style="font-size: 24px;">⚡</span>
-    <span>Boosts</span>
+    <span>BOOSTS</span>
   </div>
   <div class="nav-item" data-tab="tab-prestige">
     <span style="font-size: 24px;">🏆</span>
-    <span>Prestige</span>
+    <span>PRESTIGE</span>
+  </div>
+  <div class="nav-item" data-tab="tab-currencies">
+    <span style="font-size: 24px;">💎</span>
+    <span>DEVISES</span>
   </div>
 </nav>
 
 <!-- Boutons de contrôle rapides en haut -->
 <div style="position:fixed; top:10px; left:10px; z-index:999; display: flex; gap: 5px;">
-  <button class="btn buy" style="padding: 6px 12px; font-size: 14px;" id="saveButton">Save</button>
-  <button class="btn reset" style="padding: 6px 12px; font-size: 14px;" id="resetButton">Reset</button>
+  <button class="btn buy" style="padding: 6px 12px; font-size: 14px;" id="saveButton">SAUVEGARDER</button>
+  <button class="btn reset" style="padding: 6px 12px; font-size: 14px;" id="resetButton">RESET</button>
 </div>
 
 <div style="position:fixed; top:10px; right:10px; z-index:999; display: flex; gap: 5px;">
-  <button class="btn btn-secondary" style="padding: 6px 10px;" onclick="resetChoice()">Menu</button>
-  <button class="btn btn-logout" style="padding: 6px 10px;" onclick="window.logout()">Log out</button>
+  <button class="btn btn-secondary" style="padding: 6px 10px;" onclick="resetChoice()">MENU</button>
+  <button class="btn btn-logout" style="padding: 6px 10px;" onclick="window.logout()">QUITTER</button>
 </div>
 
-<script src="js/boutique.js" defer></script>
+<!-- Notification de Récompense Admin -->
+<div id="reward-notification" class="reward-notif hidden" onclick="openRewardModal()">
+  <div class="reward-icon"></div>
+  <div class="reward-content">
+    <div class="reward-title">Cadeau Admin !</div>
+    <div class="reward-sub">Touchez pour réclamer</div>
+  </div>
+</div>
+
+<!-- Modal de Récompense -->
+<div id="reward-modal" class="modal hidden">
+  <div class="modal-content cyberpunk-card" style="width: 90%; max-width: 400px; margin: 15% auto;">
+    <h2>Félicitations !</h2>
+    <p>L'administrateur vous a envoyé des récompenses.</p>
+    <div id="reward-list" class="reward-list"></div>
+    <button class="btn buy" onclick="claimRewards()" style="width: 100%;">TOUT RÉCUPÉRER</button>
+  </div>
+</div>
+
 <script src="js/boost.js" defer></script>
 <script src="js/prestige.js" defer></script>
+<script src="js/currency-system.js" defer></script>
 <script type="module" src="js/main.js" defer></script>
 
 <script>
