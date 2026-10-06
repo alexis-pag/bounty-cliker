@@ -369,7 +369,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
   // --- Data Persistence ---
 
   async function sauvegarderJeu(){
-    if (!currentUser || !gameLoaded) return;
+    if (!currentUser || !gameLoaded) return false;
     const g = window.BountyGame;
     const data = {
       ...g,
@@ -385,11 +385,32 @@ import { AutoclickProtection } from './autoclick-protection.js';
     }
     try {
       await saveUserData(currentUser.uid, data, currentUsername);
+      return true;
     } catch (e) {
       console.error("Autosave failed:", e);
+      return false;
     }
   }
   window.sauvegarderJeu = sauvegarderJeu;
+
+  if (DOM.saveBtn) {
+    DOM.saveBtn.addEventListener('click', async () => {
+      const button = DOM.saveBtn;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'SAUVEGARDE...';
+
+      const saved = await sauvegarderJeu();
+      button.textContent = saved ? 'SAUVEGARDÉ' : 'ÉCHEC DE SAUVEGARDE';
+      button.classList.toggle('save-error', !saved);
+
+      setTimeout(() => {
+        button.disabled = false;
+        button.textContent = originalText;
+        button.classList.remove('save-error');
+      }, 1800);
+    });
+  }
 
   async function chargerJeu(uid){
     try {
