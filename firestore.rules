@@ -12,12 +12,6 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Marché : Lecture publique, écriture pour les connectés
-    match /market/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
     // Commandes Admin
     match /admin_commands/{cmdId} {
       allow read, write: if request.auth != null;
@@ -34,18 +28,5 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // Ordres : Seul le propriétaire gère ses ordres
-    match /orders/{orderId} {
-      allow read, write: if request.auth != null && (
-        (resource == null && request.resource.data.userId == request.auth.uid) || 
-        (resource != null && resource.data.userId == request.auth.uid)
-      );
-    }
-
-    // Historique des échanges : Lecture publique
-    match /trades/{tradeId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
   }
 }

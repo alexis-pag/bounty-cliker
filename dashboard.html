@@ -53,18 +53,12 @@
             background: linear-gradient(90deg, var(--neon-blue), #2962ff);
             color: white;
         }
-        .btn-trading {
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
         .btn-logout {
             background: transparent;
             color: rgba(255,255,255,0.4);
             font-size: 0.9rem;
             margin-top: 10px;
         }
-        
         @media (max-width: 600px) {
             .container {
                 padding: 20px 15px;
@@ -95,9 +89,9 @@
             <nav class="actions" aria-label="Menu principal">
                 <button class="btn btn-secondary" id="playMobile" aria-label="Jouer en mode mobile">JOUER (MOBILE)</button>
                 <button class="btn btn-primary" id="playDesktop" aria-label="Jouer en mode bureau">JOUER (DESKTOP)</button>
-                <button class="btn btn-trading" id="openTrading" aria-label="Ouvrir le marché boursier">MARCHÉ BOURSIER</button>
                 <button class="btn btn-logout" id="logoutBtn" aria-label="Se déconnecter">DÉCONNEXION</button>
             </nav>
+
         </article>
     </main>
 
@@ -108,11 +102,12 @@
         // Secure authentication monitor
         checkAuth(async (user) => {
             const userInfoEl = document.getElementById('userInfo');
-            
             try {
                 // Fetch extended user profile
                 const data = await loadUserData(user.uid);
-                const username = data?.profile?.username || user.displayName || user.email.split('@')[0];
+                const username = data?.profile?.username
+                    || user.displayName
+                    || user.email.split('@')[0];
                 
                 // Update UI with secure templates
                 userInfoEl.innerHTML = `
@@ -120,7 +115,7 @@
                         Bienvenue, ${username} !
                     </div>
                     <div style="font-size: 0.9rem; opacity: 0.6; margin-bottom: 20px;">
-                        ${user.email}
+                        ${data?.profile?.email || `Pseudo : ${username}`}
                     </div>
                 `;
 
@@ -144,28 +139,23 @@
                 }
             } catch (error) {
                 console.error("Critical: Dashboard data load failed:", error);
-                userInfoEl.textContent = `Connecté en tant que : ${user.email}`;
+                userInfoEl.textContent = `Connecté en tant que : ${user.displayName || user.email || 'Joueur'}`;
             }
         });
 
         // Optimized event handling with version storage
         document.getElementById('playDesktop').addEventListener('click', () => {
-            localStorage.setItem("bc-version", "desktop");
             window.location.href = 'site.html';
         });
 
         document.getElementById('playMobile').addEventListener('click', () => {
-            localStorage.setItem("bc-version", "mobile");
             window.location.href = 'site-mobile.html';
-        });
-
-        document.getElementById('openTrading').addEventListener('click', () => {
-            window.location.href = 'market.html';
         });
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await logout();
         });
+
     </script>
 </body>
 </html>

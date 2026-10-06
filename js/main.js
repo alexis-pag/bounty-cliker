@@ -1,4 +1,4 @@
-// script/main.js
+// js/main.js
 /**
  * main.js
  * Core game engine for Bounty Clicker.
@@ -76,6 +76,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
     unlockedCurrencyUpgrades: [],
     rebirthBonusClick: 0,
     rebirthBonusCPS: 0,
+    autoClickLockoutExpiry: 0,
     rebirthPrice: 1000000
   };
 
@@ -265,23 +266,19 @@ import { AutoclickProtection } from './autoclick-protection.js';
   window.updateCounterUI = updateCounterUI;
 
   function calculCPS(){
-    let total = 0;
+    let total = window.BountyGame.rebirthBonusCPS || 0;
     const items = window.storeItemsData || [];
     const boosts = window.boostsData || [];
-
-    items.forEach(it => {
-      if (it.auto && it.owned) {
-        let gain = it.auto * it.owned;
-        if (boosts[1]?.active) gain *= 2;
-        if (boosts[4]?.active) gain *= 1.05;
-        if (boosts[6]?.active) gain *= 1.20;
-        if (boosts[11]?.active) gain *= 5;
-        if (boosts[12]?.active) gain *= 10;
-        total += gain;
-      }
+    items.forEach(item => {
+      if (!item.auto || !item.owned) return;
+      let gain = item.auto * item.owned;
+      if (boosts[1]?.active) gain *= 2;
+      if (boosts[4]?.active) gain *= 1.05;
+      if (boosts[6]?.active) gain *= 1.2;
+      if (boosts[11]?.active) gain *= 5;
+      if (boosts[12]?.active) gain *= 10;
+      total += gain;
     });
-
-    total += (window.BountyGame.rebirthBonusCPS || 0);
     
     const p = window.BountyGame.unlockedUpgrades || [];
     const c = window.BountyGame.unlockedCurrencyUpgrades || [];
@@ -308,15 +305,13 @@ import { AutoclickProtection } from './autoclick-protection.js';
       const g = window.BountyGame;
       const multiplier = Math.max(1, Number(g.multiplier) || 1);
       const boosts = window.boostsData || [];
-      
       let bonus = multiplier;
       if (boosts[0]?.active) bonus *= 1.5;
       if (boosts[2]?.active) bonus = Math.random() < 0.5 ? 0 : bonus * 2;
-      if (boosts[5]?.active) bonus *= 1.10;
+      if (boosts[5]?.active) bonus *= 1.1;
       if (boosts[8]?.active) bonus *= 2;
       if (boosts[10]?.active) bonus *= 2;
       if (boosts[12]?.active) bonus *= 10;
-
       const baseClick = (Number(g.clickValue) || 1) + (g.addClickBonus || 0) + (g.addCageBonus || 0) + (g.rebirthBonusClick || 0);
       const gain = Math.max(1, baseClick * bonus);
 
@@ -346,7 +341,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
       spawnParticles(ev.clientX, ev.clientY);
       changerImage();
       updateCounterUI();
-      if (typeof window.updateStore === 'function') window.updateStore();
+      window.updateStore?.();
     });
   }
 
@@ -365,11 +360,9 @@ import { AutoclickProtection } from './autoclick-protection.js';
     }
     
     updateCounterUI();
-    
-    const now = Date.now();
-    if (now - lastStoreUpdate > 5000) {
-      if (typeof window.updateStore === 'function') window.updateStore();
-      lastStoreUpdate = now;
+    if (Date.now() - lastStoreUpdate > 5000) {
+      window.updateStore?.();
+      lastStoreUpdate = Date.now();
     }
   }, 1000);
 
@@ -380,10 +373,16 @@ import { AutoclickProtection } from './autoclick-protection.js';
     const g = window.BountyGame;
     const data = {
       ...g,
-      storeItems: (window.storeItemsData || []).map(it => ({ owned: it.owned, price: it.price })),
-      boosts: (window.boostsData || []).map(b => ({ active: !!b.active, permanent: !!b.permanent })),
       violations: protection.violations
     };
+    if (window.storeItemsData) {
+      data.storeItems = window.storeItemsData.map(item => ({ owned: item.owned, price: item.price }));
+      data.boosts = (window.boostsData || []).map(boost => ({ active: !!boost.active, permanent: !!boost.permanent }));
+    } else {
+      delete data.shopMultiplierBonus;
+      delete data.storeItems;
+      delete data.boosts;
+    }
     try {
       await saveUserData(currentUser.uid, data, currentUsername);
     } catch (e) {
@@ -405,27 +404,40 @@ import { AutoclickProtection } from './autoclick-protection.js';
       const titleEl = document.querySelector('.panel.clicker h1');
       if (titleEl) titleEl.textContent = `Bounty Clicker - ${currentUsername}`;
       
-      Object.assign(window.BountyGame, data);
+      const gameState = { ...data };
+      if (window.storeItemsData) {
+        if (Array.isArray(data.storeItems)) {
+          data.storeItems.forEach((item, index) => {
+            if (window.storeItemsData[index]) {
+              window.storeItemsData[index].owned = item.owned ?? 0;
+              window.storeItemsData[index].price = item.price ?? window.storeItemsData[index].basePrice;
+            }
+          });
+        }
+        if (Array.isArray(data.boosts)) {
+          data.boosts.forEach((boost, index) => {
+            if (window.boostsData[index]) {
+              window.boostsData[index].active = !!boost.active;
+              window.boostsData[index].permanent = !!boost.permanent;
+              window.boostsData[index].available = false;
+            }
+          });
+        }
+      } else {
+        delete gameState.shopMultiplierBonus;
+        delete gameState.storeItems;
+        delete gameState.boosts;
+      }
+      Object.assign(window.BountyGame, gameState);
       applyRebirthBonus();
+      if (Number(data.autoClickLockoutExpiry) > Date.now()) {
+        protection.triggerWarning(0, null, 300, true);
+      } else {
+        window.BountyGame.autoClickLockoutExpiry = 0;
+      }
+      window.updateStore?.();
+      window.afficherBoosts?.();
       if (data.violations) protection.violations = data.violations;
-
-      if (Array.isArray(data.storeItems) && window.storeItemsData) {
-        data.storeItems.forEach((s, i) => {
-          if (window.storeItemsData[i]) {
-            window.storeItemsData[i].owned = s.owned ?? 0;
-            window.storeItemsData[i].price = s.price ?? window.storeItemsData[i].basePrice;
-          }
-        });
-      }
-
-      if (Array.isArray(data.boosts) && window.boostsData) {
-        data.boosts.forEach((b, i) => {
-          if (window.boostsData[i]) {
-            window.boostsData[i].active = !!b.active;
-            window.boostsData[i].permanent = !!b.permanent;
-          }
-        });
-      }
     } catch (e) {
       console.error("Loading failed:", e);
     }
@@ -504,24 +516,18 @@ import { AutoclickProtection } from './autoclick-protection.js';
         if (data.upgradeId && !g.unlockedUpgrades.includes(data.upgradeId)) {
           g.unlockedUpgrades.push(data.upgradeId); effectTriggered = true; 
         } break;
-      case 'TRIGGER_BOOST': 
+      case 'TRIGGER_BOOST':
         if (window.boostsData?.[data.boostIdx]) {
           window.boostsData[data.boostIdx].active = true;
           window.boostsData[data.boostIdx].permanent = true;
+          window.boostsData[data.boostIdx].available = false;
           effectTriggered = true;
         } break;
       case 'RECALCULATE_STATS': recalculerMultiplier(); effectTriggered = true; break;
-      case 'MARKET_MOON':
-        try {
-          const { updateMarketData } = await import('./database.js');
-          await updateMarketData(null, null, { trend: 1, momentum: 0.5, trendDuration: 50, currentNews: { title: "ADMIN INTERVENTION: TO THE MOON!", impact: 2, type: 'positive' } });
-          effectTriggered = true;
-        } catch (e) { console.error("Moon failed:", e); }
-        break;
       case 'RESET_PLAYER': 
         Object.assign(g, DEFAULT_GAME_STATE);
-        (window.storeItemsData || []).forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
-        (window.boostsData || []).forEach(b => { b.active = false; b.available = false; b.permanent = false; });
+        (window.storeItemsData || []).forEach(item => { item.owned = 0; item.price = item.basePrice; });
+        (window.boostsData || []).forEach(boost => { boost.active = false; boost.available = false; boost.permanent = false; });
         effectTriggered = true; break;
       case 'SPAWN_EVENT':
         if (data.type === 'GOLDEN_CARROT') {
@@ -535,8 +541,8 @@ import { AutoclickProtection } from './autoclick-protection.js';
     if (effectTriggered) {
       updateCounterUI();
       updateRebirthUI();
-      if (typeof window.updateStore === 'function') window.updateStore();
-      if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
+      window.updateStore?.();
+      window.afficherBoosts?.();
       if (typeof window.updatePrestigeTree === 'function') window.updatePrestigeTree();
       await markAdminCommandProcessed(cmd.id);
       sauvegarderJeu();
@@ -573,12 +579,12 @@ import { AutoclickProtection } from './autoclick-protection.js';
   checkAuth(async (user) => {
     currentUser = user;
     await chargerJeu(user.uid);
-    
+
     // UI Init
-    if (typeof window.updateStore === 'function') window.updateStore();
-    if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
     updateCounterUI();
     updateRebirthUI();
+    window.updateStore?.();
+    window.afficherBoosts?.();
     changerImage();
 
     // Event listeners
@@ -590,6 +596,7 @@ import { AutoclickProtection } from './autoclick-protection.js';
     
     setInterval(sauvegarderJeu, 120000);
     DOM.layout?.classList.add('loaded');
+
   });
 
   window.logout = logout;
@@ -627,16 +634,15 @@ import { AutoclickProtection } from './autoclick-protection.js';
       g.shopMultiplierBonus = 0;
       g.clickValue = 1;
       g.cps = 0;
-      
-      if (window.storeItemsData) window.storeItemsData.forEach(it => { it.owned = 0; it.price = it.basePrice ?? it.price; });
-      if (window.boostsData) window.boostsData.forEach(b => { b.active = false; b.available = false; b.permanent = false; });
+      (window.storeItemsData || []).forEach(item => { item.owned = 0; item.price = item.basePrice; });
+      (window.boostsData || []).forEach(boost => { boost.active = false; boost.available = false; boost.permanent = false; });
 
       applyRebirthBonus();
       g.rebirthPrice = 1000000 + (g.rebirths * 2_000_000);
       
       updateCounterUI();
-      if (typeof window.updateStore === 'function') window.updateStore();
-      if (typeof window.afficherBoosts === 'function') window.afficherBoosts();
+      window.updateStore?.();
+      window.afficherBoosts?.();
       if (typeof window.updatePrestigeUI === 'function') window.updatePrestigeUI();
       if (typeof window.updatePrestigeTree === 'function') window.updatePrestigeTree();
       

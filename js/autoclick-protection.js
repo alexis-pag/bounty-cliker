@@ -15,28 +15,7 @@ export class AutoclickProtection {
         this.integrityCheckInterval = null;
         
         this.initUI();
-        this.checkPersistentLockout();
         this.startIntegrityCheck();
-    }
-
-    /**
-     * Checks if a lockout was active before page refresh
-     */
-    checkPersistentLockout() {
-        const savedLockout = localStorage.getItem('bc_lockout_expiry');
-        if (savedLockout) {
-            const expiry = parseInt(savedLockout);
-            const now = Date.now();
-            
-            if (now < expiry) {
-                // Page was refreshed during a lockout!
-                // Apply 5 minute penalty (300 seconds)
-                const penaltyDuration = 300; 
-                this.triggerWarning(0, null, penaltyDuration, true);
-            } else {
-                localStorage.removeItem('bc_lockout_expiry');
-            }
-        }
     }
 
     /**
@@ -133,9 +112,9 @@ export class AutoclickProtection {
             iconEl.textContent = "🧊";
         }
 
-        // Save expiry to localStorage to detect next refresh
         const expiry = Date.now() + (secondsLeft * 1000);
-        localStorage.setItem('bc_lockout_expiry', expiry.toString());
+        if (window.BountyGame) window.BountyGame.autoClickLockoutExpiry = expiry;
+        if (typeof window.sauvegarderJeu === 'function') window.sauvegarderJeu();
 
         this.btnEl.disabled = true;
         this.btnEl.textContent = forceDuration ? "BLOQUÉ..." : "REPOS...";
@@ -150,7 +129,8 @@ export class AutoclickProtection {
                 clearInterval(this.countdownInterval);
                 this.btnEl.disabled = false;
                 this.btnEl.textContent = "C'est bon, je reprends !";
-                localStorage.removeItem('bc_lockout_expiry');
+                if (window.BountyGame) window.BountyGame.autoClickLockoutExpiry = 0;
+                if (typeof window.sauvegarderJeu === 'function') window.sauvegarderJeu();
             }
         }, 1000);
     }

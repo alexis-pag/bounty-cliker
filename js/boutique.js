@@ -198,7 +198,7 @@
             setTimeout(() => btn.classList.remove('processing'), 200);
           }
 
-          const flash = document.createElement('div'); flash.className = 'boost-appear';
+          const flash = document.createElement('div'); flash.className = 'purchase-flash';
           flash.style.position = 'absolute'; flash.style.inset = '0';
           node.appendChild(flash); setTimeout(() => flash.remove(), 420);
 

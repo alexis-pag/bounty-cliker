@@ -1,7 +1,7 @@
 /**
  * auth.js
  * Comprehensive authentication handling for Bounty Clicker.
- * Manages email/password registration, Google login, and session monitoring.
+ * Manages email/password and Google authentication for Firebase accounts.
  */
 
 import { 
@@ -24,26 +24,49 @@ const googleProvider = new GoogleAuthProvider();
 
 // Prevent multiple simultaneous auth requests
 let isAuthPending = false;
+const USERNAME_AUTH_DOMAIN = 'pseudo.bounty-clicker.invalid';
+
+function usernameToAuthEmail(username) {
+  const normalized = String(username || '').trim().toLowerCase();
+  if (!/^[a-z0-9_-]{3,20}$/.test(normalized)) {
+    const error = new Error('Le pseudo doit contenir de 3 à 20 lettres, chiffres, tirets ou tirets bas.');
+    error.code = 'auth/invalid-username';
+    throw error;
+  }
+  return `${normalized}@${USERNAME_AUTH_DOMAIN}`;
+}
+
+function isUsernameAuthEmail(email) {
+  return String(email || '').toLowerCase().endsWith(`@${USERNAME_AUTH_DOMAIN}`);
+}
+
+function resolveAuthEmail(identifier) {
+  const value = String(identifier || '').trim();
+  return value.includes('@') ? value.toLowerCase() : usernameToAuthEmail(value);
+}
 
 /**
- * Register a new user with email and password.
- * @param {string} email - User email address.
+ * Register a new user with email or username and password.
+ * @param {string} identifier - User email or username.
  * @param {string} password - User password.
- * @param {string} username - Chosen display name.
+ * @param {string} username - Chosen display name or login username.
+ * @param {string} method - Identifier type: email or username.
  */
-export async function register(email, password, username) {
+export async function register(identifier, password, username, method = 'email') {
   if (isAuthPending) return;
   isAuthPending = true;
 
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const usernameAccount = method === 'username';
+    const authEmail = usernameAccount ? usernameToAuthEmail(identifier) : String(identifier || '').trim().toLowerCase();
+    const displayName = username || (usernameAccount ? String(identifier).trim() : authEmail.split('@')[0]);
+    const userCredential = await createUserWithEmailAndPassword(auth, authEmail, password);
     const user = userCredential.user;
     
-    // Trigger email verification immediately
-    await sendEmailVerification(user);
+    if (!usernameAccount) await sendEmailVerification(user);
     
     // Initialize user profile in Firestore
-    await initializeUserData(user.uid, email, username);
+    await initializeUserData(user.uid, usernameAccount ? null : authEmail, displayName, method);
     
     // Force logout until email is verified for security
     await signOut(auth);
@@ -58,20 +81,21 @@ export async function register(email, password, username) {
 }
 
 /**
- * Standard email/password login.
- * @param {string} email - User email address.
+ * Login using an email address or username.
+ * @param {string} identifier - User email address or username.
  * @param {string} password - User password.
  */
-export async function login(email, password) {
+export async function login(identifier, password) {
   if (isAuthPending) return;
   isAuthPending = true;
 
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const authEmail = resolveAuthEmail(identifier);
+    const userCredential = await signInWithEmailAndPassword(auth, authEmail, password);
     const user = userCredential.user;
     
     // Security check: Ensure email is verified
-    if (!user.emailVerified) {
+    if (!user.emailVerified && !isUsernameAuthEmail(user.email)) {
       await signOut(auth);
       const error = new Error("Email non vérifié. Veuillez vérifier votre boîte de réception.");
       error.code = 'auth/email-not-verified';
@@ -127,6 +151,9 @@ export async function loginWithGoogle() {
 export async function resetPassword(email) {
   if (!email) throw new Error("Email requis pour la réinitialisation.");
   try {
+    if (!String(email).includes('@')) {
+      throw new Error("La récupération par e-mail n'est pas disponible pour les comptes créés avec un pseudo.");
+    }
     await sendPasswordResetEmail(auth, email);
     return true;
   } catch (error) {
@@ -155,6 +182,7 @@ export async function resendVerification(email, password) {
 
 /**
  * Global logout function.
+ * For a guest session, simply clears the local save and returns to the home page.
  */
 export async function logout() {
   try {
@@ -167,14 +195,15 @@ export async function logout() {
 }
 
 /**
- * Monitors authentication state and handles redirections.
+ * Monitors Firebase authentication state and handles redirections.
+ * Falls back to a guest session when enabled, so playing never requires an account.
  * @param {function} onUserReady - Callback when user is available and verified.
  * @param {boolean} redirectIfNull - Automatically redirect to login if no session found.
  */
 export function checkAuth(onUserReady, redirectIfNull = true) {
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      if (user.emailVerified) {
+      if (user.emailVerified || isUsernameAuthEmail(user.email)) {
         if (onUserReady) onUserReady(user);
       } else {
         if (redirectIfNull) {
@@ -183,7 +212,10 @@ export function checkAuth(onUserReady, redirectIfNull = true) {
           onUserReady(user);
         }
       }
-    } else if (redirectIfNull) {
+      return;
+    }
+
+    if (redirectIfNull) {
       window.location.replace("login.html");
     } else if (onUserReady) {
       onUserReady(null);

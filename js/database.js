@@ -1,7 +1,7 @@
 /**
  * database.js
  * Centralized Firebase Firestore operations for Bounty Clicker.
- * Handles user data, leaderboards, market, and admin systems with robust error handling.
+ * Handles user data, leaderboards, and admin systems with robust error handling.
  */
 
 import { 
@@ -17,7 +17,6 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  increment,
   arrayUnion,
   arrayRemove,
   addDoc
@@ -30,20 +29,22 @@ export const db = getFirestore(app);
 /**
  * Initializes data for a new user in Firestore.
  * @param {string} uid - User unique identifier.
- * @param {string} email - User email.
+ * @param {string|null} email - User email, or null for pseudo-only accounts.
  * @param {string} customUsername - Optional chosen username.
+ * @param {string} loginMethod - Account identifier type.
  */
-export async function initializeUserData(uid, email, customUsername) {
-  if (!uid || !email) throw new Error("Missing required parameters for user initialization.");
+export async function initializeUserData(uid, email, customUsername, loginMethod = "email") {
+  if (!uid) throw new Error("Missing required parameters for user initialization.");
 
   try {
     const userRef = doc(db, "users", uid);
-    const username = customUsername || email.split('@')[0];
+    const username = customUsername || email?.split('@')[0] || "Joueur";
     
     const initialData = {
       profile: {
-        email: email,
+        email: email || null,
         username: username,
+        loginMethod,
         createdAt: serverTimestamp()
       },
       gameData: {
@@ -58,15 +59,11 @@ export async function initializeUserData(uid, email, customUsername) {
         rabbitTokens: 0,
         unlockedUpgrades: [],
         unlockedCurrencyUpgrades: [],
-        rebirthPrice: 1000000,
         storeItems: [],
         boosts: [],
+        autoClickLockoutExpiry: 0,
+        rebirthPrice: 1000000,
         claimedRewards: []
-      },
-      portfolio: {
-        shares: 0,
-        averageBuyPrice: 0,
-        totalInvested: 0
       },
       settings: {
         theme: "dark",
@@ -138,66 +135,6 @@ export function listenToLeaderboard(callback) {
 }
 
 /**
- * Listens to global market data in real-time.
- * @param {function} callback - Function called on market update.
- * @returns {function} Unsubscribe function.
- */
-export function listenToMarket(callback) {
-  const marketRef = doc(db, "market", "carrotMarket");
-  return onSnapshot(marketRef, (doc) => {
-    if (doc.exists()) {
-      callback(doc.data());
-    } else {
-      callback(null);
-    }
-  }, (error) => {
-    console.error("Market subscription error:", error);
-  });
-}
-
-/**
- * Updates the global market data.
- * @param {number} currentPrice - New market price.
- * @param {Array} history - Array of previous prices.
- * @param {Object} extraData - Optional additional market info.
- */
-export async function updateMarketData(currentPrice, history, extraData = {}) {
-  try {
-    const marketRef = doc(db, "market", "carrotMarket");
-    await setDoc(marketRef, {
-      currentPrice: currentPrice,
-      history: history,
-      lastUpdate: serverTimestamp(),
-      ...extraData
-    }, { merge: true });
-  } catch (error) {
-    console.error("Market data update failed:", error);
-  }
-}
-
-/**
- * Updates player portfolio and balance atomically.
- * @param {string} uid - User unique identifier.
- * @param {Object} portfolioUpdates - Changes to apply to portfolio.
- * @param {number} countChange - Balance adjustment.
- */
-export async function updatePlayerPortfolio(uid, portfolioUpdates, countChange) {
-  if (!uid) return;
-  try {
-    const userRef = doc(db, "users", uid);
-    const updates = {
-      portfolio: portfolioUpdates,
-      "gameData.count": increment(countChange),
-      "modifications.lastUpdated": serverTimestamp()
-    };
-    await updateDoc(userRef, updates);
-  } catch (error) {
-    console.error("Portfolio update failed:", error);
-    throw error;
-  }
-}
-
-/**
  * Saves game progress to Firestore.
  * @param {string} uid - User unique identifier.
  * @param {Object} data - Game state data.
@@ -205,6 +142,7 @@ export async function updatePlayerPortfolio(uid, portfolioUpdates, countChange) 
  */
 export async function saveUserData(uid, data, username = null) {
   if (!uid || !data) return;
+
   try {
     const userRef = doc(db, "users", uid);
     await setDoc(userRef, {
@@ -230,6 +168,7 @@ export async function saveUserData(uid, data, username = null) {
  */
 export async function loadUserData(uid) {
   if (!uid) return null;
+
   try {
     const userRef = doc(db, "users", uid);
     const docSnap = await getDoc(userRef);
@@ -245,6 +184,7 @@ export async function loadUserData(uid) {
  */
 export async function syncCorrectionToFirebase(uid, newCount, violations) {
   if (!uid) return;
+
   try {
     const userRef = doc(db, "users", uid);
     await updateDoc(userRef, {
@@ -297,6 +237,7 @@ export async function markAdminCommandProcessed(cmdId) {
  */
 export async function updateUserData(uid, path, value) {
   if (!uid || !path) return;
+
   try {
     const userRef = doc(db, "users", uid);
     const update = {};

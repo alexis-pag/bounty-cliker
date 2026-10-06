@@ -13,7 +13,7 @@
   <div class="panel active" style="max-width: 450px; width: 90%; display: flex !important; animation: fadeIn 0.8s ease-out; padding: 40px;">
     <h1 style="color: var(--neon-blue); text-align: center; margin-bottom: 35px;">Connexion</h1>
     <form id="loginForm">
-      <input type="email" id="loginEmail" placeholder="Email" required style="margin-bottom: 20px;">
+      <input type="text" id="loginEmail" placeholder="E-mail ou pseudo" required autocomplete="username" style="margin-bottom: 20px;">
       <input type="password" id="loginPass" placeholder="Mot de passe" required style="margin-bottom: 25px;">
       <p style="text-align: right; margin-top: -15px; margin-bottom: 25px;">
         <a href="#" id="forgotPassLink" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85em;">Mot de passe oublié ?</a>
@@ -117,6 +117,8 @@
         });
       } else if (error.code === 'auth/too-many-requests') {
         errorEl.textContent = "Trop de tentatives de connexion échouées. Veuillez patienter quelques instants.";
+      } else if (error.code === 'auth/invalid-username') {
+        errorEl.textContent = error.message;
       } else if (error.code === 'auth/invalid-email') {
         errorEl.textContent = "L'adresse email n'est pas valide.";
       } else {
@@ -129,7 +131,7 @@
     const errorEl = document.getElementById('loginError');
     errorEl.textContent = "";
     try {
-      await loginWithGoogle();
+      const user = await loginWithGoogle();
       window.location.href = 'dashboard.html';
     } catch (error) {
       if (error.code === 'auth/email-not-verified') {

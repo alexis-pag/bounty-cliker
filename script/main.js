@@ -100,67 +100,15 @@
     if (typeof window.updateStore === 'function') window.updateStore();
   }, 1000);
 
-  // --- Sauvegarde uniquement en localStorage ---
-  async function sauvegarderJeu(){
-    const data = {
-      count: window.BountyGame.count,
-      multiplier: window.BountyGame.multiplier ?? 1,
-      clickValue: window.BountyGame.clickValue,
-      addClickBonus: window.BountyGame.addClickBonus,
-      addCageBonus: window.BountyGame.addCageBonus,
-      cps: window.BountyGame.cps,
-      rebirths: window.BountyGame.rebirths,
-      rebirthPrice: window.BountyGame.rebirthPrice,
-      rebirthBonusClick: window.BountyGame.rebirthBonusClick,
-      rebirthBonusCPS: window.BountyGame.rebirthBonusCPS,
-      storeItems: (window.storeItemsData || []).map(it=>({ owned: it.owned, price: it.price })),
-      boosts: (window.boostsData || []).map(b=>({ active: !!b.active, permanent: !!b.permanent }))
-    };
-    localStorage.setItem('bountySave', JSON.stringify(data));
-  }
+  // Legacy archive: no game state is stored or loaded from this script.
+  async function sauvegarderJeu() {}
+  async function chargerJeu() { applyRebirthBonus(); }
   window.sauvegarderJeu = sauvegarderJeu;
-
-  async function chargerJeu(){
-    let data = {};
-    const raw = localStorage.getItem('bountySave');
-    if (raw) {
-      try { data = JSON.parse(raw); } catch(e){ data = {}; }
-    }
-
-    window.BountyGame.count = data.count ?? window.BountyGame.count;
-    window.BountyGame.multiplier = data.multiplier ?? window.BountyGame.multiplier ?? 1;
-    window.BountyGame.clickValue = data.clickValue ?? window.BountyGame.clickValue;
-    window.BountyGame.addClickBonus = data.addClickBonus ?? window.BountyGame.addClickBonus;
-    window.BountyGame.addCageBonus = data.addCageBonus ?? window.BountyGame.addCageBonus;
-    window.BountyGame.cps = data.cps ?? window.BountyGame.cps;
-
-    window.BountyGame.rebirths = data.rebirths ?? window.BountyGame.rebirths;
-    window.BountyGame.rebirthPrice = data.rebirthPrice ?? window.BountyGame.rebirthPrice;
-    applyRebirthBonus();
-
-    if (Array.isArray(data.storeItems) && Array.isArray(window.storeItemsData)) {
-      data.storeItems.forEach((s,i) => {
-        if (window.storeItemsData[i]) {
-          window.storeItemsData[i].owned = s.owned ?? window.storeItemsData[i].owned;
-          window.storeItemsData[i].price = s.price ?? window.storeItemsData[i].price;
-        }
-      });
-    }
-    if (Array.isArray(data.boosts) && Array.isArray(window.boostsData)) {
-      data.boosts.forEach((b,i) => {
-        if (window.boostsData[i]) {
-          window.boostsData[i].active = !!b.active;
-          window.boostsData[i].permanent = !!b.permanent;
-          if (window.boostsData[i].permanent) window.boostsData[i].available = false;
-        }
-      });
-    }
-  }
   window.chargerJeu = chargerJeu;
 
   if (resetButton) {
     resetButton.addEventListener('click', () => {
-      if (!confirm("Réinitialiser le jeu et supprimer la sauvegarde ?")) return;
+      if (!confirm("Réinitialiser le jeu ?")) return;
       window.BountyGame.count = 0;
       window.BountyGame.multiplier = 1;
       window.BountyGame.clickValue = 1;

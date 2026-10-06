@@ -16,7 +16,7 @@
 <!-- Global Stats Header -->
 <header class="global-header">
   <div class="header-content">
-    <div class="brand">BOUNTY<span>CLICKER</span> <small style="font-size: 0.6rem; vertical-align: middle; opacity: 0.5;"</small></div>
+    <div class="brand">BOUNTY<span>CLICKER</span> <small style="font-size: 0.6rem; vertical-align: middle; opacity: 0.5;"></small></div>
     <div class="stats-container">
       <div class="primary-stat">
         <span id="counter">0</span>
@@ -36,15 +36,12 @@
 <nav class="desktop-nav">
   <div class="nav-items">
     <div class="nav-btn active" data-tab="tab-clicker"><span>👆</span><span>CLICKER</span></div>
-    <div class="nav-btn" data-tab="tab-shop"><span>🛒</span><span>BOUTIQUE</span></div>
-    <div class="nav-btn" data-tab="tab-boosts"><span>⚡</span><span>BOOSTS</span></div>
     <div class="nav-btn" data-tab="tab-prestige"><span>🏆</span><span>PRESTIGE</span></div>
     <div class="nav-btn" data-tab="tab-currencies"><span>💎</span><span>MULTI-MONNAIES</span></div>
   </div>
   <div class="nav-actions">
     <button class="btn-icon" id="saveButtonMain" title="Sauvegarder">💾 SAUVEGARDER</button>
     <button class="btn-icon" onclick="window.location.href='leaderboard.html'" title="Classement">📊 CLASSEMENT</button>
-    <button class="btn-icon" onclick="window.location.href='market.html'" title="Bourse">📈 BOURSE</button>
     <button class="btn-icon" onclick="resetChoice()" title="Menu">🏠 MENU</button>
     <button class="btn-logout-icon" onclick="window.logout()" title="Déconnexion">🚪 QUITTER</button>
   </div>
@@ -88,11 +85,10 @@
       </main>
   </div>
 
-  <!-- Panel Shop -->
   <div class="panel shop" id="tab-shop">
     <div class="panel-header">
       <h2>BOUTIQUE</h2>
-      <div id="buy-controls-container" class="buy-controls">
+      <div class="buy-controls" id="buy-controls-container">
         <button class="btn-qty active" onclick="setBuyAmount(1)">x1</button>
         <button class="btn-qty" onclick="setBuyAmount(10)">x10</button>
         <button class="btn-qty" onclick="setBuyAmount(100)">x100</button>
@@ -102,11 +98,8 @@
     <div class="shop-grid list" id="shopList"></div>
   </div>
 
-  <!-- Panel Boosts -->
   <div class="panel boosts" id="tab-boosts">
-    <div class="panel-header">
-      <h2>Boosts</h2>
-    </div>
+    <div class="panel-header"><h2>Boosts</h2></div>
     <div class="boosts-scroll list" id="boostList"></div>
   </div>
 
@@ -191,7 +184,6 @@
 <script>
   // Fonction pour revenir au menu de choix
   function resetChoice() {
-    localStorage.removeItem("bc-version");
     window.location.href = "index.html";
   }
 </script>

@@ -16,7 +16,7 @@
 <!-- Global Stats Header -->
 <header class="global-header">
   <div class="header-content">
-    <div class="brand">BOUNTY<span>CLICKER</span> <small style="font-size: 0.5rem; opacity: 0.5;"</small></div>
+    <div class="brand">BOUNTY<span>CLICKER</span> <small style="font-size: 0.5rem; opacity: 0.5;"></small></div>
     <div class="stats-container">
       <div class="primary-stat">
         <span id="counter">0</span>
@@ -69,7 +69,7 @@
   <aside class="panel shop" id="tab-shop">
     <header class="panel-header">
       <h2>BOUTIQUE</h2>
-      <div id="buy-controls-container" class="buy-controls" style="margin-top: 10px; width: 100%; justify-content: space-around;">
+      <div class="buy-controls" id="buy-controls-container">
         <button class="btn-qty active" onclick="setBuyAmount(1)">x1</button>
         <button class="btn-qty" onclick="setBuyAmount(10)">x10</button>
         <button class="btn-qty" onclick="setBuyAmount(100)">x100</button>
@@ -81,7 +81,7 @@
   </aside>
 
   <aside class="panel boosts" id="tab-boosts">
-    <header class="panel-header"><h2>Boosts & Bonus</h2></header>
+    <header class="panel-header"><h2>Boosts</h2></header>
     <div class="panel-main">
       <div id="boostsContainer" class="list boosts-scroll"></div>
     </div>
@@ -157,15 +157,15 @@
   </div>
 </div>
 
-<script src="js/boost.js" defer></script>
 <script src="js/prestige.js" defer></script>
 <script src="js/currency-system.js" defer></script>
+<script src="js/boutique.js" defer></script>
+<script src="js/boost.js" defer></script>
 <script type="module" src="js/main.js" defer></script>
 
 <script>
   // Fonction pour revenir au menu de choix
   function resetChoice() {
-    localStorage.removeItem("bc-version");
     window.location.href = "index.html";
   }
 
@@ -192,14 +192,6 @@
       });
     });
 
-    // Redirection automatique si le choix mobile est déjà enregistré
-    const savedChoice = localStorage.getItem("bc-version");
-    if (savedChoice === "desktop") {
-      window.location.href = "site.html";
-    } else if (savedChoice === "mobile") {
-      // reste sur cette page, choix déjà enregistré
-      localStorage.setItem("bc-version", "mobile");
-    }
   });
 </script>
 

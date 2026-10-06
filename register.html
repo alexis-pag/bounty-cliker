@@ -13,8 +13,17 @@
   <div class="panel active" style="max-width: 500px; width: 95%; display: flex !important; animation: fadeIn 0.8s ease-out; padding: 45px;">
     <h1 style="color: var(--neon-pink); text-align: center; margin-bottom: 35px;">Inscription</h1>
     <form id="regForm">
-      <input type="text" id="regUser" placeholder="Pseudo (Nom affiché)" required minlength="3" style="margin-bottom: 18px;">
-      <input type="email" id="regEmail" placeholder="Email" required style="margin-bottom: 18px;">
+      <div class="account-mode" role="group" aria-label="Mode de création du compte">
+        <button type="button" id="emailModeBtn" class="active" aria-pressed="true">Par e-mail</button>
+        <button type="button" id="usernameModeBtn" aria-pressed="false">Par pseudo</button>
+      </div>
+      <label class="field-label" id="identifierLabel" for="regEmail">Adresse e-mail</label>
+      <input type="email" id="regEmail" placeholder="Email" required autocomplete="username" style="margin-bottom: 18px;">
+      <div id="displayNameField">
+        <label class="field-label" for="regUser">Pseudo affiché (facultatif)</label>
+        <input type="text" id="regUser" placeholder="Pseudo" maxlength="20" style="margin-bottom: 18px;">
+      </div>
+      <p id="pseudoRecoveryNote" hidden>Avec un compte par pseudo, la récupération du mot de passe par e-mail n'est pas disponible.</p>
       <input type="password" id="regPass" placeholder="Mot de passe" required minlength="6" style="margin-bottom: 18px;">
       <input type="password" id="regPassConfirm" placeholder="Confirmer le mot de passe" required minlength="6" style="margin-bottom: 25px;">
       <button type="submit" id="regBtn" class="btn activate" style="width: 100%; margin-top: 15px; padding: 14px;">S'inscrire</button>
@@ -37,15 +46,49 @@
 
 <style>
   @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .account-mode { display: flex; gap: 6px; margin-bottom: 18px; padding: 4px; border-radius: 10px; background: rgba(255,255,255,.04); }
+  .account-mode button { flex: 1; padding: 9px; border: 0; border-radius: 7px; color: #cfeaff; background: transparent; cursor: pointer; font-weight: 800; }
+  .account-mode button.active { color: #04140a; background: linear-gradient(90deg, var(--neon-green), #d3ffc2); }
+  .field-label { display: block; margin-bottom: 6px; text-align: left; font-size: .85rem; }
+  #pseudoRecoveryNote { margin: -8px 0 18px; font-size: .78rem; line-height: 1.4; opacity: .7; }
 </style>
 
 <script type="module">
   import { register, loginWithGoogle } from './js/auth.js';
 
+  let accountMethod = 'email';
+  const identifierInput = document.getElementById('regEmail');
+  const displayNameField = document.getElementById('displayNameField');
+  const displayNameInput = document.getElementById('regUser');
+  const identifierLabel = document.getElementById('identifierLabel');
+  const recoveryNote = document.getElementById('pseudoRecoveryNote');
+
+  function setAccountMethod(method) {
+    accountMethod = method;
+    const usernameMode = method === 'username';
+    const emailButton = document.getElementById('emailModeBtn');
+    const usernameButton = document.getElementById('usernameModeBtn');
+    emailButton.classList.toggle('active', !usernameMode);
+    emailButton.setAttribute('aria-pressed', String(!usernameMode));
+    usernameButton.classList.toggle('active', usernameMode);
+    usernameButton.setAttribute('aria-pressed', String(usernameMode));
+    identifierLabel.textContent = usernameMode ? 'Pseudo de connexion' : 'Adresse e-mail';
+    identifierInput.type = usernameMode ? 'text' : 'email';
+    identifierInput.placeholder = usernameMode ? '3 à 20 caractères' : 'Email';
+    identifierInput.minLength = usernameMode ? 3 : 0;
+    identifierInput.maxLength = usernameMode ? 20 : 254;
+    displayNameField.hidden = usernameMode;
+    displayNameInput.disabled = usernameMode;
+    recoveryNote.hidden = !usernameMode;
+  }
+
+  document.getElementById('emailModeBtn').addEventListener('click', () => setAccountMethod('email'));
+  document.getElementById('usernameModeBtn').addEventListener('click', () => setAccountMethod('username'));
+
   document.getElementById('regForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const username = document.getElementById('regUser').value;
-    const email = document.getElementById('regEmail').value;
+    const identifier = identifierInput.value.trim();
+    const username = accountMethod === 'username' ? identifier : displayNameInput.value.trim();
     const pass = document.getElementById('regPass').value;
     const passConfirm = document.getElementById('regPassConfirm').value;
     const errorEl = document.getElementById('regError');
@@ -61,8 +104,10 @@
       const btn = document.getElementById('regBtn');
       btn.disabled = true;
       btn.textContent = "Inscription...";
-      await register(email, pass, username);
-      alert('Inscription réussie ! Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception avant de vous connecter.');
+      await register(identifier, pass, username, accountMethod);
+      alert(accountMethod === 'email'
+        ? 'Inscription réussie ! Un e-mail de confirmation vous a été envoyé.'
+        : 'Compte créé ! Vous pouvez maintenant vous connecter avec votre pseudo.');
       window.location.href = 'login.html';
     } catch (error) {
       const btn = document.getElementById('regBtn');
@@ -75,6 +120,8 @@
         errorEl.textContent = "Le mot de passe est trop faible (6 caractères min).";
       } else if (error.code === 'auth/invalid-email') {
         errorEl.textContent = "L'adresse email n'est pas valide.";
+      } else if (error.code === 'auth/invalid-username') {
+        errorEl.textContent = error.message;
       } else if (error.code === 'auth/too-many-requests') {
         errorEl.textContent = "Trop de tentatives échouées. Veuillez patienter quelques instants.";
       } else if (error.code === 'permission-denied') {
